@@ -40,24 +40,41 @@ export const sendPrivateMessage = async (
   prompt: string,
   token: string
 ) => {
-  console.log('sending message')
-  return await axios.post(
-    `${process.env.INSTAGRAM_BASE_URL}/${userId}/messages`,
-    {
-      recipient: {
-        comment_id: recieverId,
+  console.log('Sending private message:', {
+    userId,
+    receiverId: recieverId,
+    messageLength: prompt.length,
+    hasToken: !!token
+  })
+  
+  try {
+    return await axios.post(
+      `${process.env.INSTAGRAM_BASE_URL}/${userId}/messages`,
+      {
+        recipient: {
+          comment_id: recieverId,
+        },
+        message: {
+          text: prompt,
+        },
       },
-      message: {
-        text: prompt,
-      },
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    }
-  )
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+  } catch (error) {
+    console.error('Error sending private message:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      status: axios.isAxiosError(error) ? error.response?.status : 'N/A',
+      statusText: axios.isAxiosError(error) ? error.response?.statusText : 'N/A',
+      errorData: axios.isAxiosError(error) ? error.response?.data : 'N/A'
+    })
+    
+    throw error;
+  }
 }
 
 export const generateTokens = async (code: string) => {

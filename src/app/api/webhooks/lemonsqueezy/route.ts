@@ -3,7 +3,6 @@ import crypto from 'crypto';
 import { type Order, type Subscription, getCustomer, lemonSqueezySetup } from '@lemonsqueezy/lemonsqueezy.js';
 import { PrismaClient, SUBSCRIPTION_PLAN, SUBSCRIPTION_STATUS } from '@prisma/client';
 import { updateUserLemonSqueezyPaymentDetails } from '@/lib/lemonsqueezy/payment-details';
-import { onCurrentUser } from '@/actions/user';
 
 const prisma = new PrismaClient();
 const LEMONSQUEEZY_WEBHOOK_SECRET = process.env.LEMONSQUEEZY_WEBHOOK_SECRET!;
@@ -35,13 +34,17 @@ export async function POST(req: Request) {
 
     const clerkUserId = event.meta.custom_data.user_id;
     
-    // Get the user's database ID using their Clerk ID
-    const user = await onCurrentUser();
-    if (user.status !== 200 || !user.data) {
-      return new Response('Unauthorized', { status: 401 });
+    // Get the user from the database directly using Clerk ID
+    const user = await prisma.user.findUnique({
+      where: { clerkId: clerkUserId },
+    });
+
+    if (!user) {
+      console.warn(`User not found for Clerk ID: ${clerkUserId}`);
+      return new NextResponse('User not found', { status: 404 });
     }
 
-    const userId = user.data.id;
+    const userId = user.id;
 
     switch (event.meta.event_name) {
       case 'order_created':
@@ -158,4 +161,4 @@ async function handleSubscriptionExpired(data: Subscription, userId: string) {
     },
     prisma
   );
-} 
+}

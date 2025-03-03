@@ -32,4 +32,35 @@ export async function GET() {
     console.error('Error fetching customer portal URL:', error);
     return new NextResponse('Error fetching customer portal URL', { status: 500 });
   }
-} 
+}
+
+export async function POST(req: Request) {
+  try {
+    const { userId } = await req.json();
+    
+    if (!userId) {
+      return new NextResponse('Missing userId', { status: 400 });
+    }
+
+    // Find the user by database ID
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        subscription: {
+          select: {
+            lemonSqueezyCustomerPortalUrl: true,
+          },
+        },
+      },
+    });
+
+    if (!user?.subscription?.lemonSqueezyCustomerPortalUrl) {
+      return new NextResponse('No subscription found', { status: 404 });
+    }
+
+    return NextResponse.json({ url: user.subscription.lemonSqueezyCustomerPortalUrl });
+  } catch (error) {
+    console.error('Error fetching customer portal URL:', error);
+    return new NextResponse('Error fetching customer portal URL', { status: 500 });
+  }
+}

@@ -128,9 +128,17 @@ export const findAutomation = async (id: string) => {
         const hasKeywords = trigger.keywords.length > 0
         const hasReplyMessages = trigger.replyMessages.length > 0
         
-        const status = hasPost && hasKeywords && hasReplyMessages ? 'complete' :
-                      hasPost || hasKeywords || hasReplyMessages ? 'partial' :
-                      'unconfigured'
+        // Special handling for user-message (DM) triggers
+        let status
+        if (trigger.type === 'user-message') {
+          // For Direct Message triggers, only keywords are required
+          status = hasKeywords ? 'complete' : 'unconfigured'
+        } else {
+          // For other triggers, use the original logic
+          status = hasPost && hasKeywords && hasReplyMessages ? 'complete' :
+                  hasPost || hasKeywords || hasReplyMessages ? 'partial' :
+                  'unconfigured'
+        }
 
         console.log('Processing trigger:', {
           type: trigger.type,
@@ -371,7 +379,9 @@ export const addTrigger = async (automationId: string, trigger: string[], config
         trigger: {
           create: {
             type: trigger[0],
-            status: config?.status || 'unconfigured',
+            status: config?.status || ((trigger[0] === 'user-message' && config?.keywords?.include?.length > 0) 
+              ? 'complete' 
+              : 'unconfigured'),
             ...(config?.posts && {
               posts: {
                 create: config.posts.map((post: any) => ({

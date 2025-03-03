@@ -11,7 +11,7 @@ import {
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { useParams, usePathname } from "next/navigation"
+import { useParams, usePathname, useRouter } from "next/navigation"
 import { UserButton } from "@clerk/nextjs"
 
 import { NavMain } from "./nav-main"
@@ -26,6 +26,7 @@ export function AppSidebar({ onCollapse, defaultExpanded = true }: AppSidebarPro
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
   const params = useParams<{ slug: string }>()
   const pathname = usePathname()
+  const router = useRouter()
 
   useEffect(() => {
     onCollapse?.(isExpanded)
@@ -60,6 +61,18 @@ export function AppSidebar({ onCollapse, defaultExpanded = true }: AppSidebarPro
       },
     ],
   }
+
+  // Extract the slug from the path (format: /dashboard/{slug}/...)
+  const slugMatch = pathname.match(/\/dashboard\/([^/]+)/);
+  const userSlug = slugMatch ? slugMatch[1] : '';
+
+  // Handle redirection when directly accessing /settings
+  const isDirectSettingsAccess = pathname === '/settings';
+  useEffect(() => {
+    if (isDirectSettingsAccess && userSlug) {
+      router.push(`/dashboard/${userSlug}/settings`);
+    }
+  }, [isDirectSettingsAccess, userSlug, router]);
 
   return (
     <aside 
@@ -163,7 +176,7 @@ export function AppSidebar({ onCollapse, defaultExpanded = true }: AppSidebarPro
             <div className="border-t border-gray-200/30 pt-6">
               <div className="px-4">
                 <Link
-                  href="/settings"
+                  href={userSlug ? `/dashboard/${userSlug}/settings/account` : '/settings/account'}
                   className={`relative flex h-[40px] ${isExpanded ? 'w-[218px]' : 'w-[44px]'} items-center rounded-2xl bg-gradient-to-br from-[#d8d2e9] via-[#e4dff2] to-[#d5cfe6] shadow-[0_2px_4px_rgba(0,0,0,0.06)] transition-all hover:from-[#e0daf1] hover:via-[#ece7fa] hover:to-[#dfd9eb] hover:shadow-[0_3px_6px_rgba(0,0,0,0.1)]`}
                 >
                   <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-white/20 via-white/5 to-transparent pointer-events-none" />

@@ -80,7 +80,7 @@ export function CommentTriggerConfig({
   const handlePostSelection = async (selection: { type: 'specific' | 'all' | 'next'; postId?: string }, post?: InstagramPostProps) => {
     if (selection.type === 'specific' && post) {
       try {
-        showToast('loading', 'Saving post configuration')
+        showToast('loading', 'Saving post configuration', true)
         // Add reload prevention
         window.addEventListener('beforeunload', preventReload)
         
@@ -118,7 +118,7 @@ export function CommentTriggerConfig({
         
         // Remove reload prevention and show success
         window.removeEventListener('beforeunload', preventReload)
-        showToast('success', 'Post configuration saved')
+        showToast('success', 'Post configuration saved', true)
       } catch (error) {
         // Remove reload prevention on error
         window.removeEventListener('beforeunload', preventReload)
@@ -131,7 +131,7 @@ export function CommentTriggerConfig({
 
   const handleKeywordSave = async (newKeywords: KeywordState) => {
     try {
-      showToast('loading', 'Saving keyword configuration')
+      showToast('loading', 'Saving keyword configuration', true)
       // Add reload prevention
       window.addEventListener('beforeunload', preventReload)
       
@@ -171,7 +171,7 @@ export function CommentTriggerConfig({
       
       // Remove reload prevention and show success
       window.removeEventListener('beforeunload', preventReload)
-      showToast('success', 'Keywords saved successfully')
+      showToast('success', 'Keywords saved successfully', true)
     } catch (error) {
       // Remove reload prevention on error
       window.removeEventListener('beforeunload', preventReload)
@@ -183,7 +183,7 @@ export function CommentTriggerConfig({
 
   const handleReplyMessageSave = async (messages: string | string[]) => {
     try {
-      showToast('loading', 'Saving reply message')
+      showToast('loading', 'Saving reply message', true)
       // Add reload prevention
       window.addEventListener('beforeunload', preventReload)
       
@@ -224,7 +224,7 @@ export function CommentTriggerConfig({
       
       // Remove reload prevention and show success
       window.removeEventListener('beforeunload', preventReload)
-      showToast('success', 'Reply message saved')
+      showToast('success', 'Reply message saved', true)
     } catch (error) {
       // Remove reload prevention on error
       window.removeEventListener('beforeunload', preventReload)
@@ -236,7 +236,7 @@ export function CommentTriggerConfig({
 
   const handleRemoveSelectedPost = async () => {
     try {
-      showToast('loading', 'Removing post configuration')
+      showToast('loading', 'Removing post configuration', true)
       // Add reload prevention
       window.addEventListener('beforeunload', preventReload)
       
@@ -265,7 +265,7 @@ export function CommentTriggerConfig({
       
       // Remove reload prevention and show success
       window.removeEventListener('beforeunload', preventReload)
-      showToast('success', 'Post configuration removed')
+      showToast('success', 'Post configuration removed', true)
     } catch (error) {
       // Remove reload prevention on error
       window.removeEventListener('beforeunload', preventReload)

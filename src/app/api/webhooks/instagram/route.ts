@@ -113,52 +113,85 @@ export async function POST(req: NextRequest) {
           )
         }
 
+        // Add check for active status
+        if (!automation.active) {
+          console.log('Automation is disabled:', automation.id)
+          return NextResponse.json(
+            {
+              message: 'Automation is disabled',
+              automationId: automation.id
+            },
+            { status: 200 }
+          )
+        }
+
         console.log('Found automation:', {
           id: automation.id,
           type: automation.listener?.type,
-          subscription: automation.User?.subscription?.plan
+          subscription: automation.User?.subscription?.plan,
+          active: automation.active
         })
 
         if (automation?.trigger && automation.listener) {
           const commentId = webhook_payload.entry[0].changes[0].value.id
           const token = automation.User?.integrations[0].token
+          // Check if reply messages are configured
+          const hasReplyMessages = automation.trigger.some(trigger => 
+            trigger.type === 'post-comments' && trigger.replyMessages && trigger.replyMessages.length > 0
+          )
 
-          // Handle both message action and comment reply
+          // Handle message action for comments
           if (automation.listener.type === ACTION_TYPE.MESSAGE) {
-            console.log('Processing MESSAGE listener for comment')
+            console.log(
+              'COMMENT VERSION:',
+              webhook_payload.entry[0].changes[0].value.from.id
+            )
+
+            // First, try to send a direct message
+            const commentId = webhook_payload.entry[0].changes[0].value.id
+            const dmMessage = automation.listener.message || 'Thank you for your comment!'
+            let dmSent = false
+            let dmError = null
             
-            // 1. Send DM to the user
-            if (automation.listener.message && token) {
-              const direct_message = await sendDM(
+            if (token) {
+              console.log('Attempting to send DM first:', {
+                userId: webhook_payload.entry[0].id,
+                commentId: commentId,
+                messageLength: dmMessage.length,
+                tokenAvailable: !!token
+              })
+
+              try {
+                const direct_message = await sendPrivateMessage(
                 webhook_payload.entry[0].id,
-                webhook_payload.entry[0].changes[0].value.from.id,
-                automation.listener.message,
+                  commentId,
+                  dmMessage,
                 token
               )
 
               if (direct_message.status === 200) {
-                console.log('MESSAGE: DM sent successfully')
+                  console.log('DM sent successfully')
+                  dmSent = true
                 await trackResponses(automation.id, 'DM')
-              }
-            }
 
-            // 2. Reply to the comment with a random message
-            const replyMessage = await getRandomReplyMessage(matcher.triggerId)
-            if (replyMessage && token) {
-              console.log('Attempting to reply to comment:', {
-                commentId,
-                messageLength: replyMessage.length,
-                tokenAvailable: !!token
-              })
-
-              const comment_reply = await replyToComment(
+                  // DM was successful, now check if we should reply to the comment
+                  if (hasReplyMessages) {
+                    console.log('DM sent successfully, now sending comment reply')
+                    // Get a random reply message from the array if available
+                    const replyMessages = automation.trigger[0]?.replyMessages?.[0]?.message?.split('|').map((msg: string) => msg.trim()).filter(Boolean) || []
+                    const replyMessage = replyMessages.length > 0
+                      ? replyMessages[Math.floor(Math.random() * replyMessages.length)]
+                      : 'Check your DMs for more information!'
+                    
+                    // Reply to the comment with the randomly selected message
+                    const commentReply = await replyToComment(
                 commentId,
                 replyMessage,
                 token
               )
 
-              if (comment_reply.status === 200) {
-                console.log('MESSAGE: Comment reply sent successfully')
+                    if (commentReply.status === 200) {
+                      console.log('Comment reply sent successfully after DM')
                 await trackResponses(automation.id, 'COMMENT')
                 return NextResponse.json(
                   {
@@ -167,16 +200,109 @@ export async function POST(req: NextRequest) {
                   { status: 200 }
                 )
               } else {
-                console.error('Failed to reply to comment:', {
-                  status: comment_reply.status,
-                  error: comment_reply.data?.error,
+                      console.error('Failed to reply to comment after successful DM:', {
+                        status: commentReply.status,
+                        error: commentReply.data?.error,
                   commentId
+                      })
+                      
+                      // DM was successful but comment reply failed
+                      return NextResponse.json(
+                        {
+                          message: 'DM sent successfully but comment reply failed',
+                        },
+                        { status: 200 }
+                      )
+                    }
+                  } else {
+                    // No reply messages configured, just return success for DM
+                    return NextResponse.json(
+                      {
+                        message: 'DM sent successfully, no reply messages configured',
+                      },
+                      { status: 200 }
+                    )
+                  }
+                } else {
+                  console.error('Failed to send DM:', {
+                    status: direct_message.status,
+                    error: direct_message.data?.error
+                  })
+                  
+                  dmError = {
+                    status: direct_message.status,
+                    error: direct_message.data?.error
+                  }
+                  
+                  // DM failed, record the error but continue to potentially reply to comment
+                  console.log('DM failed with Instagram API error (likely 24-hour window restriction)')
+                }
+              } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                console.error('Error sending private message:', {
+                  error: errorMessage
                 })
-                // Continue execution to return success for DM sent
+                
+                dmError = {
+                  error: errorMessage
+                }
+                
+                // DM failed with exception, record the error but continue to potentially reply to comment
+                console.log('DM failed with exception')
+              }
+              
+              // If DM failed but we have reply messages configured, reply to the comment as a fallback
+              if (!dmSent && hasReplyMessages) {
+                console.log('DM failed but attempting comment reply as fallback')
+                // Get a random reply message from the array if available
+                const replyMessages = automation.trigger[0]?.replyMessages?.[0]?.message?.split('|').map((msg: string) => msg.trim()).filter(Boolean) || []
+                const replyMessage = replyMessages.length > 0
+                  ? replyMessages[Math.floor(Math.random() * replyMessages.length)]
+                  : 'Check your DMs for more information!'
+                
+                // Reply to the comment with the randomly selected message
+                const commentReply = await replyToComment(
+                  commentId,
+                  replyMessage,
+                  token
+                )
+
+                if (commentReply.status === 200) {
+                  console.log('Comment reply sent successfully as fallback after DM failure')
+                  await trackResponses(automation.id, 'COMMENT')
+                  return NextResponse.json(
+                    {
+                      message: 'DM failed but comment reply sent successfully',
+                      dmError
+                    },
+                    { status: 200 }
+                  )
+                } else {
+                  console.error('Failed to reply to comment after DM failure:', {
+                    status: commentReply.status,
+                    error: commentReply.data?.error,
+                    commentId
+                  })
+                  
+                  // Both DM and comment reply failed
+                  return NextResponse.json(
+                    {
+                      message: 'Both DM and comment reply failed',
+                      dmError,
+                      commentError: {
+                        status: commentReply.status,
+                        error: commentReply.data?.error
+                      }
+                    },
+                    { status: 200 }
+                  )
+                }
+              } else {
+                // DM failed and no reply message, return failure
                 return NextResponse.json(
                   {
-                    message: 'DM sent successfully, but comment reply failed',
-                    error: comment_reply.data?.error
+                    message: 'DM failed and no reply message configured',
+                    dmError
                   },
                   { status: 200 }
                 )
@@ -220,10 +346,23 @@ export async function POST(req: NextRequest) {
           )
         }
         
+        // Add check for active status
+        if (!automation.active) {
+          console.log('Automation is disabled:', automation.id)
+          return NextResponse.json(
+            {
+              message: 'Automation is disabled',
+              automationId: automation.id
+            },
+            { status: 200 }
+          )
+        }
+        
         console.log('Found automation:', {
           id: automation.id,
           type: automation.listener?.type,
-          subscription: automation.User?.subscription?.plan
+          subscription: automation.User?.subscription?.plan,
+          active: automation.active
         })
 
         if (automation?.trigger && automation.listener) {
@@ -360,10 +499,23 @@ export async function POST(req: NextRequest) {
           )
         }
 
+        // Add check for active status
+        if (!automation.active) {
+          console.log('Automation is disabled:', automation.id)
+          return NextResponse.json(
+            {
+              message: 'Automation is disabled',
+              automationId: automation.id
+            },
+            { status: 200 }
+          )
+        }
+
         console.log('Found automation:', {
           id: automation.id,
           type: automation.listener?.type,
-          subscription: automation.User?.subscription?.plan
+          subscription: automation.User?.subscription?.plan,
+          active: automation.active
         })
 
         if (automation?.trigger && automation.listener && webhook_payload.entry[0].changes[0].value.media) {
@@ -373,6 +525,11 @@ export async function POST(req: NextRequest) {
           )
 
           console.log('Found keyword post:', automations_post)
+
+          // Check if reply messages are configured
+          const hasReplyMessages = automation.trigger.some(trigger => 
+            trigger.type === 'post-comments' && trigger.replyMessages && trigger.replyMessages.length > 0
+          )
 
           if (automations_post) {
             // Handle message action for comments
@@ -389,25 +546,175 @@ export async function POST(req: NextRequest) {
                 webhook_payload.entry[0].changes[0].value.from.id
               )
 
+              // First, try to send a direct message
+              const commentId = webhook_payload.entry[0].changes[0].value.id
+              const dmMessage = automation.listener.message || 'Thank you for your comment!'
+              const token = automation.User?.integrations[0].token!
+              let dmSent = false
+              let dmError = null
+              
+              if (token) {
+                console.log('Attempting to send DM first:', {
+                  userId: webhook_payload.entry[0].id,
+                  commentId: commentId,
+                  messageLength: dmMessage.length,
+                  tokenAvailable: !!token
+                })
+
+                try {
               const direct_message = await sendPrivateMessage(
                 webhook_payload.entry[0].id,
-                webhook_payload.entry[0].changes[0].value.id,
-                automation.listener.message || '',
-                automation.User?.integrations[0].token!
-              )
+                    commentId,
+                    dmMessage,
+                    token
+                  )
 
-              console.log('DM SENT:', direct_message.data)
               if (direct_message.status === 200) {
-                const tracked = await trackResponses(automation.id, 'COMMENT')
+                    console.log('DM sent successfully')
+                    dmSent = true
+                    await trackResponses(automation.id, 'DM')
+                    
+                    // DM was successful, now check if we should reply to the comment
+                    if (hasReplyMessages) {
+                      console.log('DM sent successfully, now sending comment reply')
+                      // Get a random reply message from the array if available
+                      const replyMessages = automation.trigger[0]?.replyMessages?.[0]?.message?.split('|').map((msg: string) => msg.trim()).filter(Boolean) || []
+                      const replyMessage = replyMessages.length > 0
+                        ? replyMessages[Math.floor(Math.random() * replyMessages.length)]
+                        : 'Check your DMs for more information!'
+                      
+                      // Reply to the comment with the randomly selected message
+                      const commentReply = await replyToComment(
+                        commentId,
+                        replyMessage,
+                        token
+                      )
 
-                if (tracked) {
+                      if (commentReply.status === 200) {
+                        console.log('Comment reply sent successfully after DM')
+                        await trackResponses(automation.id, 'COMMENT')
+                        return NextResponse.json(
+                          {
+                            message: 'DM and comment reply sent successfully',
+                          },
+                          { status: 200 }
+                        )
+                      } else {
+                        console.error('Failed to reply to comment after successful DM:', {
+                          status: commentReply.status,
+                          error: commentReply.data?.error,
+                          commentId
+                        })
+                        
+                        // DM was successful but comment reply failed
+                        return NextResponse.json(
+                          {
+                            message: 'DM sent successfully but comment reply failed',
+                          },
+                          { status: 200 }
+                        )
+                      }
+                    } else {
+                      // No reply messages configured, just return success for DM
+                      return NextResponse.json(
+                        {
+                          message: 'DM sent successfully, no reply messages configured',
+                        },
+                        { status: 200 }
+                      )
+                    }
+                  } else {
+                    console.error('Failed to send DM:', {
+                      status: direct_message.status,
+                      error: direct_message.data?.error
+                    })
+                    
+                    dmError = {
+                      status: direct_message.status,
+                      error: direct_message.data?.error
+                    }
+                    
+                    // DM failed, record the error but continue to potentially reply to comment
+                    console.log('DM failed with Instagram API error (likely 24-hour window restriction)')
+                  }
+                } catch (error) {
+                  const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                  console.error('Error sending private message:', {
+                    error: errorMessage
+                  })
+                  
+                  dmError = {
+                    error: errorMessage
+                  }
+                  
+                  // DM failed with exception, record the error but continue to potentially reply to comment
+                  console.log('DM failed with exception')
+                }
+                
+                // If DM failed but we have reply messages configured, reply to the comment as a fallback
+                if (!dmSent && hasReplyMessages) {
+                  console.log('DM failed but attempting comment reply as fallback')
+                  // Get a random reply message from the array if available
+                  const replyMessages = automation.trigger[0]?.replyMessages?.[0]?.message?.split('|').map((msg: string) => msg.trim()).filter(Boolean) || []
+                  const replyMessage = replyMessages.length > 0
+                    ? replyMessages[Math.floor(Math.random() * replyMessages.length)]
+                    : 'Check your DMs for more information!'
+                  
+                  // Reply to the comment with the randomly selected message
+                  const commentReply = await replyToComment(
+                    commentId,
+                    replyMessage,
+                    token
+                  )
+
+                  if (commentReply.status === 200) {
+                    console.log('Comment reply sent successfully as fallback after DM failure')
+                    await trackResponses(automation.id, 'COMMENT')
+                    return NextResponse.json(
+                      {
+                        message: 'DM failed but comment reply sent successfully',
+                        dmError
+                      },
+                      { status: 200 }
+                    )
+                  } else {
+                    console.error('Failed to reply to comment after DM failure:', {
+                      status: commentReply.status,
+                      error: commentReply.data?.error,
+                      commentId
+                    })
+                    
+                    // Both DM and comment reply failed
+                    return NextResponse.json(
+                      {
+                        message: 'Both DM and comment reply failed',
+                        dmError,
+                        commentError: {
+                          status: commentReply.status,
+                          error: commentReply.data?.error
+                        }
+                      },
+                      { status: 200 }
+                    )
+                  }
+                } else {
+                  // DM failed and no reply message, return failure
                   return NextResponse.json(
                     {
-                      message: 'Message sent',
+                      message: 'DM failed and no reply message configured',
+                      dmError
                     },
                     { status: 200 }
                   )
                 }
+              } else {
+                console.error('No token available for sending messages')
+                return NextResponse.json(
+                  {
+                    message: 'No token available for sending messages',
+                  },
+                  { status: 200 }
+                )
               }
             }
 
@@ -433,6 +740,7 @@ export async function POST(req: NextRequest) {
                 automation.User?.integrations?.[0]?.token
               ) {
                 const fromId = webhook_payload.entry[0].changes[0].value.from.id
+                const commentId = webhook_payload.entry[0].changes[0].value.id
                 const commentText = webhook_payload.entry[0].changes[0].value.text
                 const entryId = webhook_payload.entry[0].id
                 const aiResponse = omni_ai_message.choices[0].message.content
@@ -456,7 +764,7 @@ export async function POST(req: NextRequest) {
 
                 const direct_message = await sendPrivateMessage(
                   entryId,
-                  fromId,
+                  commentId,
                   aiResponse,
                   token
                 )
@@ -471,7 +779,6 @@ export async function POST(req: NextRequest) {
                       },
                       { status: 200 }
                     )
-                  }
                 }
               }
             }
@@ -554,6 +861,7 @@ export async function POST(req: NextRequest) {
                 },
                 { status: 200 }
               )
+              }
             }
           }
         }

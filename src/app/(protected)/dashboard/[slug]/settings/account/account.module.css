@@ -1,0 +1,36 @@
+/* Override Railway font for settings accounts page */
+.accountSettings h1,
+.accountSettings h2,
+.accountSettings h3,
+.accountSettings h4,
+.accountSettings h5,
+.accountSettings h6 {
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Apple Color Emoji", Inter, Roboto, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif !important;
+}
+
+.accountSettings label,
+.accountSettings p,
+.accountSettings span,
+.accountSettings button {
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Apple Color Emoji", Inter, Roboto, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif !important;
+}
+
+/* More specific selectors to override any other styling */
+.accountSettings :global(h1),
+.accountSettings :global(h2),
+.accountSettings :global(h3),
+.accountSettings :global(h4),
+.accountSettings :global(h5),
+.accountSettings :global(h6) {
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Apple Color Emoji", Inter, Roboto, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif !important;
+}
+
+.accountSettings :global(.text-2xl),
+.accountSettings :global(.font-heading) {
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Apple Color Emoji", Inter, Roboto, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif !important;
+}
+
+/* Create a helper class that can be applied anywhere we need to override font-heading */
+.fontOverride {
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Apple Color Emoji", Inter, Roboto, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif !important;
+}

@@ -69,7 +69,7 @@ export function TextConfigModal({
         onClose()
         
         // Show loading toast and prevent page reload
-        showToast('loading', 'Saving message')
+        showToast('loading', 'Saving message', true)
         window.addEventListener('beforeunload', preventReload)
 
         // Add a small delay to simulate saving
@@ -80,12 +80,12 @@ export function TextConfigModal({
 
         // Remove reload prevention and show success
         window.removeEventListener('beforeunload', preventReload)
-        showToast('success', 'Message saved')
+        showToast('success', 'Message saved', true)
       } catch (error) {
         // Remove reload prevention on error
         window.removeEventListener('beforeunload', preventReload)
         console.error('Error saving message:', error)
-        showToast('loading', 'Failed to save message')
+        showToast('loading', 'Failed to save message', true)
       }
     }
   }

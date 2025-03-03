@@ -69,7 +69,7 @@ export function AiPromptModal({
         onClose()
         
         // Show loading toast and prevent page reload
-        showToast('loading', 'Saving prompt')
+        showToast('loading', 'Saving prompt', true)
         window.addEventListener('beforeunload', preventReload)
 
         // Add a small delay to simulate saving
@@ -80,12 +80,12 @@ export function AiPromptModal({
 
         // Remove reload prevention and show success
         window.removeEventListener('beforeunload', preventReload)
-        showToast('success', 'Prompt saved')
+        showToast('success', 'Prompt saved', true)
       } catch (error) {
         // Remove reload prevention on error
         window.removeEventListener('beforeunload', preventReload)
         console.error('Error saving prompt:', error)
-        showToast('success', 'Failed to save prompt. Please try again.')
+        showToast('success', 'Failed to save prompt. Please try again.', true)
       }
     }
   }

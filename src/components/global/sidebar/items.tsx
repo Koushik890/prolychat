@@ -59,7 +59,7 @@ const items: SidebarItem[] = [
   },
   {
     name: 'Settings',
-    href: '/settings',
+    href: '/settings/account',
     icon: Settings
   }
 ]
@@ -67,11 +67,25 @@ const items: SidebarItem[] = [
 export default function Items() {
   const pathname = usePathname()
 
+  // Extract the slug from the path (format: /dashboard/{slug}/...)
+  const slugMatch = pathname.match(/\/dashboard\/([^/]+)/);
+  const userSlug = slugMatch ? slugMatch[1] : '';
+
+  // Create items with dynamic URLs based on userSlug
+  const routeItems = items.map(item => ({
+    ...item,
+    href: item.name === 'Settings' && userSlug ? 
+      `/dashboard/${userSlug}/settings/account` : 
+      item.href
+  }));
+
   return (
     <nav className="space-y-1">
-      {items.map((item) => {
+      {routeItems.map((item) => {
         const Icon = item.icon
-        const isActive = pathname.includes(item.href)
+        const isActive = item.name === 'Settings' ? 
+          pathname.includes('/settings') : 
+          pathname.includes(item.href)
 
         return (
           <Link

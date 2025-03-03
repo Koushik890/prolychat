@@ -11,17 +11,19 @@ const config: Config = {
   	extend: {
   		fontFamily: {
   			sans: [
-  				'var(--font-raleway)',
-  				'system-ui',
+  				'var(--font-inter)',
   				'-apple-system',
   				'BlinkMacSystemFont',
-  				'Segoe UI',
+  				'"Apple Color Emoji"',
+  				'Inter',
   				'Roboto',
-  				'Helvetica Neue',
+  				'"Segoe UI"',
+  				'"Helvetica Neue"',
   				'Arial',
+  				'"Noto Sans"',
   				'sans-serif'
   			],
-  			raleway: [
+  			heading: [
   				'var(--font-raleway)',
   				'system-ui',
   				'-apple-system',

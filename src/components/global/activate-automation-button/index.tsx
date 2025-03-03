@@ -6,7 +6,7 @@ import { activateAutomation } from '@/actions/automations'
 import { useQueryClient } from '@tanstack/react-query'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { toast } from 'sonner'
+import { useToast } from '@/contexts/toast-context'
 import { ShimmerButton } from '@/components/magicui/shimmer-button'
 
 type Props = {
@@ -21,6 +21,9 @@ interface ActivationResult {
 const ActivateAutomationButton = ({ id }: Props) => {
   const { data } = useQueryAutomation(id)
   const queryClient = useQueryClient()
+  const { showToast, hideToast } = useToast()
+  const [optimisticState, setOptimisticState] = React.useState<boolean | null>(null)
+
   const { mutate, isPending } = useMutationData(
     ['activate', id],
     async (data: { state: boolean }) => {
@@ -39,16 +42,26 @@ const ActivateAutomationButton = ({ id }: Props) => {
     }
   )
 
-  const isActive = data?.data?.active
+  // Use optimistic state if available, otherwise fall back to server state
+  const isActive = optimisticState !== null ? optimisticState : data?.data?.active
   const status = isActive ? 'Live' : 'Draft'
   const statusColor = isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-50 text-slate-600 border-slate-200'
 
   const handleActivation = React.useCallback(async () => {
-    console.log('Handling activation:', { currentState: isActive, newState: !isActive })
+    const newState = !isActive
+    console.log('Handling activation:', { currentState: isActive, newState })
+    
+    // Show loading toast with overlay
+    showToast(
+      'loading',
+      newState ? 'Activating automation' : 'Deactivating automation',
+      true
+    )
+    
     try {
       const result = await new Promise<ActivationResult>((resolve, reject) => {
         mutate(
-          { state: !isActive },
+          { state: newState },
           {
             onSuccess: (data) => resolve(data as ActivationResult),
             onError: (error) => reject(error)
@@ -57,13 +70,23 @@ const ActivateAutomationButton = ({ id }: Props) => {
       })
       
       if (result.status === 200) {
-        toast.success(result.data)
+        // Update state only after successful activation/deactivation
+        setOptimisticState(newState)
+        // Show success toast with overlay
+        showToast('success', result.data, true)
       }
     } catch (error) {
+      hideToast()
       console.error('Activation error:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to update automation status')
+      // Use the toast notification component for error state
+      showToast('loading', error instanceof Error ? error.message : 'Failed to update automation status', true)
     }
-  }, [isActive, mutate])
+  }, [isActive, mutate, showToast, hideToast])
+
+  // Reset optimistic state when server data changes
+  React.useEffect(() => {
+    setOptimisticState(null)
+  }, [data?.data?.active])
 
   return (
     <div className="flex items-center gap-3">

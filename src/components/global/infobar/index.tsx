@@ -128,7 +128,7 @@ const InfoBar = ({ slug }: Props) => {
             <EnhancedText
               variant="h2"
               gradient
-              className="text-2xl font-semibold tracking-tight leading-none"
+              className="text-2xl font-semibold tracking-tight leading-none py-1.5"
             >
               {page === slug ? 'Dashboard' : capitalizeFirstLetter(page)}
             </EnhancedText>

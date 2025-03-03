@@ -51,7 +51,7 @@ export function MessageTriggerConfig({
 
   const handleKeywordSave = async (newKeywords: KeywordState) => {
     try {
-      showToast('loading', 'Saving keyword configuration')
+      showToast('loading', 'Saving keyword configuration', true)
       // Add reload prevention
       window.addEventListener('beforeunload', preventReload)
 
@@ -79,7 +79,7 @@ export function MessageTriggerConfig({
 
       // Remove reload prevention and show success
       window.removeEventListener('beforeunload', preventReload)
-      showToast('success', 'Keywords saved successfully')
+      showToast('success', 'Keywords saved successfully', true)
     } catch (error) {
       // Remove reload prevention on error
       window.removeEventListener('beforeunload', preventReload)

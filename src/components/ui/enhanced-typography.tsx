@@ -19,7 +19,7 @@ export function EnhancedText({
 }: EnhancedTextProps) {
   const baseStyles = {
     h1: 'text-4xl font-bold tracking-tight sm:text-5xl',
-    h2: 'text-3xl font-semibold tracking-tight',
+    h2: 'text-3xl font-semibold tracking-tight leading-relaxed',
     h3: 'text-2xl font-semibold tracking-tight',
     h4: 'text-xl font-semibold tracking-tight',
     title: 'text-lg font-medium leading-7',
