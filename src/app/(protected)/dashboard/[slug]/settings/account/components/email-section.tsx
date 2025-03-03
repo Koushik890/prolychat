@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Mail, Check, Plus } from 'lucide-react'
+import { Mail, Check, Plus, Trash, X, CheckCircle } from 'lucide-react'
 import { useUser } from '@clerk/nextjs'
 import { fontFamily } from '../constants'
 import { Input } from '@/components/ui/input'
@@ -576,203 +576,195 @@ const EmailSection: React.FC<EmailSectionProps> = ({ email: initialEmail }) => {
   };
 
   return (
-    <section className="font-sans mt-10">
-      <h2 
-        className="text-xl font-semibold text-gray-900 mb-1 font-sans tracking-tight"
-        style={{ fontFamily }}
-      >Email address</h2>
-      <p className="text-gray-600 mb-3 font-sans text-base leading-relaxed" style={{ fontSize: '16px' }}>
-        Update your email and manage additional email addresses.
-      </p>
-      
-      <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
-        <div className="divide-y divide-gray-100">
-          {/* Primary Email Section */}
-          <div className="flex items-center justify-between pb-4">
-            <div className="flex-1">
-              <h3 className="font-medium text-gray-900 font-sans tracking-tight">Primary Email</h3>
-              {isEditing ? (
-                <div className="mt-2">
-                  {!showVerification ? (
-                    <div className="space-y-2">
-                      <Input
-                        type="email"
-                        value={newEmail}
-                        onChange={(e) => setNewEmail(e.target.value)}
-                        placeholder="Enter new email address"
-                        className="w-full bg-white text-gray-900 border-gray-200 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                        style={{
-                          backgroundColor: 'white',
-                          color: '#1f2937'
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-600 font-sans leading-relaxed" style={{ fontSize: '16px' }}>
-                        We sent a verification code to <span className="font-medium">{newEmail}</span>
-                      </p>
-                      <Input
-                        type="text"
-                        value={verificationCode}
-                        onChange={(e) => setVerificationCode(e.target.value)}
-                        placeholder="Enter verification code"
-                        className="w-full bg-white text-gray-900 border-gray-200 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                        style={{
-                          backgroundColor: 'white',
-                          color: '#1f2937'
-                        }}
-                      />
-                      <Button
-                        size="sm"
-                        className="mt-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg font-sans"
-                        onClick={handleVerifyEmail}
-                        disabled={isLoading}
-                      >
-                        <Check className="h-4 w-4 mr-2" />
-                        <span>{isLoading ? 'Verifying...' : 'Verify Code'}</span>
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="flex items-center mt-1">
-                  {allEmails.length > 0 && allEmails[0] && (
-                    <>
-                      <p className="text-sm text-gray-600 font-sans leading-relaxed mr-2" style={{ fontSize: '16px' }}>
-                        {allEmails[0].emailAddress}
-                      </p>
-                      {getEmailProviderIcon(allEmails[0]) && (
-                        <span className="flex items-center bg-gray-100 text-gray-800 text-xs px-2 py-0.5 rounded">
-                          {getEmailProviderIcon(allEmails[0])}
-                          <span className="ml-1">Connected</span>
-                        </span>
-                      )}
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-            <div className="flex gap-2">
-              {isEditing && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 bg-white border-gray-200 text-gray-600 font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors rounded-lg font-sans"
-                  onClick={handleCancelEdit}
-                  disabled={isLoading}
-                >
-                  <span>Cancel</span>
-                </Button>
-              )}
-              {isEditing && !showVerification ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 bg-white border-gray-200 text-indigo-600 font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors rounded-lg font-sans"
-                  onClick={handleChangeEmail}
-                  disabled={isLoading}
-                >
-                  <Mail className="h-4 w-4 text-indigo-500" />
-                  <span>{isLoading ? 'Sending...' : 'Send Code'}</span>
-                </Button>
-              ) : isEditing && showVerification ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 bg-white border-gray-200 text-indigo-600 font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors rounded-lg font-sans"
-                  onClick={handleChangeEmail}
-                  disabled={isLoading}
-                >
-                  <Mail className="h-4 w-4 text-indigo-500" />
-                  <span>{isLoading ? 'Sending...' : 'Resend Code'}</span>
-                </Button>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 bg-white border-gray-200 text-gray-800 font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors rounded-lg font-sans"
-                  onClick={handleChangeEmail}
-                  disabled={isLoading}
-                >
-                  <Mail className="h-4 w-4 text-indigo-500" />
-                  <span>Change</span>
-                </Button>
-              )}
-            </div>
+    <section>
+      <div className="form-card">
+        <div className="form-header">
+          <div>
+            <h2 className="form-title">Email Addresses</h2>
+            <p className="form-description">
+              Manage your email addresses for login and notifications
+            </p>
           </div>
-          
-          {/* Additional Emails Section */}
-          {allEmails.length > 1 && (
-            <div className="pt-4">
-              <h3 className="font-medium text-gray-900 font-sans tracking-tight mb-2">Additional Email Addresses</h3>
-              <div className="space-y-3">
-                {allEmails.slice(1).map((email) => (
-                  <div key={email.id} className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <p className="text-sm text-gray-600 font-sans leading-relaxed mr-2">
-                        {email.emailAddress}
-                        {email.verification.status !== 'verified' && (
-                          <span className="ml-2 text-amber-600 text-xs">(Unverified)</span>
+          <Mail className="text-gray-400 h-5 w-5" />
+        </div>
+        
+        <div className="form-content">
+          {/* Primary email display or edit form */}
+          {!isEditing ? (
+            <div className="space-y-4">
+              {/* Display all emails */}
+              {allEmails.map((emailObj, idx) => {
+                const isVerified = emailObj.verification?.status === 'verified';
+                const isPrimary = emailObj.id === user?.primaryEmailAddressId;
+                const providerIcon = getEmailProviderIcon(emailObj);
+                
+                return (
+                  <div key={emailObj.id} className="provider-card">
+                    <div className="provider-icon">
+                      {providerIcon || <Mail className="h-5 w-5 text-gray-500" />}
+                    </div>
+                    <div className="provider-info">
+                      <div className="flex items-center gap-2">
+                        <p className="provider-name">{emailObj.emailAddress}</p>
+                        {isPrimary && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                            Primary
+                          </span>
+                        )}
+                        {isVerified && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Verified
+                          </span>
+                        )}
+                        {!isVerified && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            Unverified
+                          </span>
+                        )}
+                      </div>
+                      <p className="provider-status">
+                        {providerIcon && (
+                          <span className="text-xs text-gray-500">
+                            {emailObj.verification?.strategy?.includes('google') 
+                              ? 'Connected with Google' 
+                              : emailObj.verification?.strategy?.includes('apple')
+                                ? 'Connected with Apple'
+                                : 'Email'}
+                          </span>
                         )}
                       </p>
-                      {getEmailProviderIcon(email) && (
-                        <span className="flex items-center bg-gray-100 text-gray-800 text-xs px-2 py-0.5 rounded">
-                          {getEmailProviderIcon(email)}
-                          <span className="ml-1">Connected</span>
-                        </span>
-                      )}
                     </div>
-                    <div className="flex space-x-2">
-                      {/* Only show options for non-primary emails that aren't connected to external accounts */}
-                      {email.id !== user?.primaryEmailAddressId && !getEmailProviderIcon(email) && (
-                        <>
-                          {email.verification.status === 'verified' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-xs bg-white border-gray-200 text-indigo-600 font-medium hover:bg-indigo-50 hover:border-indigo-300 transition-colors rounded-lg"
-                              onClick={() => makeEmailPrimary(email.id)}
-                              disabled={isLoading}
-                            >
-                              Make Primary
-                            </Button>
-                          )}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-xs bg-white border-gray-200 text-red-600 font-medium hover:bg-red-50 hover:border-red-300 transition-colors rounded-lg"
-                            onClick={() => removeEmail(email.id)}
-                            disabled={isLoading}
-                          >
-                            Remove
-                          </Button>
-                        </>
+                    <div className="flex gap-2">
+                      {!isPrimary && isVerified && (
+                        <button
+                          onClick={() => makeEmailPrimary(emailObj.id)}
+                          className="provider-action"
+                          type="button"
+                          disabled={isLoading}
+                        >
+                          Make Primary
+                        </button>
                       )}
-                    </div>
+                      {!isPrimary && (
+                        <button
+                          onClick={() => removeEmail(emailObj.id)}
+                          className="provider-action disconnect"
+                          type="button"
+                          disabled={isLoading}
+                        >
+                          <Trash className="h-4 w-4" />
+                        </button>
+                  )}
+                </div>
+            </div>
+                );
+              })}
+              
+              {/* Add new email button */}
+              <div className="flex justify-end mt-4">
+                <Button
+                  onClick={() => {
+                    setIsEditing(true);
+                    setNewEmail('');
+                    setShowVerification(false);
+                  }}
+                  className="form-submit"
+                  type="button"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Change Email Address
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {!showVerification ? (
+                <div>
+                  <label htmlFor="newEmail" className="form-label">
+                    New Email Address
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="newEmail"
+                      type="email"
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
+                      className="form-input"
+                      placeholder="Enter your new email address"
+                  disabled={isLoading}
+                    />
+                <Button
+                  onClick={handleChangeEmail}
+                      className="form-submit"
+                      type="button"
+                      disabled={isLoading || !newEmail}
+                >
+                      {isLoading ? 'Sending...' : 'Send Code'}
+                </Button>
                   </div>
-                ))}
+                </div>
+              ) : (
+                <div>
+                  <label htmlFor="verificationCode" className="form-label">
+                    Verification Code
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="verificationCode"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value)}
+                      className="form-input"
+                      placeholder="Enter the 6-digit code from your email"
+                      disabled={isLoading}
+                    />
+                    <Button 
+                      onClick={handleVerifyEmail}
+                      className="form-submit"
+                      type="button"
+                      disabled={isLoading || verificationCode.length < 6}
+                    >
+                      {isLoading ? 'Verifying...' : 'Verify'}
+                    </Button>
+                  </div>
+                  <div className="mt-2 flex gap-3">
+                    <button 
+                      onClick={handleChangeEmail}
+                      className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                      type="button"
+                      disabled={isLoading}
+                    >
+                      Resend Code
+                    </button>
+                    <span className="text-gray-400">·</span>
+                    <button 
+                      onClick={() => {
+                        setNewEmail('');
+                        setVerificationCode('');
+                        setShowVerification(false);
+                      }}
+                      className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                      type="button"
+                      disabled={isLoading}
+                    >
+                      Change Email
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex justify-end mt-4">
+                <Button
+                  onClick={handleCancelEdit}
+                  className="provider-action disconnect"
+                  type="button"
+                  disabled={isLoading}
+                >
+                  Cancel
+                </Button>
               </div>
             </div>
           )}
-          
-          {/* Add Email Button */}
-          <div className="pt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2 bg-white border-gray-200 text-indigo-600 font-medium hover:bg-indigo-50 hover:border-indigo-300 transition-colors rounded-lg font-sans"
-              onClick={() => {
-                setIsEditing(true);
-                setNewEmail('');
-                setShowVerification(false);
-              }}
-              disabled={isLoading || isEditing}
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add Email Address</span>
-            </Button>
-          </div>
         </div>
       </div>
     </section>

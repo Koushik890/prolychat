@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { KeyRound, Eye, EyeOff } from 'lucide-react'
+import { KeyRound, Eye, EyeOff, Lock } from 'lucide-react'
 import { useUser } from '@clerk/nextjs'
 import { fontFamily } from '../constants'
 import { Input } from '@/components/ui/input'
@@ -21,13 +21,6 @@ const passwordSchema = z.object({
   message: "Passwords don't match",
   path: ['confirmPassword']
 })
-
-const inputStyle = {
-  backgroundColor: 'white',
-  color: '#1f2937' // text-gray-900 equivalent
-}
-
-const inputClassName = "w-full pr-10 bg-white text-gray-900 border-gray-200 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
 
 const PasswordSection: React.FC = () => {
   const { user } = useUser()
@@ -112,161 +105,155 @@ const PasswordSection: React.FC = () => {
   }
   
   return (
-    <section className="font-sans mt-10">
-      <h2 
-        className="text-xl font-semibold text-gray-900 mb-1 font-sans tracking-tight"
-        style={{ fontFamily }}
-      >Password & Security</h2>
-      <p className="text-gray-600 mb-3 font-sans leading-relaxed" style={{ fontSize: '16px' }}>
-        Secure your account with a strong password for better protection.
-      </p>
-      
-      <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
-        <div className="flex items-start justify-between">
-          <div className="flex items-start gap-3">
-            <div className="bg-indigo-50 p-2 rounded-lg mt-1">
-              <KeyRound className="h-5 w-5 text-indigo-600" />
-            </div>
-            <div className={isEditing ? 'w-full pr-4' : ''}>
-              <h3 
-                className="font-medium text-gray-900 font-sans tracking-tight"
-                style={{ fontFamily }}
-              >Account Password</h3>
-              
-              {isEditing ? (
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                      Current Password
-                    </label>
-                    <div className="relative">
-                      <Input
-                        id="currentPassword"
-                        name="currentPassword"
-                        type={showCurrentPassword ? 'text' : 'password'}
-                        value={formData.currentPassword}
-                        onChange={handleInputChange}
-                        className={inputClassName}
-                        style={inputStyle}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      >
-                        {showCurrentPassword ? (
-                          <EyeOff className="h-4 w-4 text-gray-400" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-gray-400" />
-                        )}
-                      </button>
-                    </div>
-                    {errors.currentPassword && (
-                      <p className="text-red-500 text-xs mt-1">{errors.currentPassword}</p>
+    <section>
+      <div className="form-card">
+        <div className="form-header">
+          <div>
+            <h2 className="form-title">Password & Security</h2>
+            <p className="form-description">
+              Secure your account with a strong password for better protection.
+            </p>
+          </div>
+          <Lock className="text-gray-400 h-5 w-5" />
+        </div>
+        
+        <div className="form-content">
+          {isEditing ? (
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="currentPassword" className="form-label">
+                  Current Password
+                </label>
+                <div className="relative">
+                  <Input
+                    id="currentPassword"
+                    name="currentPassword"
+                    type={showCurrentPassword ? 'text' : 'password'}
+                    value={formData.currentPassword}
+                    onChange={handleInputChange}
+                    className="form-input pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  >
+                    {showCurrentPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
                     )}
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                      New Password
-                    </label>
-                    <div className="relative">
-                      <Input
-                        id="newPassword"
-                        name="newPassword"
-                        type={showNewPassword ? 'text' : 'password'}
-                        value={formData.newPassword}
-                        onChange={handleInputChange}
-                        className={inputClassName}
-                        style={inputStyle}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      >
-                        {showNewPassword ? (
-                          <EyeOff className="h-4 w-4 text-gray-400" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-gray-400" />
-                        )}
-                      </button>
-                    </div>
-                    {errors.newPassword && (
-                      <p className="text-red-500 text-xs mt-1">{errors.newPassword}</p>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                      Confirm New Password
-                    </label>
-                    <div className="relative">
-                      <Input
-                        id="confirmPassword"
-                        name="confirmPassword"
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        value={formData.confirmPassword}
-                        onChange={handleInputChange}
-                        className={inputClassName}
-                        style={inputStyle}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      >
-                        {showConfirmPassword ? (
-                          <EyeOff className="h-4 w-4 text-gray-400" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-gray-400" />
-                        )}
-                      </button>
-                    </div>
-                    {errors.confirmPassword && (
-                      <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
-                    )}
-                  </div>
-                  
-                  {errors.general && (
-                    <p className="text-red-500 text-xs">{errors.general}</p>
-                  )}
+                  </button>
                 </div>
-              ) : (
-                <>
-                  <p className="text-gray-500 mt-1 font-sans leading-relaxed" style={{ fontSize: '16px' }}>
-                    Set a strong password to secure your account. We recommend using a password manager.
-                  </p>
-                  {success && (
-                    <p className="text-green-600 text-xs mt-1">{success}</p>
-                  )}
-                </>
+                {errors.currentPassword && (
+                  <p className="text-red-500 text-xs mt-1">{errors.currentPassword}</p>
+                )}
+              </div>
+              
+              <div>
+                <label htmlFor="newPassword" className="form-label">
+                  New Password
+                </label>
+                <div className="relative">
+                  <Input
+                    id="newPassword"
+                    name="newPassword"
+                    type={showNewPassword ? 'text' : 'password'}
+                    value={formData.newPassword}
+                    onChange={handleInputChange}
+                    className="form-input pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  >
+                    {showNewPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                {errors.newPassword && (
+                  <p className="text-red-500 text-xs mt-1">{errors.newPassword}</p>
+                )}
+              </div>
+              
+              <div>
+                <label htmlFor="confirmPassword" className="form-label">
+                  Confirm New Password
+                </label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    className="form-input pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
+                )}
+              </div>
+              
+              {errors.general && (
+                <div className="p-3 rounded bg-red-50 border border-red-100 text-red-600 text-sm">
+                  {errors.general}
+                </div>
               )}
+              
+              <div className="flex justify-end gap-3 mt-6">
+                <Button
+                  onClick={handleCancelEdit}
+                  className="provider-action disconnect"
+                  type="button"
+                  disabled={isLoading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleChangePassword}
+                  className="form-submit"
+                  type="button"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Updating...' : 'Update Password'}
+                </Button>
+              </div>
             </div>
-          </div>
-          <div className="flex gap-2">
-            {isEditing && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="gap-2 bg-white border-gray-200 text-gray-600 font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors rounded-lg font-sans"
-                onClick={handleCancelEdit}
-                disabled={isLoading}
+          ) : (
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-gray-500">
+                  Change your password or enable additional authentication methods.
+                </p>
+                {success && (
+                  <p className="text-green-600 text-sm mt-2">{success}</p>
+                )}
+              </div>
+              <Button
+                onClick={handleChangePassword}
+                className="form-submit"
+                type="button"
               >
-                <span>Cancel</span>
+                Change Password
               </Button>
-            )}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className={`gap-2 bg-white border-gray-200 ${isEditing ? 'text-indigo-600' : 'text-gray-800'} font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors rounded-lg font-sans`}
-              onClick={handleChangePassword}
-              disabled={isLoading}
-            >
-              <KeyRound className="h-4 w-4 text-indigo-500" />
-              <span>{isLoading ? 'Loading...' : (isEditing ? 'Save' : 'Change')}</span>
-            </Button>
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </section>

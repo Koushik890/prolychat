@@ -70,62 +70,68 @@ const NameForm: React.FC<NameFormProps> = ({
   }
   
   return (
-    <section className="font-sans">
-      <div className="flex items-center gap-2">
-        <h2 
-          className="text-xl font-semibold text-gray-900 mb-1 font-sans tracking-tight"
-          style={{ fontFamily }}
-        >Profile Information</h2>
-      </div>
-      <p className="text-gray-600 mb-3 font-sans text-base leading-relaxed" style={{ fontSize: '16px' }}>
-        Your name appears on your Profile, events you host, and notifications sent to your attendees.
-      </p>
-      
-      <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="flex flex-col md:flex-row gap-5">
-            <div className="flex-1">
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2 font-sans">
+    <section>
+      <div className="form-card">
+        <div className="form-header">
+          <div>
+            <h2 className="form-title">Profile Information</h2>
+            <p className="form-description">
+              Your name appears on your Profile, events you host, and notifications sent to your attendees.
+            </p>
+          </div>
+          <User className="text-gray-400 h-5 w-5" />
+        </div>
+        
+        <form onSubmit={handleSubmit} className="form-content">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label htmlFor="firstName" className="form-label">
                 First Name
               </label>
               <Input 
                 id="firstName"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className="bg-white border-gray-200 text-gray-900 font-medium p-2 text-sm font-sans rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                className="form-input"
+                style={{ 
+                  backgroundColor: 'white', 
+                  color: '#111827', 
+                  border: '1px solid #D1D5DB',
+                  boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+                }}
                 required
                 placeholder="Your first name"
               />
             </div>
             
-            <div className="flex-1">
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2 font-sans">
+            <div>
+              <label htmlFor="lastName" className="form-label">
                 Last Name
               </label>
               <Input 
                 id="lastName"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className="bg-white border-gray-200 text-gray-900 font-medium p-2 text-sm font-sans rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                className="form-input"
+                style={{ 
+                  backgroundColor: 'white', 
+                  color: '#111827', 
+                  border: '1px solid #D1D5DB',
+                  boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+                }}
                 required
                 placeholder="Your last name"
               />
             </div>
           </div>
           
-          <div>
+          <div className="mt-4 flex justify-end">
             <Button 
               type="submit"
-              variant="outline" 
-              size="sm" 
-              className={`gap-2 font-medium font-sans rounded-lg transition-colors ${
-                hasChanges 
-                  ? 'bg-indigo-600 border-indigo-600 text-white hover:bg-indigo-700 hover:border-indigo-700' 
-                  : 'bg-white border-gray-200 text-gray-400'
-              }`}
+              className={`form-submit ${!hasChanges || isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
               disabled={!hasChanges || isSubmitting}
             >
-              <Save className="h-4 w-4" />
+              <Save className="h-4 w-4 mr-2" />
               {isSubmitting ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>

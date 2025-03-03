@@ -12,6 +12,32 @@ import PasswordSection from './components/password-section'
 import SettingsHeader from '@/components/global/settings/settings-header'
 import Toast from './components/toast'
 import styles from './account.module.css'
+import { motion } from 'framer-motion'
+
+// Animation variants for staggered content loading
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1
+    }
+  }
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 100,
+      damping: 15
+    }
+  }
+}
 
 export default function AccountSettingsPage() {
   const params = useParams()
@@ -117,8 +143,8 @@ export default function AccountSettingsPage() {
   
   if (!isLoaded) {
     return (
-      <div className="flex items-center justify-center py-10">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+      <div className="flex items-center justify-center py-16">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
       </div>
     )
   }
@@ -126,54 +152,73 @@ export default function AccountSettingsPage() {
   if (!user) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center max-w-md">
           <h2 className="text-2xl font-semibold text-gray-800 mb-2">Authentication Required</h2>
-          <p className="text-gray-600">Please sign in to access this page.</p>
+          <p className="text-gray-600 mb-4">Please sign in to access your account settings.</p>
+          <div className="mt-4">
+            <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+              Sign In
+            </button>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-8 font-sans">
+    <div className={`space-y-8 font-sans ${styles.accountSettings}`}>
       <SettingsHeader 
         userSlug={userSlug}
         title="Settings"
+        description=""
       />
       
-      <div className="max-w-4xl mx-auto px-1">
+      <div className="max-w-4xl mx-auto px-4 pb-16">
         {isLoading ? (
-          <div className="flex items-center justify-center py-10">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+          <div className="flex items-center justify-center py-16">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
           </div>
         ) : (
-          <div className="space-y-8">
-            <NameForm 
-              initialFirstName={userData.firstName}
-              initialLastName={userData.lastName}
-              onSuccess={handleFormSuccess}
-            />
+          <motion.div 
+            className="space-y-8"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div variants={itemVariants}>
+              <NameForm 
+                initialFirstName={userData.firstName}
+                initialLastName={userData.lastName}
+                onSuccess={handleFormSuccess}
+              />
+            </motion.div>
             
-            <EmailSection email={userData.email} />
+            <motion.div variants={itemVariants}>
+              <EmailSection email={userData.email} />
+            </motion.div>
             
-            <PasswordSection />
+            <motion.div variants={itemVariants}>
+              <PasswordSection />
+            </motion.div>
             
-            <ConnectedAccounts 
-              integrations={[
-                // Use static provider info - the component will check connections dynamically
-                { 
-                  provider: 'Google', 
-                  connected: false, // Let the component check connections dynamically 
-                  id: 'google' 
-                },
-                { 
-                  provider: 'Apple', 
-                  connected: false, // Let the component check connections dynamically
-                  id: 'apple' 
-                }
-              ]}
-            />
-          </div>
+            <motion.div variants={itemVariants}>
+              <ConnectedAccounts 
+                integrations={[
+                  // Use static provider info - the component will check connections dynamically
+                  { 
+                    provider: 'Google', 
+                    connected: false, 
+                    id: 'google' 
+                  },
+                  { 
+                    provider: 'Apple', 
+                    connected: false, 
+                    id: 'apple' 
+                  }
+                ]}
+              />
+            </motion.div>
+          </motion.div>
         )}
         
         {/* Toast notification */}

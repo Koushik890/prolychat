@@ -2,7 +2,6 @@
 
 import React, { useEffect } from 'react'
 import { CheckCircle2, AlertCircle, X } from 'lucide-react'
-import { cva } from 'class-variance-authority'
 import { FormState } from '@/actions/user/account'
 
 interface ToastProps {
@@ -10,22 +9,6 @@ interface ToastProps {
   message: string
   onClose: () => void
 }
-
-const toastVariants = cva(
-  'fixed bottom-6 right-6 p-4 rounded-xl shadow-lg flex items-center gap-3 transition-all transform z-50 max-w-md',
-  {
-    variants: {
-      status: {
-        success: 'bg-white border border-green-200 text-gray-900',
-        error: 'bg-white border border-red-200 text-gray-900',
-        idle: 'hidden'
-      }
-    },
-    defaultVariants: {
-      status: 'idle'
-    }
-  }
-)
 
 const Toast: React.FC<ToastProps> = ({ status, message, onClose }) => {
   useEffect(() => {
@@ -42,22 +25,25 @@ const Toast: React.FC<ToastProps> = ({ status, message, onClose }) => {
 
   return (
     <div 
-      className={toastVariants({ status })}
+      className={`toast ${status}`}
       role="alert"
     >
-      <div className={`p-2 rounded-full ${
-        status === 'success' ? 'bg-green-50' : 'bg-red-50'
-      }`}>
+      <div className="toast-message">
         {status === 'success' ? (
-          <CheckCircle2 className="h-5 w-5 text-green-600" />
+          <div className="flex items-center">
+            <CheckCircle2 className="h-5 w-5 mr-2" />
+            {message}
+          </div>
         ) : (
-          <AlertCircle className="h-5 w-5 text-red-600" />
+          <div className="flex items-center">
+            <AlertCircle className="h-5 w-5 mr-2" />
+            {message}
+          </div>
         )}
       </div>
-      <p className="text-sm font-medium flex-1">{message}</p>
       <button 
         onClick={onClose}
-        className="text-gray-400 hover:text-gray-600 transition-colors rounded-full p-1 hover:bg-gray-100"
+        className="toast-close"
         aria-label="Close"
       >
         <span className="sr-only">Close</span>

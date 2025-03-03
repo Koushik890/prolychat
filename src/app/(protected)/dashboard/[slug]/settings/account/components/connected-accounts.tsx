@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Link2, Mail, Trash2, AlertCircle } from 'lucide-react'
+import { Link2, Mail, Trash2, AlertCircle, LinkIcon } from 'lucide-react'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { fontFamily } from '../constants'
 import {
@@ -528,183 +528,124 @@ const ConnectedAccounts: React.FC<ConnectedAccountsProps> = ({
   };
   
   return (
-    <section className="font-sans mt-10">
-      <h2 
-        className="text-xl font-semibold text-gray-900 mb-1 font-sans tracking-tight"
-        style={{ fontFamily }}
-      >Connected Accounts</h2>
-      <p className="text-gray-600 mb-3 font-sans text-base leading-relaxed" style={{ fontSize: '16px' }}>
-        Connect your social accounts to share content across platforms.
-      </p>
-      
-      <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
-        <div className="space-y-5">
-        {updatedIntegrations.map((integration, index) => (
-          <div 
-            key={integration.id} 
-            className={`flex items-center justify-between ${
-              index !== updatedIntegrations.length - 1 ? 'pb-5 border-b border-gray-100' : ''
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg flex items-center justify-center ${
-                integration.connected ? 'bg-indigo-50' : 'bg-gray-50'
-              }`}>
-                {integration.provider === 'Google' ? (
-                  <GoogleIcon />
-                ) : integration.provider === 'Apple' ? (
-                  <AppleIcon />
-                ) : (
-                  <Link2 className="h-5 w-5 text-gray-600" />
-                )}
-              </div>
-              <div>
-                <h3 className="font-medium text-gray-900 font-sans tracking-tight">{integration.provider}</h3>
-                {integration.connected ? (
-                  <div className="flex items-center mt-1">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                      Connected
-                    </span>
-                    {connectedAccounts[integration.provider] && (
-                      <div className="flex items-center ml-2 text-sm text-gray-500">
-                        <Mail className="h-3 w-3 mr-1 text-gray-400" />
-                        {connectedAccounts[integration.provider]}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 mt-1 font-sans leading-relaxed">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
-                      Not linked
-                    </span>
-                  </p>
-                )}
-              </div>
-            </div>
-            
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className={`gap-2 bg-white font-medium transition-colors rounded-lg font-sans flex items-center ${
-                integration.connected 
-                  ? 'border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300' 
-                  : 'border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300'
-              }`}
-              onClick={() => 
-                integration.connected 
-                  ? handleRemoveConnectedAccount(integration.provider)
-                  : handleConnectProvider(integration.provider)
-              }
-              disabled={loadingProvider !== null || isRemoving}
-            >
-              {integration.connected ? (
-                <>
-                  <Trash2 className="h-4 w-4" />
-                  <span>
-                    {loadingProvider === integration.provider 
-                      ? 'Loading...' 
-                      : isRemoving && providerToRemove === integration.provider
-                        ? 'Removing...'
-                        : 'Remove'}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <Link2 className="h-4 w-4" />
-                  <span>
-                    {loadingProvider === integration.provider 
-                      ? 'Loading...' 
-                      : 'Connect'}
-                  </span>
-                </>
-              )}
-            </Button>
+    <section>
+      <div className="form-card">
+        <div className="form-header">
+          <div>
+            <h2 className="form-title">Connected Accounts</h2>
+            <p className="form-description">
+              Connect your accounts for easier sign-in and account management
+            </p>
           </div>
-        ))}
+          <LinkIcon className="text-gray-400 h-5 w-5" />
         </div>
         
-        <div className="pt-4">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="gap-2 bg-white border-gray-200 text-indigo-600 font-medium hover:bg-indigo-50 hover:border-indigo-200 transition-colors rounded-lg font-sans flex items-center"
-            onClick={handleManageAllConnections}
-            disabled={loadingProvider !== null}
-          >
-            <Link2 className="h-4 w-4" />
-            {loadingProvider === 'all' ? 'Loading...' : 'Manage Connections'}
-          </Button>
+        <div className="form-content">
+          <div className="space-y-3">
+            {updatedIntegrations.map((integration) => (
+              <div key={integration.id} className="provider-card">
+                <div className="provider-icon">
+                  {integration.provider === 'Google' ? <GoogleIcon /> : <AppleIcon />}
+                </div>
+                
+                <div className="provider-info">
+                  <h3 className="provider-name">{integration.provider}</h3>
+                  <p className="provider-status">
+                    {integration.connected ? (
+                      <>
+                        <span className="text-green-600 font-medium">Connected</span>
+                        {connectedAccounts[integration.provider] && (
+                          <span className="text-xs text-gray-500 ml-2">
+                            via {connectedAccounts[integration.provider]}
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-gray-500">Not connected</span>
+                    )}
+                  </p>
+                </div>
+                
+                <div>
+                  {integration.connected ? (
+                    <button
+                      onClick={() => handleRemoveConnectedAccount(integration.provider)}
+                      className="provider-action disconnect"
+                      disabled={loadingProvider === integration.provider}
+                    >
+                      {loadingProvider === integration.provider ? 'Disconnecting...' : 'Disconnect'}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleConnectProvider(integration.provider)}
+                      className="provider-action connect"
+                      disabled={loadingProvider === integration.provider}
+                    >
+                      {loadingProvider === integration.provider ? 'Connecting...' : 'Connect'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="mt-4 flex justify-end">
+            <Button
+              onClick={handleManageAllConnections}
+              className="provider-action disconnect"
+            >
+              Manage All Connections
+            </Button>
+          </div>
         </div>
       </div>
       
       {/* Confirmation Dialog */}
       <Dialog open={showRemoveDialog} onOpenChange={setShowRemoveDialog}>
-        <DialogContent 
-          className="
-            sm:max-w-md w-[95vw] 
-            fixed left-[50%] top-[50%] z-[9999] 
-            translate-x-[-50%] translate-y-[-50%] 
-            bg-white
-            border-0 
-            shadow-[0_0_25px_rgba(0,0,0,0.1)]
-            rounded-xl 
-            overflow-visible
-            p-0
-            font-sans
-          "
-          style={{ fontFamily: 'var(--font-inter), sans-serif' }}
-        >
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-t-xl"></div>
+        <DialogOverlay className="fixed inset-0 bg-black/30 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" style={{ zIndex: 999 }} />
+        <DialogContent className="sm:max-w-xl fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-6 z-[1000] w-full border border-gray-200">
+          <DialogHeader>
+            <h2 
+              className="text-xl font-semibold text-gray-900" 
+              style={{ fontFamily: `${fontFamily} !important` }}
+            >
+              Remove Connection
+            </h2>
+          </DialogHeader>
           
-          <div className="p-6 pt-5">
-            <DialogHeader className="text-left mb-3">
-              <h2 
-                className="text-xl font-semibold text-gray-900" 
-                style={{ 
-                  fontFamily: 'var(--font-inter), sans-serif !important',
-                  fontWeight: 600
-                }}
-              >
-                Remove connected account
-              </h2>
-              <DialogDescription className="text-gray-500 mt-2 text-sm">
-                {providerToRemove} will be removed from this account.
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="py-2">
-              <p className="text-sm text-gray-600 mb-4">
-                You will no longer be able to use this connected account and any dependent features will no longer work.
+          <div className="py-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-amber-50 p-2 rounded-full">
+                <AlertCircle className="h-5 w-5 text-amber-600" />
+              </div>
+              <p className="text-gray-700" style={{ fontFamily }}>
+                Are you sure you want to disconnect your {providerToRemove?.toLowerCase()} account?
+                This action cannot be undone.
               </p>
-              {providerToRemove && connectedAccounts[providerToRemove] && (
-                <div className="flex items-center p-4 bg-amber-50 border border-amber-100 text-amber-800 rounded-lg text-sm mb-4">
-                  <Mail className="h-4 w-4 mr-2 flex-shrink-0" />
-                  <span>Removing account: <strong>{connectedAccounts[providerToRemove]}</strong></span>
-                </div>
-              )}
             </div>
-            
-            <div className="flex justify-between w-full gap-4 pt-2">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={cancelRemoveConnectedAccount}
-                disabled={isRemoving}
-                className="rounded-lg border-gray-200 bg-white hover:bg-gray-50 text-gray-700 w-full h-11 transition-all"
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="button" 
-                variant="destructive"
-                onClick={confirmRemoveConnectedAccount}
-                disabled={isRemoving}
-                className="rounded-lg bg-red-600 hover:bg-red-700 text-white w-full h-11 transition-all shadow-sm"
-              >
-                {isRemoving ? 'Removing...' : 'Remove'}
-              </Button>
-            </div>
+            <p className="text-gray-500 text-sm" style={{ fontFamily }}>
+              You will no longer be able to sign in with {providerToRemove}.
+            </p>
           </div>
+          
+          <DialogFooter className="flex justify-end gap-3">
+            <Button
+              onClick={cancelRemoveConnectedAccount}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg"
+              disabled={isRemoving}
+              style={{ fontFamily }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmRemoveConnectedAccount}
+              className="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg"
+              disabled={isRemoving}
+              style={{ fontFamily }}
+            >
+              {isRemoving ? 'Removing...' : 'Disconnect Account'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </section>
