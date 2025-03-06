@@ -2,7 +2,7 @@
 
 import InfoBar from '@/components/global/infobar'
 import { AppSidebar } from '@/components/global/app-sidebar'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import '@/app/globals.css'
 import { SidebarProvider } from '@/components/ui/sidebar'
@@ -24,11 +24,37 @@ export const DashboardLayoutContent = ({ children, slug }: ContentProps) => {
   }, []);
 
   const showGridPattern = !pathname.includes('/automations/');
+  const isPaymentSettingsPage = pathname.includes('/settings/payment');
+  // Check if we're on the contacts page to prevent unnecessary scrolling
+  const isContactsPage = pathname.includes('/contacts');
+  
+  // Set data-path attribute on body for CSS targeting
+  useEffect(() => {
+    document.body.setAttribute('data-path', pathname);
+    
+    // Handle overflow directly
+    if (isContactsPage) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    }
+    
+    return () => {
+      document.body.removeAttribute('data-path');
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, [pathname, isContactsPage]);
 
   return (
     <ToastProvider>
-      <div className="min-h-screen relative">
-        <div className="absolute inset-0" style={{ backgroundColor: '#f5f5f5' }} />
+      <div className={cn(
+        "min-h-screen relative no-scrollbar", 
+        (isPaymentSettingsPage || isContactsPage) && "overflow-hidden"
+      )}>
+        <div className="absolute inset-0 no-scrollbar" style={{ backgroundColor: '#f5f5f5' }} />
         {showGridPattern && (
           <GridPattern 
             className="absolute inset-0 opacity-30 mix-blend-multiply"
@@ -41,8 +67,8 @@ export const DashboardLayoutContent = ({ children, slug }: ContentProps) => {
             }}
           />
         )}
-        <div className="flex min-h-screen relative">
-          <div className="fixed left-0 top-0 h-full z-50">
+        <div className="flex min-h-screen relative no-scrollbar">
+          <div className="fixed left-0 top-0 h-full z-50 no-scrollbar">
             <SidebarProvider>
               <AppSidebar 
                 onCollapse={handleSidebarCollapse}
@@ -52,12 +78,20 @@ export const DashboardLayoutContent = ({ children, slug }: ContentProps) => {
           </div>
           <main 
             className={cn(
-              "flex-1 min-h-screen w-full transition-all duration-300",
-              isCollapsed ? "pl-[72px]" : "pl-[250px]"
+              "flex-1 min-h-screen w-full transition-all duration-300 no-scrollbar",
+              isCollapsed ? "pl-[72px]" : "pl-[250px]",
+              (isPaymentSettingsPage || isContactsPage) && "overflow-hidden"
             )}
+            style={isPaymentSettingsPage ? { height: '100vh' } : isContactsPage ? { height: '100vh', overflow: 'hidden' } : {}}
           >
             <InfoBar slug={slug} />
-            <div className="p-8">
+            <div className={cn(
+              "p-8 no-scrollbar", 
+              isPaymentSettingsPage && "settings-section",
+              isContactsPage && "overflow-visible"
+            )}
+            style={isContactsPage ? { overflow: 'hidden' } : {}}
+            >
               {children}
             </div>
           </main>

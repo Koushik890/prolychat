@@ -1,39 +1,43 @@
 'use client'
 
 import React from 'react'
-import { Search, ChevronDown, ChevronLeft, ChevronRight, Plus, Mic, LoaderCircle, 
-  Calendar, ArrowUpDown, ArrowDownUp, CalendarDays, MoreVertical, Copy, Pencil, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight, Plus, 
+  Calendar, ArrowUpDown, ArrowDownUp, CalendarDays, MoreVertical, Copy, Pencil, Trash2, LoaderCircle, Filter } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { cn } from '@/lib/utils'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import {
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu'
+import { Badge } from '@/components/ui/badge'
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Separator } from '@/components/ui/separator'
+import { toast } from 'sonner'
+import LoaderOne from '@/components/ui/loader-one'
+import { SearchInput } from '@/components/ui/search-input'
+import { 
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useCreateAutomation } from '@/hooks/use-automations'
 import { getAllAutomations, activateAutomation, updateAutomationName, deleteAutomation } from '@/actions/automations'
 import { useRouter, useParams } from 'next/navigation'
-import { toast } from 'sonner'
-import LoaderOne from '@/components/ui/loader-one'
-import CreateAutomation from "@/components/global/create-automation"
+import { cn } from '@/lib/utils'
+import CreateAutomation from '@/components/global/create-automation'
 
 interface AutomationData {
   id: string
@@ -80,7 +84,7 @@ interface Automation {
   active: boolean
 }
 
-type SortConfig = {
+interface SortConfig {
   key: keyof Automation
   direction: 'asc' | 'desc'
 }
@@ -97,15 +101,12 @@ function getStatusVariant(status: string): 'success' | 'warning' {
 }
 
 function transformAutomation(data: any): Automation {
-  const status: 'Live' | 'Draft' = data.active ? 'Live' : 'Draft'
-  const runs = data.listener ? data.listener.dmCount + data.listener.commentCount : 0
-
   return {
     id: data.id,
-    name: data.name || 'Untitled',
-    runs,
-    status,
-    lastPublished: data.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : 'Never',
+    name: data.name,
+    runs: data.listener ? data.listener.dmCount + data.listener.commentCount : 0,
+    status: data.active ? 'Live' : 'Draft',
+    lastPublished: new Date(data.updatedAt || data.createdAt).toLocaleDateString(),
     active: data.active
   }
 }
@@ -282,6 +283,11 @@ export default function AutomationsPage() {
     }))
   }
 
+  const handleVoiceSearch = () => {
+    // This would be implemented with a voice recognition API
+    console.log('Voice search clicked')
+  }
+
   return (
     <div className="w-full pt-[49px]">
       <div className="flex-none px-6 py-6 relative">
@@ -296,36 +302,13 @@ export default function AutomationsPage() {
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <div className="flex items-center gap-4 flex-1">
             <div className="w-full sm:w-[320px]">
-              <div className="relative">
-                <Input 
-                  type="search"
-                  placeholder="Search automations..." 
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                  className="peer pe-9 ps-9 h-10 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:ring-primary/30"
-                  aria-label="Search automations"
-                />
-                <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-gray-400 peer-disabled:opacity-50">
-                    {isLoading ? (
-                    <LoaderCircle
-                      className="animate-spin"
-                      size={16}
-                      strokeWidth={2}
-                      role="status"
-                      aria-label="Loading..."
-                    />
-                  ) : (
-                    <Search size={16} strokeWidth={2} aria-hidden="true" />
-                  )}
-                </div>
-                <button
-                  className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-gray-400 outline-offset-2 transition-colors hover:text-gray-600 focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/30 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
-                  aria-label="Press to speak"
-                  type="submit"
-                >
-                  <Mic size={16} strokeWidth={2} aria-hidden="true" />
-                </button>
-              </div>
+              <SearchInput
+                placeholder="Search automations..."
+                value={searchValue}
+                onChange={setSearchValue}
+                className="h-10 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:ring-primary/30"
+                onVoiceSearch={handleVoiceSearch}
+              />
             </div>
 
             <DropdownMenu>

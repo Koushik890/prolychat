@@ -7,5 +7,18 @@
 .settings-section h4,
 .settings-section h5,
 .settings-section h6 {
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Apple Color Emoji", Inter, Roboto, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif !important;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Apple Color Emoji", Inter, Roboto, "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
+}
+
+/* Custom styles for the payment page subnav */
+.settings-section .settings-header-with-subnav {
+  position: relative;
+}
+
+.settings-section .settings-header-with-subnav > header {
+  margin-bottom: 0 !important; /* Override the mb-6 from the header */
+}
+
+.settings-section .settings-header-with-subnav > header nav {
+  border-bottom: none; /* Remove the bottom border from the header navigation */
 }

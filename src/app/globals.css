@@ -34,10 +34,10 @@
     --sidebar-background: white;
 
     --scrollbar-track: transparent;
-    --scrollbar-thumb: #545454;
-    --scrollbar-thumb-hover: #5c5c5f;
+    --scrollbar-thumb: #e0e0e0;
+    --scrollbar-thumb-hover: #c0c0c0;
 
-    --scrollbar-width: 12px;
+    --scrollbar-width: 6px;
 
     /* Custom theme colors for light mode */
     --background-80: 0 0% 96.1%;
@@ -284,6 +284,62 @@
   .font-heading {
     font-family: var(--heading-family);
   }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  /* Custom scrollbar styles when visible */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: var(--scrollbar-width);
+    height: var(--scrollbar-width);
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 10px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+}
+
+/* Apply no-scrollbar to body by default */
+body {
+  @apply no-scrollbar;
+  overflow-y: visible;
+  height: 100%;
+}
+
+/* Apply no-scrollbar to html element */
+html {
+  @apply no-scrollbar;
+  scrollbar-gutter: stable;
+  height: 100%;
+}
+
+/* For the contacts page specifically */
+body[data-path*="contacts"] {
+  overflow: hidden !important;
+}
+
+/* Optionally enable scrollbars where needed with the custom-scrollbar class */
+.enable-scrollbar {
+  @apply custom-scrollbar;
+  -ms-overflow-style: auto;
+  scrollbar-width: thin;
 }
 
 @layer base {
