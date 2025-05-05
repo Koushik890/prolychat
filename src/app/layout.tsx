@@ -2,12 +2,16 @@ import type { Metadata } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
 import './globals.css';
 import { ThemeProvider } from '@/providers/theme-provider';
-import { Toaster } from 'sonner';
+import { Toaster } from '@/components/ui/toaster';
 import ReactQueryProvider from '@/providers/react-query-provider';
 import ReduxProvider from '@/providers/redux-provider';
-import { raleway, inter } from '@/lib/fonts';
+import { Raleway, Inter } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const raleway = Raleway({ subsets: ['latin'], variable: '--font-raleway' });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://omnisocial.com'),
   title: 'OmniSocial - Automate Your Social Media Engagement',
   description: 'Intelligent responses to comments, powered by AI. Connect with your audience automatically while maintaining authentic conversations.',
   icons: {

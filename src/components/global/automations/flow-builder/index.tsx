@@ -93,7 +93,7 @@ const getConfigurationStatus = (config?: TriggerConfig, triggerType?: string): T
 
 const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
   const { data } = useQueryAutomation(id)
-  const { showToast } = useToast()
+  const { showToast, hideToast } = useToast()
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
   const [selectedNode, setSelectedNode] = React.useState<Node | null>(null)
@@ -117,6 +117,13 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
   // Add this near the top of the FlowBuilder component
   const memoizedNodes = React.useMemo(() => nodes, [nodes])
   const memoizedEdges = React.useMemo(() => edges, [edges])
+
+  // Prevent page reload during critical operations
+  const preventReload = React.useCallback((e: BeforeUnloadEvent) => {
+    e.preventDefault()
+    e.returnValue = 'Changes you made may not be saved. Are you sure you want to leave?'
+    return e.returnValue
+  }, [])
 
   // Handle trigger selection
   const handleTriggerSelect = React.useCallback((triggerId: string, triggerName: string, icon: React.ComponentType<any>) => {
@@ -151,8 +158,8 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
     // Update nodes with fresh configuration
     setNodes(nds => nds.map(node => {
       if (node.type === 'trigger') {
-        const config = {
-          status: 'unconfigured',
+        const config: TriggerConfig = {
+          status: 'unconfigured' as TriggerConfigurationStatus,
           type: 'all',
           keywords: { include: [] },
           replyMessages: [],
@@ -199,104 +206,108 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
   // Handle trigger removal
   const handleTriggerRemove = React.useCallback(async (triggerId: string) => {
     // Store current state for potential rollback
-    const previousTriggers = selectedTriggers
-    const previousNodes = nodes
-    const previousConfig = triggerConfig
-
+    const previousTriggers = [...selectedTriggers]
+    
     try {
       // Show loading toast and prevent page reload
-      showToast('loading', 'Removing trigger configuration', true)
+      showToast('loading', 'Removing trigger configuration', 'trigger-1')
       window.addEventListener('beforeunload', preventReload)
       
-      // First, attempt to update the database
+      // First update the UI optimistically
+      setSelectedTriggers([])
+      setSelectedTriggerForConfig(null)
+      setIsTriggerConfigurationOpen(false)
+      setTriggerConfig({})
+
+      // Update trigger node data
+      setNodes(currentNodes => 
+        currentNodes.map(node => 
+          node.type === 'trigger' 
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  selectedTriggers: [],
+                  config: undefined,
+                  configurationStatus: 'unconfigured',
+                  type: 'New Trigger',
+                  // Preserve the event handlers
+                  onTriggerSelect: node.data.onTriggerSelect,
+                  onTriggerRemove: node.data.onTriggerRemove,
+                  onActionSelect: node.data.onActionSelect,
+                  onActionRemove: node.data.onActionRemove,
+                  isConfigSidebarOpen: node.data.isConfigSidebarOpen,
+                  onConfigSidebarClose: node.data.onConfigSidebarClose,
+                  onConfigSidebarOpen: node.data.onConfigSidebarOpen,
+                  isTriggerSidebarOpen: node.data.isTriggerSidebarOpen,
+                  onTriggerSidebarOpen: node.data.onTriggerSidebarOpen,
+                  onTriggerSidebarClose: node.data.onTriggerSidebarClose,
+                  onTriggerConfigurationOpen: node.data.onTriggerConfigurationOpen
+                }
+              }
+            : node
+        )
+      )
+      
+      // Clear local storage
+      localStorage.removeItem(`automation-trigger-${id}`)
+      
+      // Now update the database - CRITICAL FIX: Pass a valid but empty trigger array
       const result = await saveChanges({
-        trigger: []
+        trigger: [] // This is the correct format expected by the API
       })
 
       if (!result || result.status !== 200) {
         throw new Error('Failed to remove trigger from database')
       }
-
-      // Clear localStorage first
-      localStorage.removeItem(`automation-trigger-${id}`)
-
-      // Update trigger-related states
-      setSelectedTriggers([])
-      setSelectedTriggerForConfig(null)
-      setTriggerConfig({})
-      setIsTriggerConfigurationOpen(false)
-
-      // Update only the trigger node while preserving other nodes
-      setNodes(currentNodes => {
-        return currentNodes.map(node => {
-          // Only modify the trigger node
-          if (node.type === 'trigger') {
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                selectedTriggers: [],
-                config: undefined,
-                configurationStatus: 'unconfigured',
-                type: 'New Trigger',
-                // Preserve the event handlers and other data
-                onTriggerSelect: node.data.onTriggerSelect,
-                onTriggerRemove: node.data.onTriggerRemove,
-                onActionSelect: node.data.onActionSelect,
-                onActionRemove: node.data.onActionRemove,
-                isConfigSidebarOpen: node.data.isConfigSidebarOpen,
-                onConfigSidebarClose: node.data.onConfigSidebarClose,
-                onConfigSidebarOpen: node.data.onConfigSidebarOpen,
-                isTriggerSidebarOpen: node.data.isTriggerSidebarOpen,
-                onTriggerSidebarOpen: node.data.onTriggerSidebarOpen,
-                onTriggerSidebarClose: node.data.onTriggerSidebarClose,
-                onTriggerConfigurationOpen: node.data.onTriggerConfigurationOpen
-              }
-            }
-          }
-          // Return other nodes unchanged
-          return node
-        })
-      })
       
-      // Force immediate refetch to ensure UI and database are in sync
-      await queryClient.invalidateQueries({ 
-        queryKey: ['automation-info', id],
-        exact: true,
-        refetchType: 'all'
-      })
-
-      showToast('success', 'Trigger removed successfully', true)
+      // Success toast
+      showToast('success', 'Trigger removed successfully', 'trigger-1')
+      
+      // Remove event listener
+      window.removeEventListener('beforeunload', preventReload)
+      
+      // Refetch data after a slight delay to ensure UI updates first
+      setTimeout(() => {
+        queryClient.invalidateQueries({ 
+          queryKey: ['automation-info', id]
+        })
+      }, 300)
     } catch (error) {
       console.error('Error removing trigger:', error)
       
-      // Revert UI state changes on error
+      // Revert state on error
       setSelectedTriggers(previousTriggers)
-      setNodes(previousNodes)
-      setTriggerConfig(previousConfig)
       
+      // Revert node data
+      setNodes(currentNodes => 
+        currentNodes.map(node => 
+          node.type === 'trigger' 
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  selectedTriggers: previousTriggers,
+                  configurationStatus: previousTriggers.length > 0 ? 'configured' : 'unconfigured'
+                }
+              }
+            : node
+        )
+      )
+      
+      // Error toast
+      hideToast()
       toast.error('Failed to remove trigger')
       
-      // Force refetch to ensure UI matches database state
-      queryClient.invalidateQueries({ queryKey: ['automation-info', id] })
-    } finally {
+      // Refetch to sync with database
+      queryClient.invalidateQueries({ 
+        queryKey: ['automation-info', id] 
+      })
+      
+      // Remove event listener
       window.removeEventListener('beforeunload', preventReload)
     }
-  }, [id, saveChanges, showToast, queryClient])
-
-  // Add preventReload function
-  const preventReload = React.useCallback((e: BeforeUnloadEvent) => {
-    e.preventDefault()
-    e.returnValue = 'Changes you made may not be saved. Are you sure you want to leave?'
-    return e.returnValue
-  }, [])
-
-  // Cleanup on unmount
-  React.useEffect(() => {
-    return () => {
-      window.removeEventListener('beforeunload', preventReload)
-    }
-  }, [preventReload])
+  }, [id, saveChanges, showToast, hideToast, queryClient, setNodes, selectedTriggers, preventReload])
 
   // Handle new trigger button click
   const handleNewTrigger = React.useCallback(() => {
@@ -319,7 +330,7 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
       })
 
       if (!result || result.status !== 200) {
-        throw new Error(result?.data || 'Failed to remove listener')
+        throw new Error('Failed to remove listener')
       }
 
       // After successful database update, update UI state
@@ -362,9 +373,13 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
       showToast('success', 'Action removed successfully', true)
     } catch (error) {
       console.error('Error removing action:', error)
+      
       // Remove reload prevention
       window.removeEventListener('beforeunload', preventReload)
+      
+      // Show error toast
       toast.error('Failed to remove action')
+      
       // Revert UI changes on error
       queryClient.invalidateQueries({ queryKey: ['automation-info', id] })
     }
@@ -552,175 +567,327 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
     })
   }, [setNodes, saveChanges])
 
-  // Initialize flow with data
-  React.useEffect(() => {
-    if (data?.data && !isInitializedRef.current) {
-      const automationData = data.data as unknown as Partial<AutomationData>
-      const initialNodes: Node[] = []
-      const initialEdges: Edge[] = []
+  // Handle trigger configuration updates
+  const handleTriggerConfig = React.useCallback(async (type: string, config: TriggerConfig | null) => {
+    // Get existing config from nodes
+    const existingNode = nodes.find(node => node.type === 'trigger')
 
-      // Initialize selected triggers from saved data
-      if (automationData.trigger && automationData.trigger.length > 0) {
-        const savedTrigger = automationData.trigger[0]
-        console.log('Initializing trigger from data:', savedTrigger)
-
-        // Map API trigger type to UI type with simplified mapping
-        let triggerType = savedTrigger.type
-        if (triggerType === 'user-message') {
-          triggerType = 'DM'
-        } else if (triggerType === 'post-comments') {
-          triggerType = 'COMMENT'
-        }
-
-        const triggerDetails = getTriggerDetails(triggerType)
-        console.log('Mapped trigger details:', { 
-          originalType: savedTrigger.type, 
-          mappedType: triggerType, 
-          details: triggerDetails 
+    // Log current state for debugging
+    console.log('handleTriggerConfig called with:', { type, config, existingNode })
+    
+    // If config is null, this is a trigger removal operation
+    if (config === null) {
+      try {
+        console.log('Removing trigger with type:', type)
+        
+        // First update local state for optimistic UI
+        setSelectedTriggers([])
+        
+        // Update trigger node data
+        setNodes(currentNodes => 
+          currentNodes.map(node => 
+            node.type === 'trigger' 
+              ? {
+                  ...node,
+                  data: {
+                    ...node.data,
+                    selectedTriggers: [],
+                    config: undefined,
+                    configurationStatus: 'unconfigured',
+                    type: 'New Trigger'
+                  }
+                }
+              : node
+          )
+        )
+        
+        // Clear local trigger configuration
+        setTriggerConfig(prev => {
+          const newState = { ...prev }
+          if (type in newState) delete newState[type]
+          return newState
         })
-
-        if (triggerDetails) {
-          const trigger = {
-            id: triggerType,
-            name: triggerDetails.name,
-            icon: triggerDetails.icon
-          }
-          
-          // Set the selected triggers state
-          setSelectedTriggers([trigger])
-          
-          // Set the selected trigger for configuration with API type mapping
-          const mappedTrigger = {
-            ...trigger,
-            id: trigger.id === 'COMMENT' ? 'post-comments' :
-                trigger.id === 'DM' ? 'user-message' :
-                trigger.id
-          }
-          setSelectedTriggerForConfig(mappedTrigger)
+        
+        // This is the critical fix - the API expects an empty array for trigger removal
+        const result = await saveChanges({
+          trigger: [] // Pass empty array to remove trigger
+        })
+        
+        if (!result || result.status !== 200) {
+          throw new Error('Failed to remove trigger from database')
+        }
+        
+        return true
+      } catch (error) {
+        console.error('Error removing trigger:', error)
+        return false
+      }
+    }
+    
+    // Handle the regular trigger configuration flow for non-null config
+    // Create a clean configuration object when empty config is passed
+    let finalConfig: TriggerConfig
+    
+    if (!config || config.status === 'unconfigured') {
+      // Create empty configuration with proper type structure based on trigger type
+      if (type === 'post-comments' || type === 'COMMENT') {
+        finalConfig = {
+          type: 'all' as const, // Using 'as const' to specify exact type
+          keywords: { include: [] },
+          replyMessages: [],
+          status: 'unconfigured'
+        }
+      } else {
+        // Default empty configuration for other trigger types
+        finalConfig = {
+          type: 'all' as const,
+          keywords: { include: [] },
+          replyMessages: [],
+          status: 'unconfigured'
         }
       }
+    } else {
+      // Use the provided config
+      finalConfig = config
+    }
 
-      // Add trigger node
-      const triggerNode: Node = {
-        id: 'trigger-1',
-        type: 'trigger',
-        position: { x: 100, y: 100 },
+    // Clone the current nodes for modification
+    const newNodes = [...nodes]
+    
+    // Find trigger node and update it
+    const triggerNodeIndex = nodes.findIndex(node => node.type === 'trigger')
+    if (triggerNodeIndex >= 0) {
+      // Create a new node with updated data
+      newNodes[triggerNodeIndex] = {
+        ...nodes[triggerNodeIndex],
         data: {
-          type: automationData.trigger?.[0]?.type ?? 'New Trigger',
-          keywords: automationData.trigger?.[0]?.keywords ?? [],
-          // Use the current selectedTriggers state directly from the component state
-          // This ensures we're using the most up-to-date state
-          selectedTriggers: automationData.trigger && automationData.trigger.length > 0 && getTriggerDetails(
+          ...nodes[triggerNodeIndex].data,
+          config: finalConfig,
+          configurationStatus: getConfigurationStatus(finalConfig, type)
+        }
+      }
+    }
+
+    // Update nodes state
+    setNodes(newNodes)
+    
+    // Update trigger configs in the state
+    setTriggerConfig(prev => ({
+      ...prev,
+      [type]: finalConfig
+    }))
+      
+    // Save changes to database
+    try {
+      // Convert DM to user-message and COMMENT to post-comments for API consistency
+      const apiTriggerType = type === 'DM' ? 'user-message' : 
+                             type === 'COMMENT' ? 'post-comments' : 
+                             type;
+      
+      // Format the data according to expected structure (array of triggers)
+      await saveChanges({
+        trigger: [{
+          type: apiTriggerType,
+          config: finalConfig
+        }]
+      })
+      return true
+    } catch (error) {
+      console.error('Error saving trigger configuration:', error)
+      return false
+    }
+  }, [nodes, saveChanges, setNodes])
+
+  // Define the initializeNodesAndEdges function before it's used
+  const initializeNodesAndEdges = React.useCallback((data: any) => {
+    const automationData = data.data as unknown as Partial<AutomationData>
+    const initialNodes: Node[] = []
+    const initialEdges: Edge[] = []
+
+    // Initialize selected triggers from saved data
+    if (automationData.trigger && automationData.trigger.length > 0) {
+      const savedTrigger = automationData.trigger[0]
+      console.log('Initializing trigger from data:', savedTrigger)
+
+      // Map API trigger type to UI type with simplified mapping
+      let triggerType = savedTrigger.type
+      if (triggerType === 'user-message') {
+        triggerType = 'DM'
+      } else if (triggerType === 'post-comments') {
+        triggerType = 'COMMENT'
+      }
+
+      const triggerDetails = getTriggerDetails(triggerType)
+      console.log('Mapped trigger details:', { 
+        originalType: savedTrigger.type, 
+        mappedType: triggerType, 
+        details: triggerDetails 
+      })
+
+      if (triggerDetails) {
+        const trigger = {
+          id: triggerType,
+          name: triggerDetails.name,
+          icon: triggerDetails.icon
+        }
+        
+        // Set the selected triggers state
+        setSelectedTriggers([trigger])
+        
+        // Set the selected trigger for configuration with API type mapping
+        const mappedTrigger = {
+          ...trigger,
+          id: trigger.id === 'COMMENT' ? 'post-comments' :
+              trigger.id === 'DM' ? 'user-message' :
+              trigger.id
+        }
+        setSelectedTriggerForConfig(mappedTrigger)
+      }
+    }
+
+    // Add trigger node
+    const triggerNode: Node = {
+      id: 'trigger-1',
+      type: 'trigger',
+      position: { x: 100, y: 100 },
+      data: {
+        type: automationData.trigger?.[0]?.type ?? 'New Trigger',
+        keywords: automationData.trigger?.[0]?.keywords ?? [],
+        // Use the current selectedTriggers state directly from the component state
+        // This ensures we're using the most up-to-date state
+        selectedTriggers: automationData.trigger && automationData.trigger.length > 0 && getTriggerDetails(
+          automationData.trigger[0].type === 'user-message' ? 'DM' :
+          automationData.trigger[0].type === 'post-comments' ? 'COMMENT' :
+          automationData.trigger[0].type
+        ) ? [{
+          id: automationData.trigger[0].type === 'user-message' ? 'DM' :
+             automationData.trigger[0].type === 'post-comments' ? 'COMMENT' :
+             automationData.trigger[0].type,
+          name: getTriggerDetails(
             automationData.trigger[0].type === 'user-message' ? 'DM' :
             automationData.trigger[0].type === 'post-comments' ? 'COMMENT' :
             automationData.trigger[0].type
-          ) ? [{
-            id: automationData.trigger[0].type === 'user-message' ? 'DM' :
-               automationData.trigger[0].type === 'post-comments' ? 'COMMENT' :
-               automationData.trigger[0].type,
-            name: getTriggerDetails(
-              automationData.trigger[0].type === 'user-message' ? 'DM' :
-              automationData.trigger[0].type === 'post-comments' ? 'COMMENT' :
-              automationData.trigger[0].type
-            )?.name || '',
-            icon: getTriggerDetails(
-              automationData.trigger[0].type === 'user-message' ? 'DM' :
-              automationData.trigger[0].type === 'post-comments' ? 'COMMENT' :
-              automationData.trigger[0].type
-            )?.icon || (() => null)
-          }] : [],
-          onTriggerSelect: handleTriggerSelect,
-          onTriggerRemove: handleTriggerRemove,
-          onActionSelect: handleActionSelect,
-          onActionRemove: handleActionRemove,
-          isConfigSidebarOpen: isTriggerConfigOpen,
-          onConfigSidebarClose: () => setIsTriggerConfigOpen(false),
-          onConfigSidebarOpen: () => setIsTriggerConfigOpen(true),
-          isTriggerSidebarOpen,
-          onTriggerSidebarOpen: () => setIsTriggerSidebarOpen(true),
-          onTriggerSidebarClose: () => setIsTriggerSidebarOpen(false),
-          onTriggerConfigurationOpen: handleTriggerConfigurationOpen,
-          config: automationData.trigger?.[0]?.config,
-          configurationStatus: automationData.trigger?.[0]?.config 
-            ? getConfigurationStatus(automationData.trigger[0].config as TriggerConfig, automationData.trigger[0].type)
-            : 'unconfigured'
-        }
+          )?.name || '',
+          icon: getTriggerDetails(
+            automationData.trigger[0].type === 'user-message' ? 'DM' :
+            automationData.trigger[0].type === 'post-comments' ? 'COMMENT' :
+            automationData.trigger[0].type
+          )?.icon || (() => null)
+        }] : [],
+        onTriggerSelect: handleTriggerSelect,
+        onTriggerRemove: handleTriggerRemove,
+        onActionSelect: handleActionSelect,
+        onActionRemove: handleActionRemove,
+        isConfigSidebarOpen: isTriggerConfigOpen,
+        onConfigSidebarClose: () => setIsTriggerConfigOpen(false),
+        onConfigSidebarOpen: () => setIsTriggerConfigOpen(true),
+        isTriggerSidebarOpen,
+        onTriggerSidebarOpen: () => setIsTriggerSidebarOpen(true),
+        onTriggerSidebarClose: () => setIsTriggerSidebarOpen(false),
+        onTriggerConfigurationOpen: handleTriggerConfigurationOpen,
+        config: automationData.trigger?.[0]?.config,
+        configurationStatus: automationData.trigger?.[0]?.config 
+          ? getConfigurationStatus(automationData.trigger[0].config as TriggerConfig, automationData.trigger[0].type)
+          : 'unconfigured'
       }
-      initialNodes.push(triggerNode)
-
-      // Handle action node initialization
-      if (automationData.listener) {
-        console.log('Initializing action from data:', automationData.listener)
-        
-        // Create action node
-        const actionNode = {
-          id: 'action-1',
-          type: 'action',
-          position: { x: triggerNode.position.x + 600, y: 190 },
-          data: {
-            id: 'action-1',
-            listener: {
-              listener: automationData.listener.type, // Use the correct field from database
-              prompt: automationData.listener.prompt || '',
-              message: automationData.listener.message || '',
-              commentReply: automationData.listener.commentReply,
-              dmCount: automationData.listener.dmCount,
-              commentCount: automationData.listener.commentCount
-            }
-          }
-        }
-        initialNodes.push(actionNode)
-        actionNodeStateRef.current = actionNode
-
-        // Set selected action
-        const actionIcon = automationData.listener.type === 'MESSAGE' ? MessageSquare : Bot
-        setSelectedActions([{
-          id: 'action-1',
-          name: automationData.listener.type === 'MESSAGE' ? 'Send Message' : 'AI Assistant',
-          icon: actionIcon
-        }])
-
-        // Add edge
-        initialEdges.push({
-          id: 'edge-1',
-          source: 'trigger-1',
-          target: 'action-1',
-          type: 'smoothstep',
-          animated: true,
-          style: { stroke: '#94a3b8', strokeWidth: 2 }
-        })
-      } else {
-        // Add placeholder if no action exists
-        const placeholderNode: Node = {
-          id: 'placeholder-1',
-          type: 'placeholder',
-          position: { x: triggerNode.position.x + 600, y: 190 },
-          data: { 
-            label: 'Add Action',
-            onActionSelect: handleActionSelect
-          }
-        }
-        initialNodes.push(placeholderNode)
-
-        initialEdges.push({
-          id: 'edge-placeholder',
-          source: 'trigger-1',
-          target: 'placeholder-1',
-          type: 'smoothstep',
-          animated: true,
-          style: { stroke: '#94a3b8', strokeWidth: 2 }
-        })
-      }
-
-      // Set initial nodes and edges
-      setNodes(initialNodes)
-      setEdges(initialEdges)
-      
-      // Mark as initialized to prevent re-initialization
-      isInitializedRef.current = true
-      console.log('Flow initialized with data:', { initialNodes, initialEdges })
     }
-  }, [data, handleTriggerSelect, handleTriggerRemove, handleActionSelect, handleActionRemove, handleTriggerConfigurationOpen, isTriggerConfigOpen, isTriggerSidebarOpen, selectedActions, setNodes, setEdges])
+    initialNodes.push(triggerNode)
+
+    // Handle action node initialization
+    if (automationData.listener) {
+      console.log('Initializing action from data:', automationData.listener)
+      
+      // Create action node
+      const actionNode = {
+        id: 'action-1',
+        type: 'action',
+        position: { x: triggerNode.position.x + 600, y: 190 },
+        data: {
+          id: 'action-1',
+          listener: {
+            listener: automationData.listener.type, // Use the correct field from database
+            prompt: automationData.listener.prompt || '',
+            message: automationData.listener.message || '',
+            commentReply: automationData.listener.commentReply,
+            dmCount: automationData.listener.dmCount,
+            commentCount: automationData.listener.commentCount
+          }
+        }
+      }
+      initialNodes.push(actionNode)
+      actionNodeStateRef.current = actionNode
+
+      // Set selected action
+      const actionIcon = automationData.listener.type === 'MESSAGE' ? MessageSquare : Bot
+      setSelectedActions([{
+        id: 'action-1',
+        name: automationData.listener.type === 'MESSAGE' ? 'Send Message' : 'AI Assistant',
+        icon: actionIcon
+      }])
+
+      // Add edge
+      initialEdges.push({
+        id: 'edge-1',
+        source: 'trigger-1',
+        target: 'action-1',
+        type: 'smoothstep',
+        animated: true,
+        style: { stroke: '#94a3b8', strokeWidth: 2 }
+      })
+    } else {
+      // Add placeholder if no action exists
+      const placeholderNode: Node = {
+        id: 'placeholder-1',
+        type: 'placeholder',
+        position: { x: 600, y: 190 },
+        data: { 
+          label: 'Add Action',
+          onActionSelect: handleActionSelect
+        }
+      }
+      initialNodes.push(placeholderNode)
+
+      initialEdges.push({
+        id: 'edge-placeholder',
+        source: 'trigger-1',
+        target: 'placeholder-1',
+        type: 'smoothstep',
+        animated: true,
+        style: { stroke: '#94a3b8', strokeWidth: 2 }
+      })
+    }
+
+    // Set initial nodes and edges
+    setNodes(initialNodes)
+    setEdges(initialEdges)
+  }, [
+    handleTriggerSelect,
+    handleTriggerRemove,
+    handleActionSelect,
+    handleActionRemove,
+    isTriggerConfigOpen,
+    isTriggerSidebarOpen,
+    handleTriggerConfigurationOpen,
+    setNodes,
+    setEdges,
+    setSelectedTriggers,
+    setSelectedTriggerForConfig,
+    setSelectedActions
+  ])
+
+  // Initialize flow with data
+  React.useEffect(() => {
+    if (data && !isInitializedRef.current) {
+      // Initialize nodes and edges based on automation data
+      initializeNodesAndEdges(data)
+      isInitializedRef.current = true
+    } else if (data && isInitializedRef.current && nodes.length === 0) {
+      // If nodes are empty but we have data, re-initialize
+      // This can happen after a trigger is removed and the component re-renders
+      console.log('Re-initializing flow with data after nodes were cleared')
+      initializeNodesAndEdges(data)
+    }
+  }, [data, nodes.length, initializeNodesAndEdges])
 
   // Sync action node state with nodes
   React.useEffect(() => {
@@ -883,6 +1050,11 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
               selectedTriggers,
               onTriggerSelect: handleTriggerSelect,
               onTriggerRemove: handleTriggerRemove,
+              onActionSelect: handleActionSelect,
+              onActionRemove: handleActionRemove,
+              isConfigSidebarOpen: isTriggerConfigOpen,
+              onConfigSidebarClose: () => setIsTriggerConfigOpen(false),
+              onConfigSidebarOpen: () => setIsTriggerConfigOpen(true),
               isTriggerSidebarOpen,
               onTriggerSidebarOpen: () => setIsTriggerSidebarOpen(true),
               onTriggerSidebarClose: () => setIsTriggerSidebarOpen(false),
@@ -894,106 +1066,6 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
       })
     )
   }, [selectedTriggers, isTriggerSidebarOpen, handleTriggerSelect, handleTriggerRemove, handleTriggerConfigurationOpen])
-
-  const handleTriggerConfig = React.useCallback((type: string, config: TriggerConfig | null) => {
-    // Get existing config from nodes
-    const existingNode = nodes.find(node => node.type === 'trigger')
-    const existingConfig = existingNode?.data?.config || {}
-    
-    if (!config) {
-      // When removing post, preserve keywords and replyMessages but clear post-specific fields
-      const updatedConfig = {
-        ...existingConfig,
-        type: undefined,
-        postId: undefined,
-        mediaType: undefined,
-        mediaUrl: undefined,
-        caption: undefined,
-        // Preserve existing keywords and replyMessages
-        keywords: existingConfig.keywords,
-        replyMessages: existingConfig.replyMessages
-      }
-
-      // Calculate status based on remaining configurations
-      const hasKeywords = updatedConfig.keywords?.include?.length > 0
-      const hasReplyMessages = updatedConfig.replyMessages?.length > 0
-      
-      updatedConfig.status = (hasKeywords || hasReplyMessages) ? 'partial' : 'unconfigured'
-
-      setTriggerConfig(prev => ({
-        ...prev,
-        [type]: updatedConfig
-      }))
-
-      // Update nodes with updated configuration
-      setNodes(nds => nds.map(node => {
-        if (node.type === 'trigger') {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              config: updatedConfig,
-              configurationStatus: updatedConfig.status
-            }
-          }
-        }
-        return node
-      }))
-
-      // Save the updated configuration
-      saveChanges({
-        trigger: [{
-          type,
-          config: updatedConfig
-        }]
-      })
-      
-      return
-    }
-
-    // Rest of the existing code for handling non-null config...
-    const mergedConfig = {
-      ...existingConfig,
-      ...config,
-      // Ensure we preserve existing arrays/objects if they exist and handle null/undefined
-      keywords: config.keywords || existingConfig.keywords || undefined,
-      replyMessages: config.replyMessages || existingConfig.replyMessages || undefined,
-      status: getConfigurationStatus({
-        ...existingConfig,
-        ...config,
-        keywords: config.keywords || existingConfig.keywords || undefined,
-        replyMessages: config.replyMessages || existingConfig.replyMessages || undefined,
-      }, type)
-    }
-
-    setTriggerConfig(prev => ({
-      ...prev,
-      [type]: mergedConfig
-    }))
-
-    // Update nodes with merged configuration
-    setNodes(nds => nds.map(node => {
-      if (node.type === 'trigger') {
-        return {
-          ...node,
-          data: {
-            ...node.data,
-            config: mergedConfig,
-            configurationStatus: mergedConfig.status
-          }
-        }
-      }
-      return node
-    }))
-
-    // Save the merged configuration
-    saveChanges({
-      trigger: [{
-        type,
-        config: mergedConfig
-      }]
-    })
-  }, [nodes, saveChanges, setNodes])
 
   const nodeTypes = React.useMemo(() => ({
     trigger: TriggerNode,

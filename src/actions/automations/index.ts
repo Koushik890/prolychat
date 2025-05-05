@@ -2,6 +2,7 @@
 
 import { onCurrentUser } from '../user'
 import { findUser } from '../user/queries'
+import { formatDate } from '@/lib/utils'
 import {
   addKeyWord,
   addListener,
@@ -15,6 +16,7 @@ import {
   updateAutomation,
   deleteTrigger,
 } from './queries'
+import { client } from '@/lib/prisma'
 
 export const createAutomations = async (id?: string) => {
   const user = await onCurrentUser()
@@ -48,34 +50,107 @@ export const createAutomations = async (id?: string) => {
 export const getAllAutomations = async () => {
   try {
     const user = await onCurrentUser()
+    console.log('Current user status:', user.status)
+    
     if (user.status !== 200 || !user.data) {
+      console.warn('User authentication failed when loading automations:', user.status)
       return { status: 401, data: [] }
     }
 
     // Find user in database
     const dbUser = await findUser(user.data.id)
     if (!dbUser) {
+      console.warn('User not found in database:', user.data.id)
       return { status: 404, data: [] }
     }
 
-    const result = await getAutomations(user.data.id)
-    if (!result || !result.automations) {
-      return { status: 404, data: [] }
+    try {
+      const result = await getAutomations(user.data.id)
+      
+      // If the result is not an array, log and return empty array
+      if (!Array.isArray(result)) {
+        console.error('Expected array but got:', typeof result, result)
+        return { status: 200, data: [] }
+      }
+      
+      if (result.length === 0) {
+        console.log('No automations found for user:', user.data.id)
+        return { status: 200, data: [] } // Return 200 with empty array for no automations
+      }
+
+      // Map automations with null check for each property
+      const transformedAutomations = result.map((automation: any) => {
+        if (!automation) return null
+        
+        // Extract fields with safer fallbacks
+        const id = automation.id || 'unknown'
+        const name = automation.name || 'Untitled'
+        const active = !!automation.active
+        
+        // Get the run count directly from the automation model
+        const runCount = typeof automation.runCount === 'number' ? automation.runCount : 0;
+        
+        // For backward compatibility and debugging, still log DM and comment counts
+        const listener = automation.listener || {}
+        const dmCount = typeof listener.dmCount === 'number' ? listener.dmCount : 0
+        const commentCount = typeof listener.commentCount === 'number' ? listener.commentCount : 0
+        
+        // Include the listener information needed for accurate metrics calculations
+        const listenerInfo = {
+          id: listener.id,
+          type: listener.type,
+          actionType: listener.type, // This is the ACTION_TYPE (MESSAGE or OMNIAI)
+          dmCount,
+          commentCount
+        };
+        
+        // Include trigger information for determining automation type
+        const triggerInfo = Array.isArray(automation.trigger) ? 
+          automation.trigger.map((t: any) => ({
+            id: t.id,
+            type: t.type,
+            automationId: t.automationId,
+            status: t.status
+          })) : [];
+        
+        // Log the run count for debugging
+        console.log(`Automation ${id} (${name}) run calculation:`, { 
+          runCount,
+          dmCount, 
+          commentCount,
+          listenerType: listener.type,
+          triggerTypes: triggerInfo.map((t: any) => t.type).join(', ')
+        });
+        
+        // Safely handle dates - always use a valid date, never "Never"
+        // Use current date as fallback to prevent "Never" from displaying
+        const updatedAt = automation.updatedAt instanceof Date ? automation.updatedAt : 
+                         (automation.createdAt instanceof Date ? automation.createdAt : new Date())
+        
+        // Format date with special handling to avoid "Never"
+        const lastPublished = formatDate(updatedAt) === 'Never' ? formatDate(new Date()) : formatDate(updatedAt)
+        
+        return {
+          id,
+          name,
+          runs: runCount,
+          status: active ? 'Live' : 'Draft',
+          lastPublished,
+          active,
+          updatedAt,
+          listener: listenerInfo,
+          trigger: triggerInfo
+        }
+      }).filter(Boolean) // Remove any null entries
+      
+      return { status: 200, data: transformedAutomations }
+    } catch (dbError) {
+      console.error('Database error fetching automations:', dbError)
+      return { status: 500, data: [], error: 'Database error' }
     }
-
-    const transformedAutomations = result.automations.map(automation => ({
-      id: automation.id,
-      name: automation.name || 'Untitled',
-      runs: automation.listener ? (automation.listener.dmCount + automation.listener.commentCount) : 0,
-      status: automation.active ? 'Live' : 'Draft',
-      lastPublished: automation.updatedAt ? new Date(automation.updatedAt).toLocaleDateString() : 'Never',
-      active: automation.active
-    }))
-
-    return { status: 200, data: transformedAutomations }
   } catch (error) {
     console.error('Error in getAllAutomations:', error)
-    return { status: 500, data: [] }
+    return { status: 500, data: [], error: error instanceof Error ? error.message : 'Unknown error' }
   }
 }
 
@@ -163,10 +238,36 @@ export const saveTrigger = async (automationId: string, trigger: string[], confi
   }
 
   try {
+    console.log('Saving trigger with config:', JSON.stringify({ automationId, trigger, config }, null, 2))
+    
+    // Validate the configuration structure
+    if (config) {
+      // Ensure keywords is properly formatted as an array
+      if (config.keywords && typeof config.keywords === 'object' && 'include' in config.keywords) {
+        // Convert from UI format (keywords: { include: [] }) to DB format (keywords: [])
+        config.keywords = config.keywords.include || []
+      }
+      
+      // Ensure posts are properly formatted
+      if (config.posts && Array.isArray(config.posts)) {
+        // Make sure all required fields are present in each post
+        config.posts = config.posts.map((post: { postId?: string; id?: string; mediaType: string; mediaUrl?: string; media_url?: string; caption?: string | null }) => ({
+          postId: post.postId || post.id,
+          mediaType: post.mediaType,
+          mediaUrl: post.mediaUrl || post.media_url,
+          caption: post.caption || null
+        }))
+      }
+    }
+    
     const create = await addTrigger(automationId, trigger, config)
-    if (create) return { status: 200, data: 'Trigger saved' }
-    console.error('Failed to save trigger:', { automationId, trigger, config })
-    return { status: 404, data: 'Cannot save trigger' }
+    if (create.status === 200) {
+      console.log('Trigger saved successfully:', create)
+      return { status: 200, data: 'Trigger saved' }
+    }
+    
+    console.error('Failed to save trigger:', create)
+    return { status: create.status || 404, data: create.data || 'Cannot save trigger' }
   } catch (error) {
     console.error('Error saving trigger:', error instanceof Error ? error.message : 'Unknown error', { automationId, trigger, config })
     return { status: 500, data: 'Oops! something went wrong' }

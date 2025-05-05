@@ -2,116 +2,127 @@
 
 import { client } from '@/lib/prisma'
 import { v4 } from 'uuid'
+import { withDatabaseRetry, db } from '@/lib/db-utils'
+import { Automation, Post, Keyword, ReplyMessage } from '@prisma/client'
+
+// Define types for the returned automation data
+type AutomationWithRelations = Automation & {
+  trigger?: Array<{
+    id: string
+    type: string
+    status: string
+    automationId: string
+    config: any
+    createdAt: Date
+    updatedAt: Date
+    posts: Post[]
+    keywords: Keyword[]
+    replyMessages: ReplyMessage[]
+  }>
+  listener?: any
+  User?: {
+    subscription?: any
+    integrations?: any[]
+  }
+}
 
 export const createAutomation = async (clerkId: string, id?: string) => {
-  const newId = id || v4();
   try {
-    // First find the user to ensure they exist
-    const user = await client.user.findUnique({
-      where: { clerkId }
-    });
-
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    // Create the automation with all required fields
-    const automation = await client.automation.create({
-      data: {
-        id: newId,
-        name: 'Untitled',
-        active: false,
-        userId: user.id
+    const getUserId = await withDatabaseRetry(() => client.user.findFirst({
+      where: {
+        clerkId,
       },
-      // Include essential relations in the response
-      include: {
-        User: {
-          select: {
-            subscription: true
-          }
-        }
-      }
-    });
-    
-    if (!automation) {
-      throw new Error('Failed to create automation');
-    }
-    
-    return automation;
+      select: {
+        id: true,
+      },
+    }))
+
+    if (!getUserId) return null
+
+    const result = await withDatabaseRetry(() => client.automation.create({
+      data: {
+        id: id || v4(),
+        userId: getUserId.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    }))
+
+    return result
   } catch (error) {
-    console.error('Error creating automation:', error);
-    if (error instanceof Error && error.message === 'User not found') {
-      throw new Error('User not found in database');
-    }
-    throw new Error('Failed to create automation');
+    console.error('Error creating automation:', error)
+    return null
   }
 }
 
 export const getAutomations = async (clerkId: string) => {
   try {
-    const result = await client.user.findUnique({
+    const getUserId = await withDatabaseRetry(() => client.user.findFirst({
       where: {
         clerkId,
       },
       select: {
-        automations: {
-          select: {
-            id: true,
-            name: true,
-            active: true,
-            createdAt: true,
-            updatedAt: true,
-            status: true,
-            trigger: true,
-            listener: {
-              select: {
-                dmCount: true,
-                commentCount: true
-              }
-            }
-          },
-          orderBy: {
-            createdAt: 'asc',
-          }
-        },
+        id: true,
       },
-    })
+    }))
 
-    if (!result) {
-      console.error('No user found with clerkId:', clerkId)
-      return null
-    }
+    if (!getUserId) return []
 
-    return result
-  } catch (error) {
-    console.error('Error in getAutomations:', error)
-    throw error
-  }
-}
+    // Use type assertion to safely access the id property
+    const userId = (getUserId as { id: string }).id
 
-export const findAutomation = async (id: string) => {
-  try {
-    const result = await client.automation.findUnique({
+    const automations = await withDatabaseRetry(() => client.automation.findMany({
       where: {
-        id,
+        userId: userId,
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
       include: {
         trigger: {
           include: {
             posts: true,
             keywords: true,
-            replyMessages: true
-          }
-        },
-        listener: true,
-        User: {
-          select: {
-            subscription: true,
-            integrations: true,
+            replyMessages: true,
           },
         },
+        listener: true,
       },
-    })
+    }))
+
+    return automations
+  } catch (error) {
+    console.error('Error fetching automations:', error)
+    return []
+  }
+}
+
+export const findAutomation = async (id: string) => {
+  try {
+    // Use withDatabaseRetry directly for this critical function
+    const result = await withDatabaseRetry(() => 
+      client.automation.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          trigger: {
+            include: {
+              posts: true,
+              keywords: true,
+              replyMessages: true
+            }
+          },
+          listener: true,
+          User: {
+            select: {
+              subscription: true,
+              integrations: true,
+            },
+          },
+        },
+      })
+    );
 
     if (!result) {
       console.error('No automation found with id:', id)
@@ -178,7 +189,7 @@ export const findAutomation = async (id: string) => {
     return result
   } catch (error) {
     console.error('Error in findAutomation:', error)
-    throw error
+    return null
   }
 }
 
@@ -189,62 +200,19 @@ export const updateAutomation = async (
     active?: boolean
   }
 ) => {
-  if (!id || typeof id !== 'string') {
-    throw new Error('Invalid automation ID');
-  }
-
-  if (!update || typeof update !== 'object') {
-    throw new Error('Invalid update payload');
-  }
-
   try {
-    const data: Record<string, any> = {};
-    
-    if (update.name !== undefined) {
-      if (typeof update.name !== 'string') {
-        throw new Error('Name must be a string');
-      }
-      data.name = update.name.trim();
-    }
-    
-    if (update.active !== undefined) {
-      if (typeof update.active !== 'boolean') {
-        throw new Error('Active must be a boolean');
-      }
-      data.active = update.active;
-      // Update status based on active state
-      data.status = update.active ? 'PUBLISHED' : 'DRAFT';
-    }
-
-    const result = await client.automation.update({
-      where: { id },
-      data,
-      include: {
-        trigger: {
-          include: {
-            posts: true,
-            keywords: true,
-            replyMessages: true
-          }
-        },
-        listener: true,
-        User: {
-          select: {
-            subscription: true,
-            integrations: true,
-          },
-        },
-      }
-    });
-
-    if (!result) {
-      throw new Error('Failed to update automation');
-    }
-
-    return result;
+    return await withDatabaseRetry(() => client.automation.update({
+      where: {
+        id,
+      },
+      data: {
+        ...update,
+        updatedAt: new Date(),
+      },
+    }))
   } catch (error) {
-    console.error('Error in updateAutomation:', error);
-    throw error;
+    console.error('Error updating automation:', error)
+    throw error
   }
 }
 
@@ -263,19 +231,20 @@ export const addListener = async (
   }
 
   try {
-    const automation = await client.automation.findUnique({
+    const automation = await withDatabaseRetry(() => client.automation.findUnique({
       where: { id: automationId },
-    });
+    }));
 
     if (!automation) {
       return { status: 404, data: 'Automation not found' };
     }
 
-    const result = await client.automation.update({
+    const result = await withDatabaseRetry(() => client.automation.update({
       where: {
         id: automationId,
       },
       data: {
+        updatedAt: new Date(),
         listener: {
           upsert: {
             create: {
@@ -283,29 +252,23 @@ export const addListener = async (
               status: actionType === 'OMNIAI' ? (prompt ? 'CONFIGURED' : 'UNCONFIGURED') : (message ? 'CONFIGURED' : 'UNCONFIGURED'),
               prompt: prompt || '',
               message: message || '',
-              commentReply: null,
-              dmCount: 0,
-              commentCount: 0
             },
             update: {
               type: actionType,
               status: actionType === 'OMNIAI' ? (prompt ? 'CONFIGURED' : 'UNCONFIGURED') : (message ? 'CONFIGURED' : 'UNCONFIGURED'),
               prompt: prompt || '',
               message: message || '',
-              commentReply: null,
-              dmCount: 0,
-              commentCount: 0
-            }
-          }
+            },
+          },
         },
       },
-    });
+    }));
 
-    if (!result) {
-      return { status: 500, data: 'Failed to save listener' };
+    if (result) {
+      return { status: 200, data: 'Listener set successfully' };
+    } else {
+      return { status: 500, data: 'Failed to set listener' };
     }
-
-    return { status: 200, data: 'Listener saved successfully' };
   } catch (error) {
     console.error('Error in addListener:', error);
     return { 
@@ -317,27 +280,45 @@ export const addListener = async (
 
 export const deleteTrigger = async (automationId: string) => {
   try {
-    // First delete all existing triggers for this automation
-    await client.trigger.deleteMany({
+    // Find all triggers for this automation
+    const triggers = await withDatabaseRetry(() => client.trigger.findMany({
       where: {
-        automationId
-      }
-    })
+        automationId,
+      },
+    }));
 
-    // Update the automation to reflect the trigger removal
-    return await client.automation.update({
-      where: {
-        id: automationId
-      },
-      data: {
-        trigger: {
-          deleteMany: {} // This ensures all triggers are removed from the relation
-        }
-      },
-      include: {
-        trigger: true
-      }
-    })
+    if (!triggers || triggers.length === 0) {
+      console.warn('No triggers found to delete for automation:', automationId);
+      return { status: 404, data: 'No triggers found' };
+    }
+
+    // Delete all related posts, keywords, and reply messages
+    for (const trigger of triggers) {
+      await withDatabaseRetry(() => client.post.deleteMany({
+        where: { triggerId: trigger.id },
+      }));
+      
+      await withDatabaseRetry(() => client.keyword.deleteMany({
+        where: { triggerId: trigger.id },
+      }));
+      
+      await withDatabaseRetry(() => client.replyMessage.deleteMany({
+        where: { triggerId: trigger.id },
+      }));
+    }
+
+    // Delete the triggers themselves
+    await withDatabaseRetry(() => client.trigger.deleteMany({
+      where: { automationId },
+    }));
+
+    // Update the automation's updatedAt timestamp
+    await withDatabaseRetry(() => client.automation.update({
+      where: { id: automationId },
+      data: { updatedAt: new Date() }
+    }));
+
+    return { status: 200, data: 'Triggers deleted successfully' };
   } catch (error) {
     console.error('Error deleting trigger:', error)
     throw error
@@ -345,116 +326,233 @@ export const deleteTrigger = async (automationId: string) => {
 }
 
 export const addTrigger = async (automationId: string, trigger: string[], config?: Record<string, any>) => {
-  console.log('Adding trigger:', { automationId, trigger, config }) // Debug log
+  if (!automationId || typeof automationId !== 'string') {
+    return { status: 400, data: 'Automation ID is required' };
+  }
 
-  // If trigger array is empty, use the dedicated delete function
-  if (trigger.length === 0) {
-    return await deleteTrigger(automationId)
+  if (!trigger || !Array.isArray(trigger) || trigger.length === 0) {
+    return { status: 400, data: 'Trigger is required' };
   }
 
   try {
-    // First check if a trigger already exists for this automation with any type
-    const existingTriggers = await client.trigger.findMany({
+    console.log('Adding/updating trigger in database:', { automationId, trigger, config });
+    
+    // First, get the associated trigger if there is one, or create a new one
+    const existingTrigger = await withDatabaseRetry(() => client.trigger.findFirst({
       where: {
-        automationId
-      }
-    })
-
-    // If any triggers exist, delete them all first to ensure clean state
-    if (existingTriggers.length > 0) {
-      console.log('Cleaning up existing triggers:', existingTriggers.length)
-      await client.trigger.deleteMany({
-        where: {
-          automationId
-        }
-      })
-    }
-
-    // Create new trigger with its configurations
-    const result = await client.automation.update({
-      where: {
-        id: automationId,
-      },
-      data: {
-        trigger: {
-          create: {
-            type: trigger[0],
-            status: config?.status || ((trigger[0] === 'user-message' && config?.keywords?.include?.length > 0) 
-              ? 'complete' 
-              : 'unconfigured'),
-            ...(config?.posts && {
-              posts: {
-                create: config.posts.map((post: any) => ({
-                  postId: post.postId,
-                  mediaType: post.mediaType,
-                  mediaUrl: post.mediaUrl,
-                  caption: post.caption
-                }))
-              }
-            }),
-            ...(config?.keywords && {
-              keywords: {
-                create: config.keywords.include.map((word: string) => ({
-                  word
-                }))
-              }
-            }),
-            ...(config?.replyMessages && {
-              replyMessages: {
-                create: config.replyMessages.map((message: string) => ({
-                  message
-                }))
-              }
-            })
-          }
-        }
+        automationId,
       },
       include: {
-        trigger: {
-          include: {
-            posts: true,
-            keywords: true,
-            replyMessages: true
-          }
-        }
-      }
-    })
+        posts: true,
+        keywords: true,
+        replyMessages: true,
+      },
+    }));
 
-    console.log('Trigger added successfully:', result) // Debug log
-    return result
+    let triggerId: string;
+
+    if (existingTrigger) {
+      console.log('Using existing trigger:', existingTrigger.id);
+      triggerId = existingTrigger.id;
+      
+      // Update the automation's updatedAt timestamp
+      await withDatabaseRetry(() => client.automation.update({
+        where: { id: automationId },
+        data: { updatedAt: new Date() }
+      }));
+    } else {
+      console.log('Creating new trigger for automation:', automationId);
+      // Create a new trigger
+      const createdTrigger = await withDatabaseRetry(() => client.trigger.create({
+        data: {
+          type: trigger.join(','),
+          automationId,
+        },
+      }));
+      
+      // Update the automation's updatedAt timestamp
+      await withDatabaseRetry(() => client.automation.update({
+        where: { id: automationId },
+        data: { updatedAt: new Date() }
+      }));
+      
+      triggerId = createdTrigger.id;
+    }
+    
+    // Now we have a triggerId, we can manage keywords, posts, and reply messages
+    
+    // Normalize keywords if they exist (should be an array of strings)
+    if (config?.keywords) {
+      // If it's already an array, use it; if it's an object with include, extract that; otherwise empty array
+      const keywordsArray = Array.isArray(config.keywords) 
+        ? config.keywords 
+        : (config.keywords?.include || []);
+      
+      // Update existing keywords or create new ones
+      // First, remove all keywords associated with this trigger
+      await withDatabaseRetry(() => client.keyword.deleteMany({
+        where: { 
+          triggerId
+        }
+      }));
+      
+      // Then create new keywords
+      if (keywordsArray.length > 0) {
+        for (const word of keywordsArray) {
+          await withDatabaseRetry(() => client.keyword.create({
+            data: {
+              word,
+              trigger: {
+                connect: { id: triggerId }
+              }
+            }
+          }));
+        }
+        console.log(`Added ${keywordsArray.length} keywords to trigger ${triggerId}`);
+      }
+    }
+    
+    // Handle posts if they exist
+    if (config?.posts && Array.isArray(config.posts) && config.posts.length > 0) {
+      // Remove existing posts 
+      await withDatabaseRetry(() => client.post.deleteMany({
+        where: { 
+          triggerId
+        }
+      }));
+      
+      // Create new posts
+      for (const post of config.posts) {
+        await withDatabaseRetry(() => client.post.create({
+          data: {
+            postId: post.postId,
+            mediaType: post.mediaType,
+            mediaUrl: post.mediaUrl,
+            caption: post.caption,
+            trigger: {
+              connect: { id: triggerId }
+            }
+          }
+        }));
+      }
+      console.log(`Added ${config.posts.length} posts to trigger ${triggerId}`);
+    }
+    
+    // Handle reply messages if they exist
+    if (config?.replyMessages && Array.isArray(config.replyMessages) && config.replyMessages.length > 0) {
+      // Remove existing reply messages
+      await withDatabaseRetry(() => client.replyMessage.deleteMany({
+        where: { 
+          triggerId
+        }
+      }));
+      
+      // Create new reply messages
+      for (const message of config.replyMessages) {
+        await withDatabaseRetry(() => client.replyMessage.create({
+          data: {
+            message,
+            trigger: {
+              connect: { id: triggerId }
+            }
+          }
+        }));
+      }
+      console.log(`Added ${config.replyMessages.length} reply messages to trigger ${triggerId}`);
+    }
+
+    console.log('Trigger operation completed successfully');
+    return { status: 200, data: 'Trigger(s) added successfully' };
   } catch (error) {
-    console.error('Error adding trigger:', error)
-    throw error
+    console.error('Error in addTrigger:', error);
+    return { 
+      status: 500, 
+      data: error instanceof Error ? error.message : 'Failed to add trigger' 
+    };
   }
 }
 
 export const addKeyWord = async (automationId: string, keyword: string) => {
-  // First get the trigger ID for this automation
-  const automation = await client.automation.findUnique({
-    where: { id: automationId },
-    include: { trigger: true }
-  })
+  console.log('Adding keyword:', { automationId, keyword });
+  
+  try {
+    // Get the trigger ID first
+    const trigger = await withDatabaseRetry(() => client.trigger.findFirst({
+      where: {
+        automationId,
+      },
+    }));
 
-  if (!automation?.trigger?.[0]?.id) {
-    throw new Error('No trigger found for this automation')
-  }
-
-  return client.trigger.update({
-    where: { id: automation.trigger[0].id },
-    data: {
-      keywords: {
-        create: {
-          word: keyword
-        }
-      }
+    if (!trigger) {
+      console.error('No trigger found for automation:', automationId);
+      return { status: 404, data: 'No trigger found for this automation' };
     }
-  })
+
+    // Create the keyword
+    const result = await withDatabaseRetry(() => client.keyword.create({
+      data: {
+        word: keyword,
+        triggerId: trigger.id,
+      },
+    }));
+
+    if (result) {
+      // Update the automation's updatedAt timestamp
+      await withDatabaseRetry(() => client.automation.update({
+        where: { id: automationId },
+        data: { updatedAt: new Date() }
+      }));
+      
+      return { status: 200, data: 'Keyword added successfully' };
+    }
+
+    return { status: 400, data: 'Failed to add keyword' };
+  } catch (error) {
+    console.error('Error adding keyword:', error);
+    throw error;
+  }
 }
 
 export const deleteKeywordQuery = async (id: string) => {
-  return client.keyword.delete({
-    where: { id },
-  })
+  try {
+    // First get the keyword to find its associated trigger and automation
+    const keyword = await withDatabaseRetry(() => client.keyword.findUnique({
+      where: { id },
+      include: {
+        trigger: {
+          select: {
+            automationId: true
+          }
+        }
+      }
+    }));
+
+    if (!keyword) {
+      console.error('Keyword not found:', id);
+      return null;
+    }
+
+    // Delete the keyword
+    const result = await withDatabaseRetry(() => client.keyword.delete({
+      where: { id },
+    }));
+
+    // Update the associated automation's updatedAt timestamp
+    if (keyword.trigger?.automationId) {
+      const automationId = keyword.trigger.automationId;
+      if (automationId) {
+        await withDatabaseRetry(() => client.automation.update({
+          where: { id: automationId },
+          data: { updatedAt: new Date() }
+        }));
+      }
+    }
+
+    return result;
+  } catch (error) {
+    console.error('Error deleting keyword:', error);
+    throw error;
+  }
 }
 
 export const addPost = async (
@@ -466,35 +564,77 @@ export const addPost = async (
     mediaType: 'IMAGE' | 'VIDEO' | 'CAROSEL_ALBUM'
   }[]
 ) => {
-  // First get the trigger ID for this automation
-  const automation = await client.automation.findUnique({
-    where: { id: automationId },
-    include: { trigger: true }
-  })
+  try {
+    // First get the trigger ID
+    const trigger = await withDatabaseRetry(() => client.trigger.findFirst({
+      where: {
+        automationId,
+      },
+    }));
 
-  if (!automation?.trigger?.[0]?.id) {
-    throw new Error('No trigger found for this automation')
-  }
-
-  return client.trigger.update({
-    where: { id: automation.trigger[0].id },
-    data: {
-      posts: {
-        createMany: {
-          data: posts.map(post => ({
-            postId: post.postid,
-            mediaType: post.mediaType,
-            mediaUrl: post.media,
-            caption: post.caption
-          }))
-        }
-      }
+    if (!trigger) {
+      console.error('No trigger found for automation:', automationId);
+      return null;
     }
-  })
+
+    // Clear existing posts first
+    await withDatabaseRetry(() => client.post.deleteMany({
+      where: {
+        triggerId: trigger.id,
+      },
+    }));
+
+    // Add each new post
+    for (const post of posts) {
+      await withDatabaseRetry(() => client.post.create({
+        data: {
+          postId: post.postid,
+          mediaUrl: post.media,
+          mediaType: post.mediaType,
+          caption: post.caption || '',
+          triggerId: trigger.id,
+        },
+      }));
+    }
+
+    // Update the automation's updatedAt timestamp
+    await withDatabaseRetry(() => client.automation.update({
+      where: { id: automationId },
+      data: { updatedAt: new Date() }
+    }));
+
+    return true;
+  } catch (error) {
+    console.error('Error adding posts:', error);
+    throw error;
+  }
 }
 
 export const deleteAutomationQuery = async (id: string) => {
-  return await client.automation.delete({
-    where: { id },
-  })
+  try {
+    // First, try to clean up chat history related to this automation
+    try {
+      // Log the cleanup attempt
+      console.log(`Attempting to clean up chat history for automation: ${id}`);
+      
+      // Delete all DMs associated with this automation
+      const deletedDms = await withDatabaseRetry(() => client.dms.deleteMany({
+        where: { automationId: id },
+      }));
+      
+      console.log(`Deleted ${deletedDms.count} chat history entries for automation ${id}`);
+    } catch (dmError) {
+      // Log error but continue with automation deletion
+      console.error('Error deleting chat history:', dmError);
+      console.log('Continuing with automation deletion despite chat history error');
+    }
+
+    // Delete the automation
+    return await withDatabaseRetry(() => client.automation.delete({
+      where: { id },
+    }));
+  } catch (error) {
+    console.error('Error deleting automation:', error);
+    throw error;
+  }
 }

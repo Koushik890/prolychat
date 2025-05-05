@@ -19,6 +19,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { EnhancedText } from '@/components/ui/enhanced-typography'
+import { UserButton } from "@clerk/nextjs"
 
 type Props = {
   slug: string
@@ -137,7 +138,14 @@ const InfoBar = ({ slug }: Props) => {
 
         {/* Right: Stats & Actions */}
         <div className="flex items-center gap-4">
-          <Notifications />
+          <UserButton
+            afterSignOutUrl="/"
+            appearance={{
+              elements: {
+                avatarBox: "h-[32px] w-[32px]"
+              }
+            }}
+          />
         </div>
       </div>
     </div>

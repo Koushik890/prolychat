@@ -15,21 +15,51 @@ export async function POST(req: Request) {
     const body = await req.text();
     const signature = req.headers.get('x-signature');
 
-    if (!signature) {
+    // Log the request headers for debugging
+    console.log('LemonSqueezy webhook received:', {
+      headers: Object.fromEntries(req.headers.entries()),
+      bodyLength: body.length,
+      hasSignature: !!signature,
+    });
+
+    // Validate signature if present
+    if (signature) {
+      const hmac = crypto.createHmac('sha256', LEMONSQUEEZY_WEBHOOK_SECRET);
+      const digest = Buffer.from(hmac.update(body).digest('hex'), 'utf8');
+      const signature_buffer = Buffer.from(signature, 'utf8');
+
+      if (!crypto.timingSafeEqual(signature_buffer, digest)) {
+        console.warn('LemonSqueezy webhook: Invalid signature');
+        // Still return 200 to avoid retries for test pings
+        if (process.env.NODE_ENV === 'development') {
+          return new NextResponse('Signature verification failed but accepted in development', { status: 200 });
+        }
+        return new NextResponse('Invalid signature', { status: 400 });
+      }
+    } else {
+      console.warn('LemonSqueezy webhook: Missing signature header');
+      // Still return 200 to avoid retries for test pings in development
+      if (process.env.NODE_ENV === 'development') {
+        return new NextResponse('Missing signature but accepted in development', { status: 200 });
+      }
       return new NextResponse('Webhook signature missing', { status: 400 });
     }
 
-    const hmac = crypto.createHmac('sha256', LEMONSQUEEZY_WEBHOOK_SECRET);
-    const digest = Buffer.from(hmac.update(body).digest('hex'), 'utf8');
-    const signature_buffer = Buffer.from(signature, 'utf8');
-
-    if (!crypto.timingSafeEqual(signature_buffer, digest)) {
-      return new NextResponse('Invalid signature', { status: 400 });
+    // Parse event data
+    let event;
+    try {
+      event = JSON.parse(body);
+      console.log('LemonSqueezy webhook event type:', event?.meta?.event_name);
+    } catch (error) {
+      console.error('LemonSqueezy webhook: Failed to parse JSON body', error);
+      return new NextResponse('Invalid JSON payload', { status: 400 });
     }
 
-    const event = JSON.parse(body);
+    // Handle the case of test pings or simulator events which might not have user_id
     if (!event?.meta?.custom_data?.user_id) {
-      return new NextResponse('Invalid webhook payload', { status: 400 });
+      console.log('LemonSqueezy webhook: No user_id in custom_data, likely a test ping');
+      // For test pings or verification, we still return 200 to confirm the endpoint works
+      return new NextResponse('Webhook received - no user data to process', { status: 200 });
     }
 
     const clerkUserId = event.meta.custom_data.user_id;
@@ -40,11 +70,13 @@ export async function POST(req: Request) {
     });
 
     if (!user) {
-      console.warn(`User not found for Clerk ID: ${clerkUserId}`);
-      return new NextResponse('User not found', { status: 404 });
+      console.warn(`LemonSqueezy webhook: User not found for Clerk ID: ${clerkUserId}`);
+      // Return 200 to avoid retries for non-existent users
+      return new NextResponse('User not found - webhook acknowledged', { status: 200 });
     }
 
     const userId = user.id;
+    console.log(`LemonSqueezy webhook: Processing event ${event.meta.event_name} for user ${userId}`);
 
     switch (event.meta.event_name) {
       case 'order_created':
@@ -63,13 +95,13 @@ export async function POST(req: Request) {
         await handleSubscriptionExpired(event as Subscription, userId);
         break;
       default:
-        console.warn('Unhandled webhook event:', event.meta.event_name);
+        console.warn('LemonSqueezy webhook: Unhandled event type:', event.meta.event_name);
     }
 
-    return new NextResponse('Webhook processed', { status: 200 });
+    return new NextResponse('Webhook processed successfully', { status: 200 });
   } catch (error) {
-    console.error('Webhook error:', error instanceof Error ? error.message : 'Unknown error');
-    return new NextResponse('Webhook error', { status: 400 });
+    console.error('LemonSqueezy webhook error:', error instanceof Error ? error.message : 'Unknown error');
+    return new NextResponse('Internal server error', { status: 500 });
   }
 }
 

@@ -23,8 +23,11 @@ export function NavMain({ items, isExpanded }: NavMainProps) {
     <nav>
       <div className="space-y-3">
         {items.map((item) => {
-          const isActive = pathname === item.url || 
-                         (item.title === "Home" && !pathname.includes("/automations") && !pathname.includes("/contacts"))
+          const isActive = (pathname && (
+            pathname === item.url || 
+            (item.title === "Home" && !pathname.includes("/automations") && !pathname.includes("/contacts")) ||
+            (item.title === "Automations" && pathname.includes("/automations"))
+          )) || false
           return (
             <div key={item.title} className="px-4">
               <Link

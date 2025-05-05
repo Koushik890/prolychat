@@ -9,8 +9,8 @@ interface AutomatedActivityCardProps {
 
 export function AutomatedActivityCard({ className }: AutomatedActivityCardProps) {
   return (
-    <div className={cn("h-full", className)}>
-      <AutomatedActivityChart />
+    <div className={cn("h-full w-full", className)}>
+      <AutomatedActivityChart className="w-full" />
     </div>
   );
 }

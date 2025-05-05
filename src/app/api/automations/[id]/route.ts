@@ -140,6 +140,8 @@ export async function PATCH(request: Request, { params }: Context) {
     const updateData: any = {
       ...(body.name && { name: body.name }),
       ...(body.active !== undefined && { active: body.active }),
+      // Always update the timestamp when any changes are made
+      updatedAt: new Date(),
     };
 
     // Handle listener updates (create/update)

@@ -17,6 +17,7 @@ model User {
   lastname     String?
   createdAt    DateTime       @default(now())
   automations  Automation[]
+  contacts     Contact[]
   integrations Integrations[]
   subscription Subscription?
 }
@@ -53,6 +54,7 @@ model Automation {
   userId    String?          @db.Uuid
   config    Json?
   status    AutomationStatus @default(DRAFT)
+  runCount  Int              @default(0)
   User      User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
   dms       Dms[]
   listener  Listener?
@@ -66,7 +68,7 @@ model Dms {
   senderId     String?
   reciever     String?
   message      String?
-  Automation   Automation? @relation(fields: [automationId], references: [id])
+  Automation   Automation? @relation(fields: [automationId], references: [id], onDelete: Cascade)
 }
 
 model Post {
@@ -75,7 +77,7 @@ model Post {
   mediaType MEDIATYPE @default(IMAGE)
   mediaUrl  String
   caption   String?
-  triggerId String
+  triggerId String    @db.Uuid
   trigger   Trigger   @relation(fields: [triggerId], references: [id], onDelete: Cascade)
 
   @@index([triggerId])
@@ -98,17 +100,17 @@ model Listener {
 }
 
 model Trigger {
-  id            String   @id @default(cuid())
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   type          String
-  status        String   @default("unconfigured")
-  automationId  String?  @db.Uuid
-  automation    Automation? @relation(fields: [automationId], references: [id], onDelete: Cascade)
-  posts         Post[]
-  keywords      Keyword[]
-  replyMessages ReplyMessage[]
+  status        String         @default("unconfigured")
+  automationId  String?        @db.Uuid
   config        Json?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  keywords      Keyword[]
+  posts         Post[]
+  replyMessages ReplyMessage[]
+  automation    Automation?    @relation(fields: [automationId], references: [id], onDelete: Cascade)
 
   @@unique([automationId, type])
   @@index([automationId])
@@ -117,7 +119,7 @@ model Trigger {
 model Keyword {
   id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   word      String
-  triggerId String
+  triggerId String  @db.Uuid
   trigger   Trigger @relation(fields: [triggerId], references: [id], onDelete: Cascade)
 
   @@unique([triggerId, word])
@@ -127,10 +129,30 @@ model Keyword {
 model ReplyMessage {
   id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   message   String
-  triggerId String
+  triggerId String  @db.Uuid
   trigger   Trigger @relation(fields: [triggerId], references: [id], onDelete: Cascade)
 
   @@index([triggerId])
+}
+
+model Contact {
+  id                String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String        @db.Uuid
+  instagramId       String
+  name              String
+  status            ContactStatus @default(Subscribed)
+  subscribed        DateTime      @default(now())
+  pauseDuration     String?
+  isPausedForever   Boolean       @default(false)
+  pauseEndTime      DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  profilePictureUrl String?
+  username          String?
+  User              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, instagramId])
+  @@index([userId])
 }
 
 enum SUBSCRIPTION_PLAN {
@@ -175,4 +197,10 @@ enum ACTION_STATUS {
   UNCONFIGURED
   CONFIGURED
   COMPLETED
+}
+
+enum ContactStatus {
+  Subscribed
+  Paused
+  Report
 }

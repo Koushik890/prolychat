@@ -10,6 +10,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Pause, Clock, Check, X, User, Flag, Calendar, Play } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Contact } from '@/types/contact'
 
 // Add global styles to fix overlay issues
 const globalStyles = `
@@ -32,56 +34,142 @@ const globalStyles = `
   }
 `
 
-interface Contact {
-  id: string
-  avatar: string
-  instagramProfilePic?: string
-  name: string
-  status: 'Subscribed' | 'Unsubscribed'
-  subscribed: string
-}
-
 interface ContactModalProps {
   isOpen: boolean
   onClose: () => void
   contact: Contact | null
+  onContactUpdate: (updatedContact: Contact) => void
 }
 
-export function ContactModal({ isOpen, onClose, contact }: ContactModalProps) {
-  if (!contact) return null
+export function ContactModal({ isOpen, onClose, contact: initialContact, onContactUpdate }: ContactModalProps) {
+  if (!initialContact) return null
+  
+  // Local copy of contact that can be updated within the component
+  const [contact, setContact] = useState<Contact>(initialContact)
 
-  // Format the username to match the image
-  const formattedUsername = `__${contact.name.replace('__', '')}__`
-  
-  // State for pause automations functionality
+  // State for automation dropdown
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const [selectedOption, setSelectedOption] = useState<string | null>(null)
-  const [isPausedForever, setIsPausedForever] = useState(false)
-  const [pauseEndTime, setPauseEndTime] = useState<Date | null>(null)
+  const [selectedOption, setSelectedOption] = useState<string | null>(
+    contact.pauseDuration || null
+  )
+  const [pauseEndTime, setPauseEndTime] = useState<Date | null>(
+    contact.pauseEndTime || null
+  )
   const [timeRemaining, setTimeRemaining] = useState<string>('00:00:00')
+  const [customDuration, setCustomDuration] = useState<string>('')
+  const [isCustomDuration, setIsCustomDuration] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  
-  // Add global styles when the modal opens
+
+  // Update local contact state when parent contact prop changes
   useEffect(() => {
-    if (isOpen) {
-      // Create and inject global styles
-      const style = document.createElement('style')
-      style.innerHTML = globalStyles
-      document.head.appendChild(style)
+    if (initialContact) {
+      setContact(initialContact)
+      setSelectedOption(initialContact.pauseDuration || null)
+      setPauseEndTime(initialContact.pauseEndTime ? new Date(initialContact.pauseEndTime) : null)
       
-      // Add class to body
-      document.body.classList.add('contact-modal-open')
-      document.documentElement.classList.add('contact-modal-open')
+      // Initialize timeRemaining for paused contacts with existing duration
+      updateTimeRemaining(initialContact)
+    }
+  }, [initialContact])
+
+  // Check if pause has already expired on mount or when pause end time changes
+  useEffect(() => {
+    // Only check if contact is in paused state
+    if (contact.status === 'Paused' && contact.pauseEndTime) {
+      const endTime = new Date(contact.pauseEndTime)
+      const now = new Date()
       
-      return () => {
-        // Clean up when modal closes
-        document.body.classList.remove('contact-modal-open')
-        document.documentElement.classList.remove('contact-modal-open')
-        style.remove()
+      // If pause end time is in the past, update status
+      if (endTime <= now) {
+        const updatedContact = {
+          ...contact,
+          status: 'Subscribed' as const,
+          pauseDuration: null,
+          pauseEndTime: null
+        }
+        setContact(updatedContact)
+        setSelectedOption(null)
+        setPauseEndTime(null)
+        setTimeRemaining('00:00:00')
+        onContactUpdate(updatedContact)
       }
     }
+  }, [contact.status, contact.pauseEndTime])
+
+  // Function to update time remaining display - extracted for reuse
+  const updateTimeRemaining = (currentContact: Contact) => {
+    if (currentContact.status === 'Paused') {
+      // Handle 'Forever' pause specially
+      if (currentContact.isPausedForever) {
+        setTimeRemaining('Paused forever')
+        return
+      }
+      
+      // Otherwise calculate time remaining for normal pause durations
+      if (currentContact.pauseEndTime) {
+        const endTime = new Date(currentContact.pauseEndTime)
+        const now = new Date()
+        const diff = endTime.getTime() - now.getTime()
+        
+        if (diff > 0) {
+          // Calculate hours, minutes, seconds
+          const hours = Math.floor(diff / (1000 * 60 * 60))
+          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+          const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+          
+          // Format time remaining
+          const formattedHours = hours.toString().padStart(2, '0')
+          const formattedMinutes = minutes.toString().padStart(2, '0')
+          const formattedSeconds = seconds.toString().padStart(2, '0')
+          
+          setTimeRemaining(`${formattedHours}:${formattedMinutes}:${formattedSeconds}`)
+        } else {
+          // Timer expired, reset status
+          setTimeRemaining('00:00:00')
+          if (currentContact.status === 'Paused') {
+            const expiredContact = {
+              ...currentContact,
+              status: 'Subscribed' as const,
+              pauseDuration: null,
+              pauseEndTime: null,
+              isPausedForever: false
+            }
+            // Update the local contact state as well
+            setContact(expiredContact)
+            setSelectedOption(null)
+            setPauseEndTime(null)
+            onContactUpdate(expiredContact)
+          }
+        }
+      }
+    } else {
+      setTimeRemaining('00:00:00')
+    }
+  }
+
+  // Reset state when contact changes
+  useEffect(() => {
+    if (contact) {
+      setSelectedOption(contact.pauseDuration || null)
+      setPauseEndTime(contact.pauseEndTime || null)
+      setIsCustomDuration(false)
+      setCustomDuration('')
+    }
+  }, [contact.status, contact.pauseDuration, contact.pauseEndTime])
+
+  // Add/remove body class to prevent scrolling when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('contact-modal-open')
+    } else {
+      document.body.classList.remove('contact-modal-open')
+    }
+
+    return () => {
+      document.body.classList.remove('contact-modal-open')
+    }
   }, [isOpen])
-  
+
   // Track clicks outside to close dropdown
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -95,332 +183,701 @@ export function ContactModal({ isOpen, onClose, contact }: ContactModalProps) {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [])
-  
+
   // Calculate time remaining when a duration is selected
   useEffect(() => {
-    if (!selectedOption && !isPausedForever) {
-      setTimeRemaining('00:00:00')
-      setPauseEndTime(null)
-      return
+    // Don't proceed if contact is not paused or has no end time and is not paused forever
+    if (contact.status !== 'Paused' || (!contact.pauseEndTime && !contact.isPausedForever)) {
+      return () => {}; // No cleanup needed
     }
     
-    if (isPausedForever) {
-      setTimeRemaining('∞')
-      setPauseEndTime(null)
-      return
+    // If paused forever, set the special text and exit
+    if (contact.isPausedForever) {
+      setTimeRemaining('Paused forever')
+      return () => {}; // No need for countdown timer
     }
     
+    let endTime: Date
+    if (pauseEndTime) {
+      endTime = new Date(pauseEndTime)
+    } else if (contact.pauseEndTime) {
+      endTime = new Date(contact.pauseEndTime)
+    } else {
+      return () => {}; // No valid end time, so no timer needed
+    }
+    
+    // Initial calculation
     const now = new Date()
-    let endTime = new Date(now)
+    const diff = endTime.getTime() - now.getTime()
     
-    // Add selected duration to current time
-    switch (selectedOption) {
-      case '30 minutes':
-        endTime.setMinutes(now.getMinutes() + 30)
-        break
-      case '1 hour':
-        endTime.setHours(now.getHours() + 1)
-        break
-      case '3 hours':
-        endTime.setHours(now.getHours() + 3)
-        break
-      case '6 hours':
-        endTime.setHours(now.getHours() + 6)
-        break
-      case '12 hours':
-        endTime.setHours(now.getHours() + 12)
-        break
-      case '1 day':
-        endTime.setDate(now.getDate() + 1)
-        break
-      default:
-        break
+    if (diff <= 0) {
+      // Already expired
+      setTimeRemaining('00:00:00')
+      
+      // Ensure subscription is resumed
+      const updatedContact = {
+        ...contact,
+        status: 'Subscribed' as const,
+        pauseDuration: null,
+        pauseEndTime: null,
+        isPausedForever: false
+      }
+      setContact(updatedContact)
+      setSelectedOption(null)
+      setPauseEndTime(null)
+      onContactUpdate(updatedContact)
+      
+      return () => {};
     }
     
-    setPauseEndTime(endTime)
+    // Immediately calculate and display time remaining
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+    
+    const formattedHours = hours.toString().padStart(2, '0')
+    const formattedMinutes = minutes.toString().padStart(2, '0')
+    const formattedSeconds = seconds.toString().padStart(2, '0')
+    
+    setTimeRemaining(`${formattedHours}:${formattedMinutes}:${formattedSeconds}`)
     
     // Update countdown timer every second
     const intervalId = setInterval(() => {
       const currentTime = new Date()
-      const diff = endTime.getTime() - currentTime.getTime()
+      const currentDiff = endTime.getTime() - currentTime.getTime()
       
-      if (diff <= 0) {
+      if (currentDiff <= 0) {
         clearInterval(intervalId)
+        // Reset the pause state and update the contact
         setSelectedOption(null)
         setPauseEndTime(null)
         setTimeRemaining('00:00:00')
-        return
+        setIsCustomDuration(false)
+        setCustomDuration('')
+        
+        // Update the contact status
+        if (contact) {
+          const updatedContact = {
+            ...contact,
+            status: 'Subscribed' as const,
+            pauseDuration: null,
+            pauseEndTime: null,
+            isPausedForever: false
+          }
+          // Ensure we update both local state and parent
+          setContact(updatedContact)
+          onContactUpdate(updatedContact)
+        }
+      } else {
+        // Update time remaining display
+        const hours = Math.floor(currentDiff / (1000 * 60 * 60))
+        const minutes = Math.floor((currentDiff % (1000 * 60 * 60)) / (1000 * 60))
+        const seconds = Math.floor((currentDiff % (1000 * 60)) / 1000)
+        
+        const formattedHours = hours.toString().padStart(2, '0')
+        const formattedMinutes = minutes.toString().padStart(2, '0')
+        const formattedSeconds = seconds.toString().padStart(2, '0')
+        
+        setTimeRemaining(`${formattedHours}:${formattedMinutes}:${formattedSeconds}`)
       }
-      
-      // Calculate hours, minutes, seconds
-      const hours = Math.floor(diff / (1000 * 60 * 60))
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000)
-      
-      // Format time remaining
-      const formattedHours = hours.toString().padStart(2, '0')
-      const formattedMinutes = minutes.toString().padStart(2, '0')
-      const formattedSeconds = seconds.toString().padStart(2, '0')
-      
-      setTimeRemaining(`${formattedHours}:${formattedMinutes}:${formattedSeconds}`)
     }, 1000)
     
+    // Clean up interval on unmount
     return () => clearInterval(intervalId)
-  }, [selectedOption, isPausedForever])
-  
+  }, [contact, selectedOption, pauseEndTime, onContactUpdate])
+
   // Toggle dropdown visibility
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen)
   }
   
-  // Handle clicking on a duration option
-  const handleOptionClick = (option: string) => {
+  // Handle custom duration change
+  const handleCustomDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Allow only numbers
+    const value = e.target.value.replace(/[^0-9]/g, '')
+    setCustomDuration(value)
+  }
+
+  // Handle custom duration submit
+  const handleCustomDurationSubmit = () => {
+    if (!customDuration || parseInt(customDuration) <= 0) return
+    
+    // Parse the custom duration value
+    const durationValue = parseInt(customDuration)
+    
+    // Set custom duration as selected option
+    const option = `${durationValue} minutes`
     setSelectedOption(option)
-    setIsPausedForever(false)
+    setIsCustomDuration(false)
     setIsDropdownOpen(false)
-    console.log(`Selected option: ${option}`)
-  }
-  
-  // Handle the "Pause forever" option
-  const handlePauseForever = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = event.target.checked
-    setIsPausedForever(checked)
-    if (checked) {
-      setSelectedOption(null)
+    
+    // Calculate end time
+    const now = new Date()
+    const endTime = new Date(now)
+    endTime.setMinutes(now.getMinutes() + durationValue)
+    
+    // Set the pause end time in state
+    setPauseEndTime(endTime)
+    
+    // Create updated contact
+    const updatedContact = {
+      ...contact,
+      status: 'Paused' as const,
+      pauseDuration: option,
+      pauseEndTime: endTime
     }
-    console.log(`Pause forever: ${checked}`)
+    
+    // Update time remaining immediately
+    const diff = endTime.getTime() - now.getTime()
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+    
+    const formattedHours = hours.toString().padStart(2, '0')
+    const formattedMinutes = minutes.toString().padStart(2, '0')
+    const formattedSeconds = seconds.toString().padStart(2, '0')
+    
+    setTimeRemaining(`${formattedHours}:${formattedMinutes}:${formattedSeconds}`)
+    
+    // Update both parent and local state
+    setContact(updatedContact)
+    onContactUpdate(updatedContact)
   }
-  
-  // Resume automations
-  const handleResumeAutomations = () => {
-    setSelectedOption(null)
-    setIsPausedForever(false)
-    setPauseEndTime(null)
-    setTimeRemaining('00:00:00')
+
+  // Handle option selection
+  const handleOptionClick = (option: string) => {
+    // If this is the custom option, show custom input
+    if (option === 'custom') {
+      setIsCustomDuration(true)
+      return
+    }
+    
+    // Handle all other duration options
+    setIsCustomDuration(false)
+    setSelectedOption(option)
+    
+    // Calculate new pause end time based on option
+    const now = new Date()
+    let newEndTime: Date | null = null
+    
+    // Handle 'Forever' option specially
+    if (option === 'Forever') {
+      // Set far future date (essentially forever)
+      const farFuture = new Date()
+      farFuture.setFullYear(farFuture.getFullYear() + 100) // 100 years in the future
+      newEndTime = farFuture
+    } else {
+      // For all other options, calculate duration
+      let minutes = 0
+      
+      // Parse the option to get minutes
+      if (option.includes('minute')) {
+        minutes = parseInt(option.split(' ')[0])
+      } else if (option.includes('hour')) {
+        minutes = parseInt(option.split(' ')[0]) * 60
+      } else if (option.includes('day')) {
+        minutes = parseInt(option.split(' ')[0]) * 24 * 60
+      }
+      
+      // Calculate new end time
+      if (minutes > 0) {
+        newEndTime = new Date(now.getTime() + minutes * 60 * 1000)
+      }
+    }
+    
+    // Update pause end time
+    setPauseEndTime(newEndTime)
+    
+    // Update contact with new pause details
+    if (contact) {
+      const updatedContact = {
+        ...contact,
+        status: 'Paused' as const,
+        pauseDuration: option,
+        pauseEndTime: newEndTime,
+        isPausedForever: option === 'Forever'
+      }
+      
+      // Update local state
+      setContact(updatedContact)
+      
+      // Update parent component
+      onContactUpdate(updatedContact)
+    }
+    
+    // Close dropdown
     setIsDropdownOpen(false)
-    console.log('Resumed automations')
   }
   
+  // Handle main action button click (pause/resume/approve)
+  const handleMainActionClick = () => {
+    if (contact) {
+      // Handle Resume (when currently paused)
+      if (contact.status === 'Paused') {
+        // Resume automation
+        const updatedContact = {
+          ...contact,
+          status: 'Subscribed' as const,
+          pauseDuration: null,
+          pauseEndTime: null,
+          isPausedForever: false
+        }
+        
+        // Update local state
+        setContact(updatedContact)
+        setSelectedOption(null)
+        setPauseEndTime(null)
+        setTimeRemaining('00:00:00')
+        setIsCustomDuration(false)
+        setCustomDuration('')
+        
+        // Update parent component
+        onContactUpdate(updatedContact)
+      } 
+      // Handle Pause (when currently subscribed)
+      else if (contact.status === 'Subscribed') {
+        // Open dropdown to select pause duration
+        toggleDropdown()
+      } 
+      // Handle Approve (when currently reported)
+      else if (contact.status === 'Report') {
+        // Set to subscribed
+        const updatedContact = {
+          ...contact,
+          status: 'Subscribed' as const
+        }
+        
+        // Update local state
+        setContact(updatedContact)
+        
+        // Update parent component
+        onContactUpdate(updatedContact)
+      }
+    }
+  }
+  
+  // Handle report button click
+  const handleReportClick = () => {
+    if (contact) {
+      const updatedContact = {
+        ...contact,
+        status: 'Report' as const
+      }
+      
+      // Update local state
+      setContact(updatedContact)
+      
+      // Update parent component
+      onContactUpdate(updatedContact)
+    }
+  }
+
   // Get the button text based on current selection
   const getButtonText = () => {
-    if (isPausedForever || selectedOption) {
-      return timeRemaining
+    // First check the actual contact status from props before local state
+    // This ensures we always reflect the most current status
+    if (contact.status === 'Subscribed') {
+      return 'Pause subscription'
     }
-    return 'Pause Automations'
+    
+    // If paused forever, show that text
+    if (contact.status === 'Paused' && contact.isPausedForever) {
+      return 'Paused forever'
+    }
+    
+    // If we have a time remaining from a pause duration, show it
+    if (timeRemaining && timeRemaining !== '00:00:00' && (selectedOption || contact.pauseDuration)) {
+      return `Paused: ${timeRemaining}`
+    }
+    
+    return contact.status === 'Paused' ? 'Resume subscription' : 'Approve Contact'
   }
   
   // Format end time to show when automations will resume
   const getFormattedEndTime = () => {
+    // If paused forever, show special message
+    if (contact.isPausedForever) {
+      return 'Automations paused indefinitely'
+    }
+    
     if (!pauseEndTime) return ''
     
-    const hours = pauseEndTime.getHours()
-    const minutes = pauseEndTime.getMinutes()
+    const now = new Date()
+    const diff = pauseEndTime.getTime() - now.getTime()
     
-    // Format as HH:MM (e.g., 20:00)
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
-  }
-  
-  // Generate a random color based on name (for consistent avatar)
-  const getAvatarColor = (name: string) => {
-    const colors = [
-      'bg-blue-600', 'bg-emerald-600', 'bg-indigo-600', 
-      'bg-violet-600', 'bg-rose-600', 'bg-amber-600'
-    ]
-    const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-    return colors[hash % colors.length]
+    // If pause has already ended
+    if (diff <= 0) {
+      return 'Automations active'
+    }
+    
+    // Show relative time for short durations
+    if (diff < 24 * 60 * 60 * 1000) { // Less than 24 hours
+      const hours = pauseEndTime.getHours()
+      const minutes = pauseEndTime.getMinutes()
+      return `Resumes at ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+    }
+    
+    // Show date for longer durations
+    const month = pauseEndTime.toLocaleString('default', { month: 'short' })
+    const day = pauseEndTime.getDate()
+    const time = pauseEndTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    return `Resumes on ${month} ${day} at ${time}`
   }
 
-  // Get first letter for avatar
-  const getInitial = (name: string) => {
-    return name.charAt(0).toUpperCase()
+  // Get status details based on contact status
+  const getStatusDetails = () => {
+    switch(contact.status) {
+      case 'Subscribed':
+        return {
+          icon: <Check className="text-green-500 w-4 h-4" />,
+          label: 'Subscribed',
+          color: 'text-green-600',
+          bg: 'bg-green-50',
+          actionIcon: <Pause className="w-4 h-4 mr-2" />,
+          actionText: 'Pause subscription',
+          actionColor: 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+        }
+      case 'Paused':
+        return {
+          icon: <Pause className="text-amber-500 w-4 h-4" />,
+          label: 'Paused',
+          color: 'text-amber-600',
+          bg: 'bg-amber-50',
+          actionIcon: <Play className="w-4 h-4 mr-2" />,
+          actionText: 'Resume subscription',
+          actionColor: 'bg-green-50 text-green-700 hover:bg-green-100'
+        }
+      case 'Report':
+        return {
+          icon: <Flag className="text-red-500 w-4 h-4" />,
+          label: 'Report',
+          color: 'text-red-600',
+          bg: 'bg-red-50',
+          actionIcon: <Check className="w-4 h-4 mr-2" />,
+          actionText: 'Approve Contact',
+          actionColor: 'bg-green-50 text-green-700 hover:bg-green-100'
+        }
+      default:
+        return {
+          icon: <Check className="text-green-500 w-4 h-4" />,
+          label: 'Unknown',
+          color: 'text-gray-600',
+          bg: 'bg-gray-50',
+          actionIcon: <Check className="w-4 h-4 mr-2" />,
+          actionText: 'Subscribe',
+          actionColor: 'bg-green-50 text-green-700 hover:bg-green-100'
+        }
+    }
+  }
+  
+  const statusDetails = getStatusDetails()
+
+  /**
+   * Get avatar source with flexibility for Instagram profile pic integration
+   * Uses real Instagram profile images if available, falls back to initials
+   */
+  const getAvatarSource = (contact: Contact): { src: string; fallbackColor: string } => {
+    // Generate a deterministic color based on the contact name
+    const generateDeterministicColor = (name: string): string => {
+      let hash = 0
+      for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash)
+      }
+      // Generate a pastel color (lighter and more pleasant for UI)
+      const h = hash % 360
+      return `hsl(${h}, 70%, 80%)`
+    }
+
+    // Use Instagram profile picture URL if available
+    if (contact.profilePictureUrl) {
+      // Check if it's a valid URL
+      if (contact.profilePictureUrl.startsWith('http')) {
+        // Use our proxy endpoint to avoid CORS issues with Instagram's CDN
+        const proxyUrl = `/api/proxy/instagram-image?url=${encodeURIComponent(contact.profilePictureUrl)}`
+        return {
+          src: proxyUrl,
+          fallbackColor: generateDeterministicColor(contact.name)
+        }
+      }
+      
+      // If somehow we have an invalid URL, use the default
+      return {
+        src: 'https://static.cdninstagram.com/rsrc.php/v3/yI/r/VsNE-OHk_8a.png',
+        fallbackColor: generateDeterministicColor(contact.name)
+      }
+    }
+    
+    // Legacy field for backwards compatibility
+    if (contact.instagramProfilePic) {
+      // Also proxy the legacy field
+      const proxyUrl = `/api/proxy/instagram-image?url=${encodeURIComponent(contact.instagramProfilePic)}`
+      return {
+        src: proxyUrl,
+        fallbackColor: generateDeterministicColor(contact.name)
+      }
+    }
+    
+    // Fallback to DiceBear API for mock avatars
+    return {
+      src: `https://api.dicebear.com/7.x/lorelei/svg?seed=${encodeURIComponent(contact.name)}`,
+      fallbackColor: generateDeterministicColor(contact.name)
+    }
   }
 
-  const avatarColor = getAvatarColor(contact.name)
-  
   return (
     <Dialog 
       open={isOpen} 
       onOpenChange={(open) => !open && onClose()}
     >
+      <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
       <DialogPortal>
-        <div className="contact-modal-overlay" />
-        <DialogContent className="fixed top-[30%] left-1/2 -translate-x-1/2 -translate-y-1/2 p-0 overflow-visible w-[90%] max-w-[600px] rounded-xl shadow-2xl border-0 bg-white z-[1000]">
-          {/* Close button */}
-          <button
-            onClick={onClose}
-            className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-gray-800 text-white flex items-center justify-center cursor-pointer z-50 shadow-md hover:bg-gray-700 transition-colors"
-          >
-            <X size={14} />
-          </button>
+        <DialogOverlay className="contact-modal-overlay" />
+        <DialogContent 
+          onInteractOutside={(e) => e.preventDefault()}
+          className="p-0 bg-white rounded-xl shadow-2xl border border-gray-200 w-[440px] max-w-[95vw] overflow-hidden"
+        >
+          {/* Modal content */}
+          <div className="relative">
+            {/* Close button */}
+            <button 
+              onClick={onClose} 
+              className="absolute right-3 top-3 rounded-full p-1.5 text-gray-500 hover:bg-gray-100 transition-colors z-10"
+            >
+              <X className="h-5 w-5" />
+            </button>
 
-          <div className="flex flex-col md:flex-row w-full">
-            {/* Left panel - Avatar and automation controls */}
-            <div className="flex flex-col items-center p-6 bg-gray-50 rounded-l-xl w-full md:w-[240px]">
-              {/* Avatar */}
-              <div className={cn(
-                "w-full aspect-square rounded-lg overflow-hidden mb-4 shadow-md", 
-                avatarColor
-              )}>
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-white text-5xl font-semibold">
-                    {getInitial(contact.name)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Pause/Resume Automations dropdown */}
-              <div className="relative w-full" ref={dropdownRef}>
-                <Button 
-                  variant="outline" 
-                  className={cn(
-                    "w-full flex items-center justify-center border border-gray-200 bg-white rounded-md px-3 py-2 text-sm font-medium shadow-sm transition-all",
-                    (selectedOption || isPausedForever) 
-                      ? "text-amber-600 hover:text-amber-700 border-amber-200" 
-                      : "text-gray-700 hover:text-gray-900 hover:border-gray-300"
-                  )}
-                  onClick={toggleDropdown}
-                  type="button"
+            {/* Contact info */}
+            <div className="flex flex-col">
+              <div className="flex flex-col items-center p-6">
+                {/* Avatar */}
+                <Avatar 
+                  className="w-44 h-44 rounded-md mb-4"
+                  style={{ backgroundColor: getAvatarSource(contact).fallbackColor }}
                 >
-                  <div className="flex items-center gap-1.5">
-                    {(selectedOption || isPausedForever) ? (
-                      <Clock className="h-4 w-4" />
-                    ) : (
-                      <Pause className="h-4 w-4" />
-                    )}
-                    <span className="text-xs">{getButtonText()}</span>
-                  </div>
-                </Button>
+                  <AvatarImage 
+                    src={getAvatarSource(contact).src} 
+                    alt={contact.name} 
+                    className="object-cover rounded-md"
+                  />
+                  <AvatarFallback className="text-7xl font-bold text-white rounded-md">
+                    {contact.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <h1 className="text-2xl font-semibold text-gray-900 mb-1">{contact.name}</h1>
                 
-                {/* Dropdown menu */}
-                {isDropdownOpen && (
-                  <div 
-                    className="absolute mt-1 w-full bg-white rounded-md shadow-lg border border-gray-200 z-50 overflow-hidden"
-                    style={{ 
-                      maxHeight: selectedOption || isPausedForever ? '360px' : '280px',
-                      animation: 'fadeIn 0.2s ease-in-out',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-                    }}
-                  >
-                    {/* Header */}
-                    <div className="px-3 py-1.5 border-b border-gray-200 font-semibold text-xs text-gray-800 bg-gray-50 sticky top-0 z-10">
-                      {(selectedOption || isPausedForever) ? 'Edit duration' : 'Set duration'}
+                <div className="flex items-center gap-1 text-green-600 mb-2">
+                  {statusDetails.icon}
+                  <span>{statusDetails.label}</span>
+                </div>
+                
+                {/* Pause status indicator */}
+                {contact.status === 'Paused' && (
+                  <div className="flex flex-col items-center mb-2">
+                    <div className="flex items-center gap-1.5 text-amber-600 text-sm mb-1">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>Automations paused temporarily</span>
                     </div>
+                    {pauseEndTime && (
+                      <div className="text-xs text-gray-500">
+                        {getFormattedEndTime()}
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                <div className="flex items-center text-gray-500 text-sm mb-3">
+                  <User className="w-4 h-4 mr-2" />
+                  <span>{contact.username ? `@${contact.username}` : '—'}</span>
+                </div>
+                
+                <div className="flex items-center mb-6 text-sm text-gray-500">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  <span>Joined February 15, 2025</span>
+                </div>
+                
+                <div className="flex flex-col w-full space-y-3">
+                  {/* Primary action button with dropdown */}
+                  <div className="relative w-full" ref={dropdownRef}>
+                    <Button 
+                      variant="outline" 
+                      className={cn(
+                        "w-full flex items-center justify-center py-5",
+                        // If we have a selected option, use amber color
+                        selectedOption || (contact.status === 'Paused' && contact.pauseDuration)
+                          ? "text-amber-600 hover:text-amber-700 border-amber-200 bg-amber-50"
+                          : contact.status === 'Subscribed'
+                            ? "text-amber-700 bg-amber-50 hover:bg-amber-100 border-amber-200"
+                            : contact.status === 'Paused'
+                              ? "text-green-700 bg-green-50 hover:bg-green-100 border-green-200"
+                              : contact.status === 'Report'
+                                ? "text-green-700 bg-green-50 hover:bg-green-100 border-green-200"
+                                : "text-green-700 bg-green-50 hover:bg-green-100 border-green-200"
+                      )}
+                      onClick={handleMainActionClick}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        {contact.status === 'Subscribed' ? (
+                          <Pause className="h-4 w-4 mr-2" />
+                        ) : contact.status === 'Paused' ? (
+                          timeRemaining && timeRemaining !== '00:00:00' && (selectedOption || contact.pauseDuration) ? (
+                            <Clock className="h-4 w-4 mr-2" />
+                          ) : (
+                            <Play className="h-4 w-4 mr-2" />
+                          )
+                        ) : (selectedOption) ? (
+                          <Clock className="h-4 w-4 mr-2" />
+                        ) : (
+                          statusDetails.actionIcon
+                        )}
+                        <span>{getButtonText()}</span>
+                      </div>
+                    </Button>
                     
-                    {/* Options */}
-                    <div className="bg-white py-0.5 overflow-y-auto">
-                      {/* Resume automations (only when paused) */}
-                      {(selectedOption || isPausedForever) && (
-                        <div 
-                          className="flex flex-col px-3 py-2 text-xs cursor-pointer border-b border-gray-100 hover:bg-gray-50"
-                          onClick={handleResumeAutomations}
-                        >
-                          <div className="flex items-center">
-                            <Play className="h-3.5 w-3.5 mr-2 text-gray-600" />
-                            <span className="flex-1 font-medium text-gray-700 whitespace-nowrap">Resume automations</span>
-                          </div>
-                          {pauseEndTime && (
-                            <div className="text-gray-500 text-[10px] mt-1.5 ml-5">
-                              Automations paused until {getFormattedEndTime()}
+                    {/* Dropdown menu */}
+                    {isDropdownOpen && (
+                      <div 
+                        className="absolute left-0 bottom-full mb-1 w-full bg-white rounded-md shadow-lg border border-gray-200 z-50 overflow-hidden"
+                        style={{ 
+                          maxHeight: isCustomDuration ? '420px' : selectedOption ? '360px' : '280px',
+                          animation: 'fadeIn 0.2s ease-in-out',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                        }}
+                      >
+                        {/* Header */}
+                        <div className="px-3 py-1.5 border-b border-gray-200 font-semibold text-xs text-gray-800 bg-gray-50 sticky top-0 z-10">
+                          {selectedOption ? 'Edit duration' : 'Set duration'}
+                        </div>
+                        
+                        {/* Options */}
+                        <div className="bg-white py-0.5 overflow-y-auto">
+                          {/* Resume button (only when paused) */}
+                          {(contact.status === 'Paused' || selectedOption) && (
+                            <div 
+                              className="flex flex-col px-3 py-2 text-xs cursor-pointer border-b border-gray-100 hover:bg-gray-50"
+                              onClick={() => {
+                                // Create updated contact with Subscribed status
+                                const updatedContact = {
+                                  ...contact,
+                                  status: 'Subscribed' as const,
+                                  pauseDuration: null,
+                                  pauseEndTime: null
+                                }
+                                
+                                // Update local state immediately
+                                setContact(updatedContact)
+                                setSelectedOption(null)
+                                setPauseEndTime(null)
+                                setTimeRemaining('00:00:00')
+                                setIsCustomDuration(false)
+                                setCustomDuration('')
+                                
+                                // Close dropdown
+                                setIsDropdownOpen(false)
+                                
+                                // Update parent component
+                                onContactUpdate(updatedContact)
+                              }}
+                            >
+                              <div className="flex items-center">
+                                <Play className="h-3 w-3 mr-2 text-green-600" />
+                                <span className="text-green-600 font-medium">Resume automation</span>
+                              </div>
+                              <div className="text-[10px] text-gray-500 mt-0.5 ml-5">
+                                Contact will start receiving messages again
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Duration options (only when not Reported) */}
+                          {[
+                            '30 minutes',
+                            '1 hour',
+                            '3 hours',
+                            '6 hours',
+                            '12 hours',
+                            '1 day',
+                            'Forever',
+                            'custom'
+                          ].map((option) => (
+                            <div
+                              key={option}
+                              className={cn(
+                                "flex items-center px-3 py-1.5 text-xs cursor-pointer border-b border-gray-100",
+                                selectedOption === option && !isCustomDuration
+                                  ? "bg-blue-50 text-blue-600 font-medium" 
+                                  : option === 'custom' && isCustomDuration
+                                    ? "bg-blue-50 text-blue-600 font-medium"
+                                    : "text-gray-800 hover:bg-gray-50"
+                              )}
+                              onClick={() => handleOptionClick(option)}
+                            >
+                              <Clock className={cn(
+                                "h-3 w-3 mr-2",
+                                (selectedOption === option && !isCustomDuration) || (option === 'custom' && isCustomDuration)
+                                  ? "text-blue-500" 
+                                  : "text-gray-500"
+                              )} />
+                              <span className="flex-1">{option === 'custom' ? 'Custom duration' : option}</span>
+                              {selectedOption === option && !isCustomDuration && (
+                                <Check className="h-3 w-3 text-blue-500" />
+                              )}
+                            </div>
+                          ))}
+                          
+                          {/* Custom duration input */}
+                          {isCustomDuration && (
+                            <div className="flex flex-col px-3 py-3 text-xs border-b border-gray-100 bg-blue-50">
+                              <div className="flex items-center mb-2">
+                                <Clock className="h-3 w-3 mr-2 text-blue-500" />
+                                <span className="text-blue-600 font-medium">Enter custom duration</span>
+                              </div>
+                              <div className="ml-5 flex flex-col">
+                                <div className="flex items-center mb-3">
+                                  <input
+                                    type="text"
+                                    value={customDuration}
+                                    onChange={handleCustomDurationChange}
+                                    placeholder="Enter minutes"
+                                    className="w-24 px-2 py-1.5 text-xs border border-blue-300 rounded mr-2 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white text-gray-800"
+                                    autoFocus
+                                  />
+                                  <span className="text-blue-600">minutes</span>
+                                </div>
+                                <div className="flex items-center">
+                                  <button
+                                    onClick={() => setIsCustomDuration(false)}
+                                    className="px-3 py-1.5 text-xs bg-gray-100 text-gray-700 rounded mr-2 hover:bg-gray-200"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    onClick={handleCustomDurationSubmit}
+                                    className="px-3 py-1.5 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                                    disabled={!customDuration || parseInt(customDuration) <= 0}
+                                  >
+                                    Apply
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                           )}
                         </div>
-                      )}
-                      
-                      {/* Duration options */}
-                      {[
-                        '30 minutes',
-                        '1 hour',
-                        '3 hours',
-                        '6 hours',
-                        '12 hours',
-                        '1 day'
-                      ].map((option, index) => (
-                        <div
-                          key={option}
-                          className={cn(
-                            "flex items-center px-3 py-1.5 text-xs cursor-pointer border-b border-gray-100",
-                            selectedOption === option 
-                              ? "bg-blue-50 text-blue-600 font-medium" 
-                              : "text-gray-800 hover:bg-gray-50"
-                          )}
-                          onClick={() => handleOptionClick(option)}
-                        >
-                          <Clock className={cn(
-                            "h-3 w-3 mr-2",
-                            selectedOption === option ? "text-blue-500" : "text-gray-500"
-                          )} />
-                          <span className="flex-1">{option}</span>
-                          {selectedOption === option && (
-                            <Check className="h-3 w-3 text-blue-500" />
-                          )}
-                        </div>
-                      ))}
-                      
-                      {/* Pause forever option */}
-                      <div 
-                        className={cn(
-                          "flex items-center px-3 py-1.5 text-xs cursor-pointer mb-1",
-                          isPausedForever 
-                            ? "bg-blue-50 text-blue-600 font-medium" 
-                            : "text-gray-800 hover:bg-gray-50"
-                        )}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isPausedForever}
-                          onChange={handlePauseForever}
-                          className="mr-2.5 h-3 w-3 cursor-pointer accent-blue-500"
-                          onClick={e => e.stopPropagation()}
-                        />
-                        <span>Pause forever</span>
                       </div>
-                    </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
-
-            {/* Right panel - Contact details */}
-            <div className="flex-1 p-6">
-              <div className="mb-6">
-                <h2 className="text-2xl font-semibold text-gray-800 mb-1">
-                  {contact.name}
-                </h2>
-                <div className={cn(
-                  "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mb-3",
-                  contact.status === 'Subscribed' 
-                    ? "bg-green-100 text-green-800" 
-                    : "bg-red-100 text-red-800"
-                )}>
-                  {contact.status}
+                  
+                  {/* Only show Report button if contact is not already reported */}
+                  {contact.status !== 'Report' && (
+                    <Button 
+                      variant="outline" 
+                      className="w-full flex items-center justify-center py-5 text-red-700 bg-red-50 hover:bg-red-100 border-red-200"
+                      onClick={handleReportClick}
+                    >
+                      <Flag className="w-4 h-4 mr-2" />
+                      Report account
+                    </Button>
+                  )}
                 </div>
-                <p className="text-sm text-gray-500 flex items-center">
-                  <User className="h-3.5 w-3.5 mr-1.5" />
-                  {formattedUsername}
-                </p>
-              </div>
-
-              {/* Join date */}
-              <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                <div className="flex items-center text-gray-700 mb-1">
-                  <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                  <span className="text-xs font-medium">Joined</span>
-                </div>
-                <p className="text-sm font-medium text-gray-700">
-                  February 15, 2025
-                </p>
-              </div>
-
-              {/* Report button only */}
-              <div className="flex justify-end">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="text-xs bg-white hover:bg-gray-50 text-red-600 border-gray-200 hover:border-red-200 hover:bg-red-50"
-                >
-                  <Flag className="h-3.5 w-3.5 mr-1.5" />
-                  Report
-                </Button>
               </div>
             </div>
           </div>

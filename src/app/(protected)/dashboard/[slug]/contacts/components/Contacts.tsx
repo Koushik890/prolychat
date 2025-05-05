@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   Table,
   TableBody,
@@ -19,9 +19,16 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu'
 import { SearchInput } from '@/components/ui/search-input'
-import { Check, ChevronDown, ChevronLeft, ChevronRight, Filter, Mic } from 'lucide-react'
+import { Check, ChevronDown, ChevronLeft, ChevronRight, Filter, Mic, Pause, AlertTriangle, RefreshCw, Users, BellRing, PauseCircle, ShieldAlert } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ContactModal } from './ContactModal'
+import { Contact } from '@/types/contact'
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipTrigger,
+  TooltipProvider 
+} from '@/components/ui/tooltip'
 
 // Define keyframes for button animation - enhanced with stronger visual effects
 // We'll add this to global.css or a specific CSS module file in a real app
@@ -104,15 +111,6 @@ const tableStyles = `
   }
 `
 
-interface Contact {
-  id: string
-  avatar: string
-  instagramProfilePic?: string // For future real Instagram profile images
-  name: string
-  status: 'Subscribed' | 'Unsubscribed'
-  subscribed: string
-}
-
 /**
  * Generate a deterministic color based on a string (name or ID)
  * Used for avatar fallback background colors
@@ -129,155 +127,48 @@ const generateDeterministicColor = (str: string): string => {
 }
 
 /**
- * Get avatar source with flexibility for future Instagram profile pic integration
- * Currently uses mock data from DiceBear API
- * Will be able to switch to real Instagram profile pics when backend integration is ready
+ * Get avatar source with flexibility for Instagram profile pic integration
+ * Uses real Instagram profile images if available, falls back to DiceBear API
  */
 const getAvatarSource = (contact: Contact): { src: string; fallbackColor: string } => {
-  // For future integration: if Instagram profile pic becomes available, use it
-  if (contact.instagramProfilePic) {
+  // Use Instagram profile picture URL if available
+  if (contact.profilePictureUrl) {
+    // Check if it's a valid URL
+    if (contact.profilePictureUrl.startsWith('http')) {
+      // Use our proxy endpoint to avoid CORS issues with Instagram's CDN
+      const proxyUrl = `/api/proxy/instagram-image?url=${encodeURIComponent(contact.profilePictureUrl)}`
+      return {
+        src: proxyUrl,
+        fallbackColor: generateDeterministicColor(contact.name)
+      }
+    }
+    
+    // If somehow we have an invalid URL, use the default
     return {
-      src: contact.instagramProfilePic,
+      src: 'https://static.cdninstagram.com/rsrc.php/v3/yI/r/VsNE-OHk_8a.png',
       fallbackColor: generateDeterministicColor(contact.name)
     }
   }
   
-  // For now, use DiceBear API for mock avatars
+  // Legacy field for backwards compatibility
+  if (contact.instagramProfilePic) {
+    // Also proxy the legacy field
+    const proxyUrl = `/api/proxy/instagram-image?url=${encodeURIComponent(contact.instagramProfilePic)}`
+    return {
+      src: proxyUrl,
+      fallbackColor: generateDeterministicColor(contact.name)
+    }
+  }
+  
+  // Fallback to DiceBear API for mock avatars
   return {
     src: `https://api.dicebear.com/7.x/lorelei/svg?seed=${encodeURIComponent(contact.name)}`,
     fallbackColor: generateDeterministicColor(contact.name)
   }
 }
 
-// Sample data for demonstration
-const contacts: Contact[] = [
-  {
-    id: '1',
-    avatar: '',  // This field is kept for backward compatibility
-    name: '__techidentity__',
-    status: 'Subscribed',
-    subscribed: '11 minutes ago'
-  },
-  {
-    id: '2',
-    avatar: '',
-    name: 'alex_morgan',
-    status: 'Subscribed',
-    subscribed: '3 hours ago'
-  },
-  {
-    id: '3',
-    avatar: '',
-    name: 'sarah_developer',
-    status: 'Unsubscribed',
-    subscribed: '2 days ago'
-  },
-  {
-    id: '4',
-    avatar: '',
-    name: 'john_doe',
-    status: 'Subscribed',
-    subscribed: '1 week ago'
-  },
-  {
-    id: '5',
-    avatar: '',
-    name: 'emily_smith',
-    status: 'Subscribed',
-    subscribed: '3 days ago'
-  },
-  {
-    id: '6',
-    avatar: '',
-    name: 'michael_johnson',
-    status: 'Unsubscribed',
-    subscribed: '1 month ago'
-  },
-  {
-    id: '7',
-    avatar: '',
-    name: 'david_wilson',
-    status: 'Subscribed',
-    subscribed: '2 weeks ago'
-  },
-  {
-    id: '8',
-    avatar: '',
-    name: 'jessica_brown',
-    status: 'Subscribed',
-    subscribed: '4 days ago'
-  },
-  {
-    id: '9',
-    avatar: '',
-    name: 'robert_taylor',
-    status: 'Unsubscribed',
-    subscribed: '5 days ago'
-  },
-  {
-    id: '10',
-    avatar: '',
-    name: 'lisa_anderson',
-    status: 'Subscribed',
-    subscribed: '6 hours ago'
-  },
-  {
-    id: '11',
-    avatar: '',
-    name: 'james_white',
-    status: 'Subscribed',
-    subscribed: '7 days ago'
-  },
-  {
-    id: '12',
-    avatar: '',
-    name: 'olivia_martin',
-    status: 'Unsubscribed',
-    subscribed: '2 months ago'
-  },
-  {
-    id: '13',
-    avatar: '',
-    name: 'william_thompson',
-    status: 'Subscribed',
-    subscribed: '8 hours ago'
-  },
-  {
-    id: '14',
-    avatar: '',
-    name: 'sophia_clark',
-    status: 'Subscribed',
-    subscribed: '9 days ago'
-  },
-  {
-    id: '15',
-    avatar: '',
-    name: 'daniel_lewis',
-    status: 'Unsubscribed',
-    subscribed: '10 days ago'
-  },
-  {
-    id: '16',
-    avatar: '',
-    name: 'ava_walker',
-    status: 'Subscribed',
-    subscribed: '11 days ago'
-  },
-  {
-    id: '17',
-    avatar: '',
-    name: 'joseph_hall',
-    status: 'Subscribed',
-    subscribed: '12 hours ago'
-  },
-  {
-    id: '18',
-    avatar: '',
-    name: 'mia_young',
-    status: 'Unsubscribed',
-    subscribed: '13 days ago'
-  }
-]
+// Replace initialContacts with empty array
+const initialContacts: Contact[] = []
 
 export function Contacts() {
   const [searchValue, setSearchValue] = useState('')
@@ -285,17 +176,114 @@ export function Contacts() {
   const [currentPage, setCurrentPage] = useState(1)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
+  const [contacts, setContacts] = useState<Contact[]>(initialContacts)
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const itemsPerPage = 6
 
+  // Fetch contacts from API and set up automatic background refresh
+  useEffect(() => {
+    fetchContacts()
+    
+    // Set up polling to refresh contacts data every 5 seconds (reduced from 10 seconds)
+    const pollingInterval = setInterval(() => {
+      fetchContacts(true) // Pass true to indicate this is a background refresh
+    }, 5000) // 5 seconds
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(pollingInterval)
+  }, [])
+
+  // Extract this function from the useEffect for reusability
+  const fetchContacts = async (isBackgroundRefresh = false) => {
+    try {
+      // Only show loading state on initial load, not during refreshes
+      if (!isBackgroundRefresh && contacts.length === 0) {
+        setLoading(true)
+      } else if (isBackgroundRefresh) {
+        setRefreshing(true)
+      }
+      
+      const response = await fetch('/api/contacts')
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('Error fetching contacts:', errorData)
+        setError(`Error loading contacts: ${errorData.error || 'Unknown error'}`)
+        return
+      }
+      
+      const data = await response.json()
+      
+      if (data.contacts) {
+        // Transform API data to match the component's expected format
+        const formattedContacts = data.contacts.map((contact: any) => ({
+          id: contact.id,
+          avatar: '',
+          name: contact.name,
+          username: contact.username,
+          profilePictureUrl: contact.profilePictureUrl,
+          status: contact.status as 'Subscribed' | 'Paused' | 'Report',
+          subscribed: formatTimeAgo(new Date(contact.subscribed)),
+          pauseDuration: contact.pauseDuration,
+          isPausedForever: contact.isPausedForever,
+          pauseEndTime: contact.pauseEndTime ? new Date(contact.pauseEndTime) : null
+        }))
+        
+        setContacts(formattedContacts)
+        
+        // Clear any previous error state
+        if (error) {
+          setError(null)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching contacts:', error)
+      // Only set error if we don't have contacts to show
+      if (contacts.length === 0) {
+        setError('Failed to load contacts. Please try again later.')
+      }
+    } finally {
+      // Make sure loading is set to false
+      if (!isBackgroundRefresh) {
+        setLoading(false)
+      }
+      // Always reset refreshing state
+      setRefreshing(false)
+    }
+  }
+
+  // Helper function to format time ago string
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffSeconds = Math.floor(diffMs / 1000)
+    const diffMinutes = Math.floor(diffSeconds / 60)
+    const diffHours = Math.floor(diffMinutes / 60)
+    const diffDays = Math.floor(diffHours / 24)
+    const diffWeeks = Math.floor(diffDays / 7)
+    const diffMonths = Math.floor(diffDays / 30)
+    
+    if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`
+    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`
+    if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`
+    if (diffWeeks < 4) return `${diffWeeks} week${diffWeeks !== 1 ? 's' : ''} ago`
+    return `${diffMonths} month${diffMonths !== 1 ? 's' : ''} ago`
+  }
+  
   // Filter contacts based on search and status
   const filteredContacts = useMemo(() => {
     return contacts.filter(contact => {
-      const matchesSearch = contact.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-        contact.status.toLowerCase().includes(searchValue.toLowerCase())
+      // First filter by search term
+      const matchesSearch = contact.name.toLowerCase().includes(searchValue.toLowerCase())
       
-      const matchesStatus = statusFilter === 'all' || 
-        (statusFilter === 'subscribed' && contact.status === 'Subscribed') ||
-        (statusFilter === 'unsubscribed' && contact.status === 'Unsubscribed')
+      // Then filter by status
+      const matchesStatus = 
+        statusFilter === 'all' ? true : 
+        statusFilter === 'subscribed' ? contact.status === 'Subscribed' : 
+        statusFilter === 'paused' ? contact.status === 'Paused' :
+        statusFilter === 'report' ? contact.status === 'Report' : false
       
       return matchesSearch && matchesStatus
     })
@@ -322,170 +310,288 @@ export function Contacts() {
     setIsModalOpen(true)
   }
 
+  // Handler for when a contact's status is updated
+  const handleContactUpdate = async (updatedContact: Contact) => {
+    try {
+      // Update local state immediately for responsive UI
+      setContacts(prevContacts => 
+        prevContacts.map(contact => 
+          contact.id === updatedContact.id ? updatedContact : contact
+        )
+      )
+      
+      // Call API to persist the change
+      const response = await fetch(`/api/contacts/${updatedContact.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: updatedContact.status,
+          pauseDuration: updatedContact.pauseDuration,
+          isPausedForever: updatedContact.isPausedForever,
+          pauseEndTime: updatedContact.pauseEndTime,
+        }),
+      })
+      
+      if (!response.ok) {
+        // If API call fails, revert the local state change
+        console.error('Failed to update contact on server')
+        
+        // Refresh contacts from server to ensure UI is in sync - with background refresh flag
+        fetchContacts(true)
+      }
+    } catch (error) {
+      console.error('Error updating contact:', error)
+      // Refresh contacts from server to ensure UI is in sync - with background refresh flag
+      fetchContacts(true)
+    }
+  }
+
   return (
-    <div className="space-y-4 overflow-visible">
-      {/* Add the keyframe animation styles to the component */}
-      <style dangerouslySetInnerHTML={{ __html: paginationButtonAnimationStyles }} />
-      
-      {/* Add the table border radius styles */}
-      <style dangerouslySetInnerHTML={{ __html: tableStyles }} />
-      
-      {/* Controls outside of the table, as a separate component */}
-      <div className="flex items-center justify-between p-2 overflow-visible">
-        <div className="flex items-center gap-x-2">
-          <div className="w-full sm:w-[320px]">
-            <SearchInput
-              placeholder="Search contacts..."
-              value={searchValue}
-              onChange={setSearchValue}
-              className="h-10 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:ring-primary/30"
-              onVoiceSearch={handleVoiceSearch}
-            />
+    <div className="space-y-6">
+      <div className="flex-none relative">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between px-6 py-6">
+          <div className="flex items-center gap-4 flex-1">
+            <div className="w-full sm:w-[320px]">
+              <SearchInput
+                placeholder="Search contacts..."
+                value={searchValue}
+                onChange={(value) => {
+                  setSearchValue(value)
+                  setCurrentPage(1) // Reset to first page when searching
+                }}
+                className="h-10 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:ring-primary/30"
+                onVoiceSearch={handleVoiceSearch}
+              />
+            </div>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="h-10 px-4 bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300 shadow-sm w-[180px]"
+                >
+                  <span>Filter</span>
+                  <ChevronDown className="ml-2 h-4 w-4 text-gray-500/80" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="start"
+                className="w-[180px] p-1.5 bg-white backdrop-blur-xl border border-gray-200 shadow-[0_0.75rem_1.5rem_rgba(0,0,0,0.1)] rounded-lg"
+              >
+                <DropdownMenuItem 
+                  onClick={() => setStatusFilter('all')}
+                  className="flex items-center gap-2.5 px-2.5 py-2 text-sm text-gray-600 hover:text-gray-900 data-[highlighted]:bg-gray-100 data-[highlighted]:text-gray-900 rounded-md cursor-pointer transition-colors"
+                >
+                  <div className="w-5 flex items-center">
+                    {statusFilter === 'all' ? (
+                      <Check className="h-4 w-4 text-gray-500 flex-shrink-0" strokeWidth={1.5} />
+                    ) : (
+                      <Users className="h-4 w-4 text-gray-500 flex-shrink-0" strokeWidth={1.5} />
+                    )}
+                  </div>
+                  <span>All Contacts</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setStatusFilter('Subscribed')}
+                  className="flex items-center gap-2.5 px-2.5 py-2 text-sm text-gray-600 hover:text-gray-900 data-[highlighted]:bg-gray-100 data-[highlighted]:text-gray-900 rounded-md cursor-pointer transition-colors"
+                >
+                  <div className="w-5 flex items-center">
+                    {statusFilter === 'Subscribed' ? (
+                      <Check className="h-4 w-4 text-gray-500 flex-shrink-0" strokeWidth={1.5} />
+                    ) : (
+                      <BellRing className="h-4 w-4 text-gray-500 flex-shrink-0" strokeWidth={1.5} />
+                    )}
+                  </div>
+                  <span>Subscribed</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setStatusFilter('Paused')}
+                  className="flex items-center gap-2.5 px-2.5 py-2 text-sm text-gray-600 hover:text-gray-900 data-[highlighted]:bg-gray-100 data-[highlighted]:text-gray-900 rounded-md cursor-pointer transition-colors"
+                >
+                  <div className="w-5 flex items-center">
+                    {statusFilter === 'Paused' ? (
+                      <Check className="h-4 w-4 text-gray-500 flex-shrink-0" strokeWidth={1.5} />
+                    ) : (
+                      <PauseCircle className="h-4 w-4 text-gray-500 flex-shrink-0" strokeWidth={1.5} />
+                    )}
+                  </div>
+                  <span>Paused</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setStatusFilter('Report')}
+                  className="flex items-center gap-2.5 px-2.5 py-2 text-sm text-gray-600 hover:text-gray-900 data-[highlighted]:bg-gray-100 data-[highlighted]:text-gray-900 rounded-md cursor-pointer transition-colors"
+                >
+                  <div className="w-5 flex items-center">
+                    {statusFilter === 'Report' ? (
+                      <Check className="h-4 w-4 text-gray-500 flex-shrink-0" strokeWidth={1.5} />
+                    ) : (
+                      <ShieldAlert className="h-4 w-4 text-gray-500 flex-shrink-0" strokeWidth={1.5} />
+                    )}
+                  </div>
+                  <span>Report</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="h-10 px-4 bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300 shadow-sm flex items-center gap-x-1.5"
-              >
-                <Filter className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
-                <span>Filter</span>
-                <ChevronDown className="ml-1 h-4 w-4 text-gray-500/80" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="start"
-              className="min-w-[140px] p-1.5 bg-white backdrop-blur-xl border border-gray-200 shadow-[0_0.75rem_1.5rem_rgba(0,0,0,0.1)] rounded-lg"
-            >
-              <DropdownMenuItem
-                onClick={() => setStatusFilter('all')}
-                className={cn(
-                  "flex items-center gap-2.5 px-2.5 py-2 text-sm text-gray-600 hover:text-gray-900 data-[highlighted]:bg-gray-100 data-[highlighted]:text-gray-900 rounded-md cursor-pointer transition-colors",
-                  statusFilter === 'all' && "bg-gray-100 text-gray-900"
-                )}
-              >
-                <span className="truncate">All</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setStatusFilter('subscribed')}
-                className={cn(
-                  "flex items-center gap-2.5 px-2.5 py-2 text-sm text-gray-600 hover:text-gray-900 data-[highlighted]:bg-gray-100 data-[highlighted]:text-gray-900 rounded-md cursor-pointer transition-colors",
-                  statusFilter === 'subscribed' && "bg-gray-100 text-gray-900"
-                )}
-              >
-                <span className="truncate">Subscribed</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setStatusFilter('unsubscribed')}
-                className={cn(
-                  "flex items-center gap-2.5 px-2.5 py-2 text-sm text-gray-600 hover:text-gray-900 data-[highlighted]:bg-gray-100 data-[highlighted]:text-gray-900 rounded-md cursor-pointer transition-colors",
-                  statusFilter === 'unsubscribed' && "bg-gray-100 text-gray-900"
-                )}
-              >
-                <span className="truncate">Unsubscribed</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
-      </div>
       
-      {/* Table as a completely separate component */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm relative z-10 overflow-hidden contacts-table-container">
-        <div className="overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[60px]">Avatar</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Subscribed</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentContacts.map((contact) => {
-                const { src, fallbackColor } = getAvatarSource(contact)
-                return (
-                  <TableRow 
-                    key={contact.id}
-                    className="cursor-pointer hover:bg-gray-50"
-                    onClick={() => handleContactClick(contact)}
-                  >
-                    <TableCell>
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={src} alt={contact.name} />
-                        <AvatarFallback 
-                          style={{ backgroundColor: fallbackColor }}
-                        >
-                          {contact.name.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {contact.name}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          contact.status === 'Subscribed' 
-                            ? 'success' 
-                            : 'destructive' 
-                        }
-                        className={
-                          contact.status === 'Subscribed'
-                            ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                            : 'bg-red-50 text-red-700 hover:bg-red-100'
-                        }
+        {/* Add the keyframe animation styles to the component */}
+        <style dangerouslySetInnerHTML={{ __html: paginationButtonAnimationStyles }} />
+        
+        {/* Add the table border radius styles */}
+        <style dangerouslySetInnerHTML={{ __html: tableStyles }} />
+        
+        {/* Table as a completely separate component */}
+        <div className="px-6 pb-6">
+          {loading && contacts.length === 0 ? (
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm relative z-10 overflow-hidden contacts-table-container">
+              <div className="overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[60px]">Avatar</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Username</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Subscribed</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {Array(3).fill(0).map((_, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="py-3">
+                          <div className="h-9 w-9 rounded-full bg-gray-200 animate-pulse" />
+                        </TableCell>
+                        <TableCell className="py-3">
+                          <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+                        </TableCell>
+                        <TableCell className="py-3">
+                          <div className="h-4 w-20 bg-gray-200 rounded animate-pulse" />
+                        </TableCell>
+                        <TableCell className="py-3">
+                          <div className="h-4 w-16 bg-gray-200 rounded animate-pulse" />
+                        </TableCell>
+                        <TableCell className="py-3">
+                          <div className="h-4 w-16 bg-gray-200 rounded animate-pulse" />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          ) : error && contacts.length === 0 ? (
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="text-red-500 p-4 rounded-md border border-red-200 bg-red-50 max-w-md">
+                <h3 className="font-semibold mb-2">Error</h3>
+                <p>{error}</p>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="mt-4 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm relative z-10 overflow-hidden contacts-table-container">
+              <div className="overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[60px]">Avatar</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Username</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Subscribed</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {currentContacts.map((contact) => (
+                      <TableRow 
+                        key={contact.id}
+                        className="cursor-pointer hover:bg-gray-50"
+                        onClick={() => handleContactClick(contact)}
                       >
-                        {contact.status === 'Subscribed' && (
-                          <Check className="mr-1 h-3.5 w-3.5" />
-                        )}
-                        {contact.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-gray-500">
-                      {contact.subscribed}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </div>
-      
-        <div className="flex items-center justify-between p-4 border-t border-gray-100">
-          <div className="text-sm text-gray-500">
-            Showing {Math.min(currentPage * itemsPerPage, filteredContacts.length)} of {filteredContacts.length} contacts
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className={cn(
-                "h-8 w-8 text-gray-600 hover:text-gray-900 bg-white border-gray-200 pagination-button-animated",
-                currentPage === 1 && "pointer-events-none opacity-50"
-              )}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              <span className="sr-only">Previous page</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className={cn(
-                "h-8 w-8 text-gray-600 hover:text-gray-900 bg-white border-gray-200 pagination-button-animated",
-                currentPage === totalPages && "pointer-events-none opacity-50"
-              )}
-            >
-              <ChevronRight className="h-4 w-4" />
-              <span className="sr-only">Next page</span>
-            </Button>
-          </div>
+                        <TableCell className="py-3">
+                          <Avatar className="h-9 w-9 bg-primary/10" style={{ backgroundColor: getAvatarSource(contact).fallbackColor }}>
+                            <AvatarImage src={getAvatarSource(contact).src} alt={contact.name} className="object-cover" />
+                            <AvatarFallback>{contact.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                        </TableCell>
+                        <TableCell className="py-3 text-gray-900 font-medium">
+                          {contact.name}
+                        </TableCell>
+                        <TableCell className="py-3 text-gray-600">
+                          {contact.username ? `@${contact.username}` : '—'}
+                        </TableCell>
+                        <TableCell className="py-3">
+                          {contact.status === 'Subscribed' && (
+                            <div className="flex items-center">
+                              <Check className="h-4 w-4 text-green-500 mr-1.5" strokeWidth={2} />
+                              <span className="text-green-600 text-sm">Subscribed</span>
+                            </div>
+                          )}
+                          {contact.status === 'Paused' && (
+                            <div className="flex items-center">
+                              <Pause className="h-4 w-4 text-amber-500 mr-1.5" strokeWidth={2} />
+                              <span className="text-amber-600 text-sm">Paused</span>
+                            </div>
+                          )}
+                          {contact.status === 'Report' && (
+                            <div className="flex items-center">
+                              <AlertTriangle className="h-4 w-4 text-red-500 mr-1.5" strokeWidth={2} />
+                              <span className="text-red-600 text-sm">Report</span>
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="py-3 text-gray-500">
+                          {contact.subscribed}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            
+              <div className="flex items-center justify-between p-4 border-t border-gray-100">
+                <div className="text-sm text-gray-500">
+                  Showing {Math.min(currentPage * itemsPerPage, filteredContacts.length)} of {filteredContacts.length} contacts
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className={cn(
+                      "h-8 w-8 text-gray-600 hover:text-gray-900 bg-white border-gray-200 pagination-button-animated",
+                      currentPage === 1 && "pointer-events-none opacity-50"
+                    )}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    <span className="sr-only">Previous page</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className={cn(
+                      "h-8 w-8 text-gray-600 hover:text-gray-900 bg-white border-gray-200 pagination-button-animated",
+                      currentPage === totalPages && "pointer-events-none opacity-50"
+                    )}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                    <span className="sr-only">Next page</span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -493,7 +599,8 @@ export function Contacts() {
       <ContactModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        contact={selectedContact} 
+        contact={selectedContact}
+        onContactUpdate={handleContactUpdate}
       />
     </div>
   )

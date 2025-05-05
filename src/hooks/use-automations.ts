@@ -208,6 +208,24 @@ export const useAutomationSync = (id: string) => {
   const queryClient = useQueryClient()
   const { data: automationData } = useQueryAutomation(id)
 
+  // Helper function to update lastSaved and invalidate queries
+  const updateSaveStateAndInvalidate = useCallback(async () => {
+    // Update last saved timestamp
+    setLastSaved(new Date())
+    
+    // Invalidate queries to refresh data
+    await queryClient.invalidateQueries({ 
+      queryKey: ['automation-info', id],
+      exact: true,
+      refetchType: 'all'
+    })
+    await queryClient.invalidateQueries({ 
+      queryKey: ['user-automations'],
+      exact: true,
+      refetchType: 'all'
+    })
+  }, [id, queryClient])
+
   const saveChanges = useCallback(async (changes: AutomationChanges) => {
     try {
       setIsSaving(true)
@@ -234,20 +252,7 @@ export const useAutomationSync = (id: string) => {
               throw new Error(result.message || result.error || 'Failed to remove listener');
             }
             
-            // Update last saved timestamp
-            setLastSaved(new Date());
-            
-            // Invalidate queries to refresh data
-            await queryClient.invalidateQueries({ 
-              queryKey: ['automation-info', id],
-              exact: true,
-              refetchType: 'all'
-            });
-            await queryClient.invalidateQueries({ 
-              queryKey: ['user-automations'],
-              exact: true,
-              refetchType: 'all'
-            });
+            await updateSaveStateAndInvalidate()
 
             return { status: 200, data: 'Listener removed successfully' };
           } catch (error) {
@@ -285,20 +290,7 @@ export const useAutomationSync = (id: string) => {
             throw new Error(result.data || 'Failed to save listener');
           }
 
-          // Update last saved timestamp
-          setLastSaved(new Date())
-          
-          // Invalidate queries to refresh data
-          await queryClient.invalidateQueries({ 
-            queryKey: ['automation-info', id],
-            exact: true,
-            refetchType: 'all'
-          });
-          await queryClient.invalidateQueries({ 
-            queryKey: ['user-automations'],
-            exact: true,
-            refetchType: 'all'
-          });
+          await updateSaveStateAndInvalidate()
 
           return { status: 200, data: 'Listener saved successfully' }
         } catch (error) {
@@ -309,21 +301,27 @@ export const useAutomationSync = (id: string) => {
 
       // Handle trigger removal case
       if (changes.trigger && changes.trigger.length === 0) {
-        // Call saveTrigger with empty array to remove trigger
-        const result = await saveTrigger(id, [], {})
+        // Enhanced logging for debugging
+        console.log('Trigger removal detected in saveChanges, calling removeTrigger')
         
-        if (!result || result.status !== 200) {
-          throw new Error(result?.data || 'Failed to remove trigger')
+        try {
+          // CRITICAL FIX: Use removeTrigger instead of saveTrigger with empty array
+          // This is the correct API function for removing triggers
+          const result = await removeTrigger(id)
+          
+          console.log('Trigger removal result:', result)
+          
+          if (!result || result.status !== 200) {
+            throw new Error(result?.data || 'Failed to remove trigger')
+          }
+  
+          await updateSaveStateAndInvalidate()
+  
+          return { status: 200, data: 'Trigger removed successfully' }
+        } catch (error) {
+          console.error('Error in trigger removal:', error)
+          throw error
         }
-
-        // Update last saved timestamp
-        setLastSaved(new Date())
-        
-        // Invalidate queries to refresh data
-        queryClient.invalidateQueries({ queryKey: ['automation-info', id] })
-        queryClient.invalidateQueries({ queryKey: ['user-automations'] })
-
-        return { status: 200, data: 'Trigger removed successfully' }
       }
 
       // Extract trigger type and config from changes
@@ -344,12 +342,7 @@ export const useAutomationSync = (id: string) => {
         }
       }
 
-      // Update last saved timestamp
-      setLastSaved(new Date())
-      
-      // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ['automation-info', id] })
-      queryClient.invalidateQueries({ queryKey: ['user-automations'] })
+      await updateSaveStateAndInvalidate()
 
       return { status: 200, data: 'Changes saved successfully' }
     } catch (error) {
@@ -358,7 +351,7 @@ export const useAutomationSync = (id: string) => {
     } finally {
       setIsSaving(false)
     }
-  }, [id, queryClient, automationData])
+  }, [id, queryClient, automationData, updateSaveStateAndInvalidate])
 
   const debouncedSave = useCallback((state: AutomationChanges) => {
     if (saveTimeoutRef.current) {

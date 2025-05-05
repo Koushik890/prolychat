@@ -15,6 +15,8 @@ import { useAutomationSync } from '@/hooks/use-automations'
 import { useQueryAutomation } from '@/hooks/user-queries'
 import { TriggerConfig, TriggerConfigurationStatus } from '@/types/automation'
 import { useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { useToast } from '@/contexts/toast-context'
 
 interface TriggerConfigurationSidebarProps {
   isOpen: boolean
@@ -65,13 +67,14 @@ const updateConfigurationStatus = (config: Partial<TriggerConfig>): TriggerConfi
   return 'unconfigured'
 }
 
-export function TriggerConfigurationSidebar({
+export const TriggerConfigurationSidebar: React.FC<TriggerConfigurationSidebarProps> = ({
   isOpen,
   onClose,
   selectedTrigger,
   automationId,
   onTriggerConfig
-}: TriggerConfigurationSidebarProps) {
+}) => {
+  const { showToast, hideToast } = useToast()
   const [isPostSelectionModalOpen, setIsPostSelectionModalOpen] = useState(false)
   const [isKeywordModalOpen, setIsKeywordModalOpen] = useState(false)
   const [isReplyMessageModalOpen, setIsReplyMessageModalOpen] = useState(false)
@@ -138,11 +141,14 @@ export function TriggerConfigurationSidebar({
     }
   }, [selectedTrigger, automationData?.data])
 
-  const handlePostSelection = (selection: { type: 'specific' | 'all' | 'next'; postId?: string }, post?: InstagramPostProps) => {
+  const handlePostSelection = async (selection: { type: 'specific' | 'all' | 'next'; postId?: string }, post?: InstagramPostProps) => {
     if (selection.type === 'specific' && post) {
       // Update local state first
       setSelectedPost(post)
       setIsPostSelectionModalOpen(false)
+
+      // Show loading toast with the node ID to properly block interaction
+      showToast('loading', 'Saving configuration post', 'trigger-1')
 
       // Then update the configuration with API type
       const config: Partial<TriggerConfig> = {
@@ -157,24 +163,41 @@ export function TriggerConfigurationSidebar({
           mediaUrl: post.media_url,
           keywords: keywords,
           replyMessages: replyMessage ? replyMessage.split(' | ') : undefined
-        })
+        }),
+        // Ensure posts array is properly formatted for the database
+        posts: [{
+          postId: post.id,
+          mediaType: post.media_type || 'IMAGE',
+          mediaUrl: post.media_url,
+          caption: post.caption || null
+        }]
       }
 
       if (onTriggerConfig && selectedTrigger) {
-        // Map UI type to API type when saving
-        const apiType = selectedTrigger.id === 'DM' ? 'user-message' :
-                       selectedTrigger.id === 'COMMENT' ? 'post-comments' :
-                       selectedTrigger.id
+        try {
+          // Map UI type to API type when saving
+          const apiType = selectedTrigger.id === 'DM' ? 'user-message' :
+                         selectedTrigger.id === 'COMMENT' ? 'post-comments' :
+                         selectedTrigger.id
 
-        // Wrap in Promise.resolve to ensure state updates complete before saving
-        Promise.resolve().then(() => {
-          onTriggerConfig(apiType, config)
-        })
+          // Wait for the save operation to complete
+          await onTriggerConfig(apiType, config)
+          
+          // Update toast to success state after save completes
+          showToast('success', 'Post configuration saved', 'trigger-1')
+        } catch (error) {
+          console.error('Error saving trigger config:', error)
+          toast.error('Failed to save post configuration')
+          hideToast()
+        }
       }
     } else {
       // Update local state first
       setSelectedPost(null)
       setIsPostSelectionModalOpen(false)
+      
+      // Show loading toast with the node ID
+      showToast('loading', 'Saving configuration', 'trigger-1')
 
       // Then update the configuration
       const config = { 
@@ -189,23 +212,56 @@ export function TriggerConfigurationSidebar({
       }
 
       if (onTriggerConfig && selectedTrigger) {
-        // Map UI type to API type when saving
-        const apiType = selectedTrigger.id === 'DM' ? 'user-message' :
-                       selectedTrigger.id === 'COMMENT' ? 'post-comments' :
-                       selectedTrigger.id
+        try {
+          // Map UI type to API type when saving
+          const apiType = selectedTrigger.id === 'DM' ? 'user-message' :
+                         selectedTrigger.id === 'COMMENT' ? 'post-comments' :
+                         selectedTrigger.id
 
-        // Wrap in Promise.resolve to ensure state updates complete before saving
-        Promise.resolve().then(() => {
-          onTriggerConfig(apiType, config)
-        })
+          // Wait for the save operation to complete
+          await onTriggerConfig(apiType, config)
+          
+          // Update toast to success state after save completes
+          showToast('success', 'Configuration saved', 'trigger-1')
+        } catch (error) {
+          console.error('Error saving trigger config:', error)
+          toast.error('Failed to save configuration')
+          hideToast()
+        }
       }
     }
   }
 
-  const handleRemoveSelectedPost = () => {
-    setSelectedPost(null)
-    if (onTriggerConfig && selectedTrigger) {
-      onTriggerConfig(selectedTrigger.id, null)
+  const handleRemoveSelectedPost = async () => {
+    // Show loading toast
+    showToast('loading', 'Removing trigger item...', 'trigger-1')
+    
+    try {
+      // First optimistically update the UI by clearing the selected post
+      setSelectedPost(null)
+      
+      if (onTriggerConfig && selectedTrigger) {
+        // CRITICAL FIX: We need to pass the API type format, not the UI format
+        // Map UI type to API type when removing
+        const apiType = selectedTrigger.id === 'DM' ? 'user-message' :
+                       selectedTrigger.id === 'COMMENT' ? 'post-comments' :
+                       selectedTrigger.id
+        
+        console.log('Removing trigger with API type:', apiType)
+        
+        // Pass null to indicate removal
+        await onTriggerConfig(apiType, null)
+        
+        // Show success toast
+        showToast('success', 'Trigger item removed', 'trigger-1')
+        
+        // Close the sidebar after removal
+        onClose()
+      }
+    } catch (error) {
+      console.error('Error removing trigger item:', error)
+      hideToast()
+      toast.error('Failed to remove trigger item')
     }
   }
 
@@ -300,21 +356,46 @@ export function TriggerConfigurationSidebar({
   const handleTriggerConfig = useCallback(async (type: string, config: Partial<TriggerConfig>) => {
     if (!selectedTrigger) return;
 
+    console.log(' Saving trigger config:', { type, config });
+
     // Map UI type to API type for consistency
     const apiType = type === 'DM' ? 'user-message' :
                    type === 'COMMENT' ? 'post-comments' :
                    type
 
-    await saveChanges({
-      trigger: [{
-        type: apiType,
-        config
-      }]
-    })
-    
-    // Invalidate queries to refetch fresh data
-    queryClient.invalidateQueries({ queryKey: ['automation-info', automationId] })
-  }, [saveChanges, selectedTrigger, queryClient, automationId])
+    // Format data properly for the backend
+    const formattedConfig = {
+      ...config,
+      // Ensure keywords is formatted correctly as expected by the backend
+      keywords: { include: config.keywords?.include || [] },
+      // Ensure posts are formatted as expected by the backend
+      posts: config.posts?.map(post => ({
+        postId: post.postId,
+        mediaType: post.mediaType,
+        mediaUrl: post.mediaUrl,
+        caption: post.caption
+      })) || [],
+      status: config.status || 'unconfigured'
+    };
+
+    console.log(' Formatted config for API:', { apiType, formattedConfig });
+
+    try {
+      const result = await saveChanges({
+        trigger: [{
+          type: apiType,
+          config: formattedConfig
+        }]
+      });
+      console.log(' Save result:', result);
+      
+      // Invalidate queries to refetch fresh data
+      queryClient.invalidateQueries({ queryKey: ['automation-info', automationId] });
+    } catch (error) {
+      console.error(' Error saving trigger configuration:', error);
+      // toast.error('Failed to save configuration. Please try again.');
+    }
+  }, [saveChanges, selectedTrigger, queryClient, automationId]);
 
   return (
     <>
