@@ -99,21 +99,31 @@ export const onUserInfo = async (): Promise<UserResponse> => {
       if (!result) {
         // Only proceed if we have all required user data
         if (user.data.firstName && user.data.lastName && user.data.emailAddresses?.[0]?.emailAddress) {
-          const created = await createUser(
-            user.data.id,
-            user.data.firstName,
-            user.data.lastName,
-            user.data.emailAddresses[0].emailAddress
-          )
-          if (created) {
-            // Fetch the complete user profile after creation
+          try {
+            const created = await createUser(
+              user.data.id,
+              user.data.firstName,
+              user.data.lastName,
+              user.data.emailAddresses[0].emailAddress
+            )
+            if (created) {
+              // Wait a bit before fetching to ensure consistency
+              await delay(50)
+              // Fetch the complete user profile after creation
+              result = await findUser(user.data.id)
+            }
+          } catch (createError: any) {
+            // If creation fails due to unique constraint, the user might have been created by another request
+            // Try to find the user again
+            console.warn('User creation failed, retrying findUser:', createError.message)
+            await delay(100)
             result = await findUser(user.data.id)
           }
         }
       }
       
       if (!result) {
-        throw new Error('User not found')
+        throw new Error('User not found after creation attempts')
       }
       return result
     })

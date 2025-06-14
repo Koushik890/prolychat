@@ -1,19 +1,26 @@
-import { INTEGRATION_CARDS } from '@/constants/integrations'
-import IntegrationCard from './_components/integration-card'
-import React from 'react'
+'use client'
 
-const IntegrationsPage = () => {
+import { useEffect } from 'react'
+import { useRouter, useParams } from 'next/navigation'
+
+export default function IntegrationsRedirect() {
+  const router = useRouter()
+  const params = useParams()
+
+  useEffect(() => {
+    if (params?.slug) {
+      // Redirect to the main dashboard
+      router.replace(`/dashboard/${params.slug}`)
+    }
+  }, [params, router])
+
   return (
-    <div className="w-full px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto w-full lg:flex lg:justify-center">
-        <div className="grid gap-4 sm:gap-6 w-full lg:w-10/12">
-          {INTEGRATION_CARDS.map((card, key) => (
-            <IntegrationCard key={key} {...card} />
-          ))}
-        </div>
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+        <p className="text-gray-600">Redirecting to dashboard...</p>
+        <p className="text-sm text-gray-500 mt-2">Integration management is now available from the floating Instagram button</p>
       </div>
     </div>
   )
 }
-
-export default IntegrationsPage

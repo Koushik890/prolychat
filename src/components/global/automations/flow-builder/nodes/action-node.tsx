@@ -14,7 +14,7 @@ interface ActionNodeProps {
   data: {
     id: string
     listener: {
-      listener: 'OMNIAI' | 'MESSAGE'
+      	listener: 'PROLYAI' | 'MESSAGE'
       prompt: string
       commentReply: string | null
       dmCount: number
@@ -117,7 +117,7 @@ export const ActionNode: React.FC<ActionNodeProps> = ({ data, onMessageUpdate, o
             <p className={styles.description}>
               {isMessageAction
                 ? 'Configure the message that will be sent to the user.'
-                : 'Configure how OmniAI should respond to the user.'}
+                					: 'Configure how Proly AI should respond to the user.'}
             </p>
             <Button
               variant="ghost"

@@ -1,6 +1,6 @@
 import React from 'react'
 
-export const OmniAi = (props: React.SVGProps<SVGSVGElement>) => {
+export const ProlyAi = (props: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       width="24"

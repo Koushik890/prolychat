@@ -11,8 +11,8 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const raleway = Raleway({ subsets: ['latin'], variable: '--font-raleway' });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://omnisocial.com'),
-  title: 'OmniSocial - Automate Your Social Media Engagement',
+  	metadataBase: new URL('https://prolychat.com'),
+	title: 'Prolychat - Automate Your Social Media Engagement',
   description: 'Intelligent responses to comments, powered by AI. Connect with your audience automatically while maintaining authentic conversations.',
   icons: {
     icon: [

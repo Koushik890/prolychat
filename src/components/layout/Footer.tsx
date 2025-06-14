@@ -11,7 +11,7 @@ export function Footer() {
             <div className="relative h-10 w-40">
               <Image 
                 src="/logo.png"
-                alt="OmniSocial Logo"
+                			alt="Prolychat Logo"
                 fill
                 className="object-contain"
                 priority
@@ -49,7 +49,7 @@ export function Footer() {
         </div>
       </div>
       <div className="mt-8 pt-8 border-t border-gray-200 text-center">
-        <p className="text-sm text-gray-600">&copy; {new Date().getFullYear()} OmniSocial. All rights reserved.</p>
+        <p className="text-sm text-gray-600">&copy; {new Date().getFullYear()} Prolychat. All rights reserved.</p>
       </div>
     </footer>
   )

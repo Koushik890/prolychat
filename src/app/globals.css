@@ -33,6 +33,13 @@
     --chart-5: 27 87% 67%;
     --sidebar-background: white;
 
+    /* Untitled project specific variables for Instagram modal */
+    --font-size: 14px;
+    --font-weight-medium: 500;
+    --font-weight-normal: 400;
+    --input-background: #f3f3f5;
+    --switch-background: #cbced4;
+
     --scrollbar-track: transparent;
     --scrollbar-thumb: #e0e0e0;
     --scrollbar-thumb-hover: #c0c0c0;
@@ -129,6 +136,7 @@
   }
   html {
     font-family: var(--font-family);
+    font-size: var(--font-size);
   }
   body {
     background-color: hsl(var(--background));
@@ -141,6 +149,55 @@
   /* Heading font specifically for h1-h6 elements */
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--heading-family) !important;
+  }
+
+  /* Typography styles from Untitled project */
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  p {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
   }
 }
 
@@ -285,6 +342,23 @@
     font-family: var(--heading-family);
   }
 
+  /* Untitled project specific utilities for Instagram modal */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .rotate-y-2 {
+    transform: rotateY(2deg);
+  }
+
+  .rotate-x-1 {
+    transform: rotateX(1deg);
+  }
+
+  .transform-style-preserve-3d {
+    transform-style: preserve-3d;
+  }
+
   /* Hide scrollbar for Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -351,4 +425,13 @@ body[data-path*="contacts"] {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
   }
+}
+
+/* Animation Delays */
+.animation-delay-150 {
+  animation-delay: 150ms;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms;
 }

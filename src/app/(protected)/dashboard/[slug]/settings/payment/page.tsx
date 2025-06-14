@@ -65,7 +65,7 @@ const PaymentSettingsPage = () => {
   // Features available based on current plan
   const planFeatures = currentPlan === SUBSCRIPTION_PLAN.PRO
     ? [
-        'Access to Omni AI for automated content management',
+        					'Access to Proly AI for automated content management',
         'Advanced analytics and insights',
         'Unlimited automations for social media',
         'Priority customer support'

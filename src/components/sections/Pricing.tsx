@@ -18,7 +18,7 @@ export const pricingPlans = [
     ]
   },
   {
-    name: 'Omni ai Plan',
+    		name: 'Proly AI Plan',
     description: 'Advanced features for power users',
     monthlyPrice: 99,
     quarterlyPrice: 89,

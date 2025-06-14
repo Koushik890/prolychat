@@ -56,7 +56,7 @@ const PrivacyPolicyPage = () => {
           <section className="border-b border-gray-100 pb-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Introduction</h2>
             <p className="text-gray-700 leading-relaxed">
-              Welcome to OmniSocial. We respect your privacy and are committed to protecting your personal data. 
+              Welcome to Prolychat. We respect your privacy and are committed to protecting your personal data. 
               This privacy policy explains how we handle your data when you use our application.
             </p>
           </section>
@@ -64,7 +64,7 @@ const PrivacyPolicyPage = () => {
           {/* Data Collection */}
           <section className="border-b border-gray-100 pb-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">2. Data We Collect</h2>
-            <p className="text-gray-700 mb-4">When you use OmniSocial, we collect and process the following information:</p>
+                          <p className="text-gray-700 mb-4">When you use Prolychat, we collect and process the following information:</p>
             <ul className="list-none space-y-3">
               {DATA_COLLECTION_ITEMS.map((item, index) => (
                 <li key={index} className="flex items-start">
@@ -128,8 +128,8 @@ const PrivacyPolicyPage = () => {
             <p className="text-gray-700 leading-relaxed">
               If you have any questions about this privacy policy or our privacy practices, 
               please contact us at&nbsp;
-              <a href="mailto:support@omnisocial.com" className="text-purple-600 hover:text-purple-700 underline">
-                support@omnisocial.com
+                              <a href="mailto:support@prolychat.com" className="text-purple-600 hover:text-purple-700 underline">
+                  support@prolychat.com
               </a>
             </p>
           </section>

@@ -60,7 +60,7 @@ export function ViewPromptModal({
                 AI Assistant Prompt
               </DialogTitle>
               <DialogDescription className="text-[14px] text-gray-600 mt-1.5 leading-relaxed">
-                Review how OmniAI will respond to the user
+                					Review how Proly AI will respond to the user
               </DialogDescription>
             </div>
             <DialogClose 

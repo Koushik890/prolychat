@@ -131,7 +131,7 @@ export function AiPromptModal({
                 Configure AI Assistant
               </DialogTitle>
               <DialogDescription className="text-[14px] text-gray-600 mt-1.5 leading-relaxed">
-                Enter the prompt for how OmniAI should respond to the user
+                					Enter the prompt for how Proly AI should respond to the user
               </DialogDescription>
             </div>
             <DialogClose 

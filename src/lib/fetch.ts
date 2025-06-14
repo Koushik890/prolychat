@@ -446,33 +446,117 @@ export const sendPrivateMessage = async (
 }
 
 export const generateTokens = async (code: string) => {
+  try {
+    // Validate input
+    if (!code || code.trim() === '') {
+      throw new Error('Authorization code is required')
+    }
+
+    // Validate environment variables
+    const requiredEnvs = ['INSTAGRAM_CLIENT_ID', 'INSTAGRAM_CLIENT_SECRET', 'INSTAGRAM_TOKEN_URL']
+    const missing = requiredEnvs.filter(key => !process.env[key])
+    if (missing.length > 0) {
+      throw new Error(`Missing required environment variables: ${missing.join(', ')}`)
+    }
+
   const insta_form = new FormData()
   insta_form.append('client_id', process.env.INSTAGRAM_CLIENT_ID as string)
-
-  insta_form.append(
-    'client_secret',
-    process.env.INSTAGRAM_CLIENT_SECRET as string
-  )
+    insta_form.append('client_secret', process.env.INSTAGRAM_CLIENT_SECRET as string)
   insta_form.append('grant_type', 'authorization_code')
   insta_form.append(
     'redirect_uri',
-    `${process.env.NEXT_PUBLIC_HOST_URL}/callback/instagram`
+    process.env.INSTAGRAM_REDIRECT_URI || `${process.env.NEXT_PUBLIC_HOST_URL}/callback/instagram`
   )
   insta_form.append('code', code)
 
+    const redirectUri = process.env.INSTAGRAM_REDIRECT_URI || `${process.env.NEXT_PUBLIC_HOST_URL}/callback/instagram`
+    console.log('Exchanging authorization code for short-lived token', {
+      redirectUri,
+      codeLength: code.length
+    })
+
+    // Exchange authorization code for short-lived token
   const shortTokenRes = await fetch(process.env.INSTAGRAM_TOKEN_URL as string, {
     method: 'POST',
     body: insta_form,
-  })
+      headers: {
+        'Accept': 'application/json'
+      }
+    })
+
+    if (!shortTokenRes.ok) {
+      const errorText = await shortTokenRes.text()
+      console.error('Short token exchange failed:', {
+        status: shortTokenRes.status,
+        statusText: shortTokenRes.statusText,
+        response: errorText
+      })
+      throw new Error(`Token exchange failed: ${shortTokenRes.status} ${shortTokenRes.statusText}`)
+    }
 
   const token = await shortTokenRes.json()
-  if (token.permissions.length > 0) {
-    console.log(token, 'got permissions')
-    const long_token = await axios.get(
-      `${process.env.INSTAGRAM_BASE_URL}/access_token?grant_type=ig_exchange_token&client_secret=${process.env.INSTAGRAM_CLIENT_SECRET}&access_token=${token.access_token}`
-    )
+    console.log('Short-lived token received:', { 
+      hasAccessToken: !!token.access_token,
+      tokenType: token.token_type,
+      expiresIn: token.expires_in 
+    })
+  
+    // Validate short-lived token response
+    if (!token || !token.access_token) {
+      console.error('Invalid short token response:', token)
+      throw new Error('Invalid token response: missing access_token')
+    }
 
-    return long_token.data
+    // Exchange short-lived token for long-lived token
+    try {
+      console.log('Exchanging short-lived token for long-lived token')
+      
+      const long_token_response = await axios.get(
+        `${process.env.INSTAGRAM_BASE_URL}/access_token?grant_type=ig_exchange_token&client_secret=${process.env.INSTAGRAM_CLIENT_SECRET}&access_token=${token.access_token}`,
+        { 
+          timeout: 15000,
+          headers: {
+            'Accept': 'application/json'
+          }
+        }
+      )
+      
+      const longToken = long_token_response.data
+      console.log('Long-lived token received:', { 
+        hasAccessToken: !!longToken.access_token,
+        tokenType: longToken.token_type,
+        expiresIn: longToken.expires_in 
+      })
+
+      if (!longToken.access_token) {
+        throw new Error('Long-lived token exchange failed: missing access_token')
+      }
+
+      return longToken
+    } catch (error) {
+      console.error('Error exchanging short token for long token:', error)
+      
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status
+        const data = error.response?.data
+        console.error('Long token exchange API error:', { status, data })
+        
+        if (status === 400) {
+          throw new Error('Invalid short-lived token or client configuration')
+        } else if (status === 401) {
+          throw new Error('Authentication failed during token exchange')
+        } else if (status === 429) {
+          throw new Error('Rate limit exceeded during token exchange')
+        }
+        
+        throw new Error(`Token exchange API error: ${status} - ${data?.error?.message || error.message}`)
+      }
+      
+      throw new Error(`Token exchange failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  } catch (error) {
+    console.error('Error in generateTokens:', error)
+    throw error
   }
 }
 

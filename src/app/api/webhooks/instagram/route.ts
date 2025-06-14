@@ -11,7 +11,7 @@ import {
 } from '@/actions/webhook/queries'
 import { sendDM, sendPrivateMessage, replyToComment } from '@/lib/fetch'
 import { mistralAI } from '@/lib/mistral'
-import { client, releaseConnections } from '@/lib/prisma'
+import { client } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { ACTION_TYPE } from '@prisma/client'
 import { addContactFromAutomation } from '@/lib/contact-manager'
@@ -693,12 +693,25 @@ export async function POST(req: NextRequest) {
 
                     // DM was successful, now check if we should reply to the comment
                     if (hasReplyMessages) {
-                      console.log('DM sent successfully, now sending comment reply')
+                      console.log('DM sent successfully, now checking comment reply configuration')
                       // Get a random reply message from the array if available
                       const replyMessages = automation.trigger[0]?.replyMessages?.map(msg => msg.message) || []
                       const replyMessage = replyMessages.length > 0
                         ? replyMessages[Math.floor(Math.random() * replyMessages.length)]
                         : 'Check your DMs for more information!'
+                      
+                      // Check if the selected reply message is "no" - if so, skip comment reply
+                      if (replyMessage.toLowerCase() === 'no') {
+                        console.log('Reply message is "No" - skipping comment reply but showing green status')
+                        // Track only DM since we're not replying to comment
+                        await trackAutomationActivity(automation.id, ['DM'])
+                        return NextResponse.json(
+                          {
+                            message: 'DM sent successfully, no comment reply configured',
+                          },
+                          { status: 200 }
+                        )
+                      }
                       
                       // Reply to the comment with the randomly selected message
                       const commentReply = await replyToComment(
@@ -774,12 +787,25 @@ export async function POST(req: NextRequest) {
                 
                 // If DM failed but we have reply messages configured, reply to the comment as a fallback
                 if (!dmSent && hasReplyMessages) {
-                  console.log('DM failed but attempting comment reply as fallback')
+                  console.log('DM failed but checking comment reply configuration as fallback')
                   // Get a random reply message from the array if available
                   const replyMessages = automation.trigger[0]?.replyMessages?.map(msg => msg.message) || []
                   const replyMessage = replyMessages.length > 0
                     ? replyMessages[Math.floor(Math.random() * replyMessages.length)]
                     : 'Check your DMs for more information!'
+                  
+                  // Check if the selected reply message is "no" - if so, skip comment reply
+                  if (replyMessage.toLowerCase() === 'no') {
+                    console.log('Reply message is "No" - skipping comment reply fallback but showing green status')
+                    // Don't track anything since both DM failed and we're not replying to comment
+                    return NextResponse.json(
+                      {
+                        message: 'DM failed and no comment reply configured',
+                        dmError
+                      },
+                      { status: 200 }
+                    )
+                  }
                   
                   // Reply to the comment with the randomly selected message
                   const commentReply = await replyToComment(
@@ -973,21 +999,21 @@ export async function POST(req: NextRequest) {
 
             // Handle AI action
             if (
-              isSameActionType(automation.listener.type, ACTION_TYPE.OMNIAI) &&
+              isSameActionType(automation.listener.type, ACTION_TYPE.PROLYAI) &&
               automation.User?.subscription?.plan === 'PRO'
             ) {
               // If we're handling a comment (changes), let the comment-specific handler take care of it
               if (webhook_payload.entry[0].changes) {
-                console.log('Skipping direct message OmniAI processing for comment - will be handled by comment-specific handler');
+                console.log('Skipping direct message Proly AI processing for comment - will be handled by comment-specific handler');
                 return NextResponse.json(
                   {
-                    message: 'Comment OmniAI processing deferred to specific handler',
+                    message: 'Comment Proly AI processing deferred to specific handler',
                   },
                   { status: 200 }
                 );
               }
               
-              console.log('Starting Omni AI processing for direct message')
+              				console.log('Starting Proly AI processing for direct message')
               try {
                 const messageText = webhook_payload.entry[0]?.messaging?.[0]?.message?.text || '';
                 const senderId = webhook_payload.entry[0]?.messaging?.[0]?.sender?.id;
@@ -1035,7 +1061,7 @@ export async function POST(req: NextRequest) {
                   messages: messages,
                 });
                 
-                console.log('Omni AI response received:', omni_ai_message.choices[0].message.content);
+                				console.log('Proly AI response received:', omni_ai_message.choices[0].message.content);
 
                 if (
                   omni_ai_message.choices[0]?.message?.content && 
@@ -1074,7 +1100,7 @@ export async function POST(req: NextRequest) {
                     console.log('Continuing with message delivery despite chat history error');
                   }
 
-                  console.log('Sending DM with Omni AI response');
+                  				console.log('Sending DM with Proly AI response');
                   const direct_message = await sendDM(
                     entryId,
                     senderId,
@@ -1102,18 +1128,18 @@ export async function POST(req: NextRequest) {
                   }
                 }
               } catch (error) {
-                console.error('Error in Omni AI processing:', error);
+                				console.error('Error in Proly AI processing:', error);
                 
                 // Check if this is a token-related error
                 if (axios.isAxiosError(error) && error.response?.status === 401) {
-                  console.log('OmniAI processing failed with 401 error - likely an expired token');
+                  console.log('Proly AI processing failed with 401 error - likely an expired token');
                   
                   // Track that the automation was triggered even though message delivery failed
                   await trackAutomationActivity(automation.id, []);
                   
                   return NextResponse.json(
                     {
-                      message: 'Authentication error when processing Omni AI request. Token may need to be refreshed.',
+                      						message: 'Authentication error when processing Proly AI request. Token may need to be refreshed.',
                       error: error.response?.data?.error?.message || 'Token authentication failed',
                       suggestedAction: 'Please reconnect your Instagram account in settings to refresh your token.'
                     },
@@ -1123,7 +1149,7 @@ export async function POST(req: NextRequest) {
                 
                 return NextResponse.json(
                   {
-                    message: 'Error processing Omni AI request',
+                    						message: 'Error processing Proly AI request',
                     error: error instanceof Error ? error.message : 'Unknown error'
                   },
                   { status: 500 }
@@ -1258,18 +1284,18 @@ export async function POST(req: NextRequest) {
             // Log the automation type to help with debugging
             console.log('Automation type for comment handling:', {
               type: automation.listener.type,
-              isOmniAI: isSameActionType(automation.listener.type, ACTION_TYPE.OMNIAI),
+              isProlyAI: isSameActionType(automation.listener.type, ACTION_TYPE.PROLYAI),
               isMessage: isSameActionType(automation.listener.type, ACTION_TYPE.MESSAGE),
               subscription: automation.User?.subscription?.plan
             });
 
             if (automations_post) {
-              // Handle OmniAI action for comments first
+              // Handle Proly AI action for comments first
               if (
-                isSameActionType(automation.listener.type, ACTION_TYPE.OMNIAI) &&
+                isSameActionType(automation.listener.type, ACTION_TYPE.PROLYAI) &&
                 automation.User?.subscription?.plan === 'PRO'
               ) {
-                console.log('Processing OmniAI for comment before other handlers');
+                console.log('Processing Proly AI for comment before other handlers');
                 
                 const commentText = webhook_payload.entry[0].changes[0].value.text || '';
                   
@@ -1287,7 +1313,7 @@ export async function POST(req: NextRequest) {
                   ],
                 })
 
-                console.log('OmniAI generated response:', omni_ai_message.choices[0]?.message?.content);
+                console.log('Proly AI generated response:', omni_ai_message.choices[0]?.message?.content);
 
                 if (
                   omni_ai_message.choices[0]?.message?.content && 
@@ -1329,7 +1355,7 @@ export async function POST(req: NextRequest) {
                     console.log('Continuing with message delivery despite chat history error')
                   }
 
-                  console.log('Sending DM with Omni AI response')
+                  				console.log('Sending DM with Proly AI response')
                   const direct_message = await sendDM(
                     entryId,
                     commentId,
@@ -1339,7 +1365,7 @@ export async function POST(req: NextRequest) {
                   )
 
                   if (direct_message.status === 200) {
-                    console.log('OmniAI private message sent successfully');
+                    console.log('Proly AI private message sent successfully');
                     const tracked = await trackAutomationActivity(automation.id, ['DM'])
 
                     if (tracked) {
@@ -1355,39 +1381,46 @@ export async function POST(req: NextRequest) {
                       
                       // Now check if we should also reply to the comment publicly
                       if (hasReplyMessages) {
-                        console.log('OmniAI DM sent successfully, now also sending comment reply');
+                        console.log('Proly AI DM sent successfully, now checking comment reply configuration');
                         // Get a random reply message from the array if available
                         const replyMessages = automation.trigger[0]?.replyMessages?.map(msg => msg.message) || []
                         const replyMessage = replyMessages.length > 0
                           ? replyMessages[Math.floor(Math.random() * replyMessages.length)]
                           : 'Check your DMs for more information!'
                         
-                        // Reply to the comment with the randomly selected message
-                        const commentReply = await replyToComment(
-                          commentId,
-                          replyMessage,
-                          token
-                        )
+                        // Check if the selected reply message is "no" - if so, skip comment reply
+                        if (replyMessage.toLowerCase() === 'no') {
+                          console.log('Reply message is "No" - skipping comment reply but showing green status')
+                          // Only track DM since we're not replying to comment
+                          // (DM already tracked above)
+                        } else {
+                          // Reply to the comment with the randomly selected message
+                          const commentReply = await replyToComment(
+                            commentId,
+                            replyMessage,
+                            token
+                          )
 
-                        if (commentReply.status === 200) {
-                          console.log('Comment reply sent successfully after OmniAI DM');
-                          await trackAutomationActivity(automation.id, ['DM', 'COMMENT']);
-                        }
-                        else {
-                          // Still track the DM since it was successful
-                          await trackAutomationActivity(automation.id, ['DM']);
+                          if (commentReply.status === 200) {
+                            console.log('Comment reply sent successfully after Proly AI DM');
+                            await trackAutomationActivity(automation.id, ['DM', 'COMMENT']);
+                          }
+                          else {
+                            // Still track the DM since it was successful
+                            await trackAutomationActivity(automation.id, ['DM']);
+                          }
                         }
                       }
                       
                       return NextResponse.json(
                         {
-                          message: 'OmniAI message sent',
+                          message: 'Proly AI message sent',
                         },
                         { status: 200 }
                       )
                     }
                   } else {
-                    console.error('Failed to send OmniAI private message:', {
+                    console.error('Failed to send Proly AI private message:', {
                       status: direct_message.status,
                       error: direct_message.data?.error
                     });
@@ -1451,12 +1484,25 @@ export async function POST(req: NextRequest) {
 
                       // DM was successful, now check if we should reply to the comment
                       if (hasReplyMessages) {
-                        console.log('DM sent successfully, now sending comment reply')
+                        console.log('DM sent successfully, now checking comment reply configuration')
                         // Get a random reply message from the array if available
                         const replyMessages = automation.trigger[0]?.replyMessages?.map(msg => msg.message) || []
                         const replyMessage = replyMessages.length > 0
                           ? replyMessages[Math.floor(Math.random() * replyMessages.length)]
                           : 'Check your DMs for more information!'
+                        
+                        // Check if the selected reply message is "no" - if so, skip comment reply
+                        if (replyMessage.toLowerCase() === 'no') {
+                          console.log('Reply message is "No" - skipping comment reply but showing green status')
+                          // Track only DM since we're not replying to comment
+                          await trackAutomationActivity(automation.id, ['DM'])
+                          return NextResponse.json(
+                            {
+                              message: 'DM sent successfully, no comment reply configured',
+                            },
+                            { status: 200 }
+                          )
+                        }
                         
                         // Reply to the comment with the randomly selected message
                         const commentReply = await replyToComment(
@@ -1532,12 +1578,25 @@ export async function POST(req: NextRequest) {
                   
                   // If DM failed but we have reply messages configured, reply to the comment as a fallback
                   if (!dmSent && hasReplyMessages) {
-                    console.log('DM failed but attempting comment reply as fallback')
+                    console.log('DM failed but checking comment reply configuration as fallback')
                     // Get a random reply message from the array if available
                     const replyMessages = automation.trigger[0]?.replyMessages?.map(msg => msg.message) || []
                     const replyMessage = replyMessages.length > 0
                       ? replyMessages[Math.floor(Math.random() * replyMessages.length)]
                       : 'Check your DMs for more information!'
+                    
+                    // Check if the selected reply message is "no" - if so, skip comment reply
+                    if (replyMessage.toLowerCase() === 'no') {
+                      console.log('Reply message is "No" - skipping comment reply fallback but showing green status')
+                      // Don't track anything since both DM failed and we're not replying to comment
+                      return NextResponse.json(
+                        {
+                          message: 'DM failed and no comment reply configured',
+                          dmError
+                        },
+                        { status: 200 }
+                      )
+                    }
                     
                     // Reply to the comment with the randomly selected message
                     const commentReply = await replyToComment(
@@ -1593,14 +1652,14 @@ export async function POST(req: NextRequest) {
 
                 // Handle AI action for comments
                 if (
-                  isSameActionType(automation.listener.type, ACTION_TYPE.OMNIAI) &&
+                  isSameActionType(automation.listener.type, ACTION_TYPE.PROLYAI) &&
                   automation.User?.subscription?.plan === 'PRO'
                 ) {
                   // This implementation has been moved above for better flow control
-                  console.log('Skipping redundant OmniAI processing, already handled above');
+                  console.log('Skipping redundant Proly AI processing, already handled above');
                   return NextResponse.json(
                     {
-                      message: 'OmniAI processing already handled',
+                      message: 'Proly AI processing already handled',
                     },
                     { status: 200 }
                   );
@@ -1649,9 +1708,9 @@ export async function POST(req: NextRequest) {
 
           if (
             automation?.User?.subscription?.plan === 'PRO' &&
-            automation.listener?.type === ACTION_TYPE.OMNIAI
+            automation.listener?.type === ACTION_TYPE.PROLYAI
           ) {
-            console.log('Processing ongoing conversation with OmniAI');
+            console.log('Processing ongoing conversation with Proly AI');
             
             const omni_ai_message = await mistralAI.chat.complete({
               model: 'mistral-large-latest',
@@ -1705,7 +1764,7 @@ export async function POST(req: NextRequest) {
                 console.log('Continuing with message delivery despite chat history error');
               }
 
-              console.log('Sending DM with Omni AI response for ongoing conversation');
+              				console.log('Sending DM with Proly AI response for ongoing conversation');
               const direct_message = await sendDM(
                 entryId,
                 senderId,
@@ -1787,12 +1846,7 @@ export async function POST(req: NextRequest) {
       payload: await req.json().catch(() => 'Invalid JSON')
     });
     
-    // Always try to release connections even on error
-    try {
-      await releaseConnections();
-    } catch (disconnectError) {
-      console.error('Failed to release connections after error:', disconnectError);
-    }
+    // Connection cleanup is handled by Prisma automatically
     
     return NextResponse.json(
       { success: false, error: error?.message || 'Unknown error' },
@@ -1842,11 +1896,6 @@ async function processWebhook(webhook_payload: WebhookPayload) {
       error: errorMessage 
     };
   } finally {
-    // Always release database connections when done with processing
-    try {
-      await releaseConnections();
-    } catch (error) {
-      console.error('Error releasing connections in processWebhook:', error);
-    }
+    // Connection cleanup is handled by Prisma automatically
   }
 }

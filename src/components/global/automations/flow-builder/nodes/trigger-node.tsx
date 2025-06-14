@@ -25,7 +25,7 @@ interface TriggerNodeData {
   onTriggerSidebarOpen: () => void
   onTriggerSidebarClose: () => void
   onTriggerConfigurationOpen: (trigger: TriggerItem) => void
-  onActionSelect?: (actionId: string, action: 'MESSAGE' | 'OMNIAI', actionName: string, icon: React.ComponentType<any>) => void
+  	onActionSelect?: (actionId: string, action: 'MESSAGE' | 'PROLYAI', actionName: string, icon: React.ComponentType<any>) => void
   config?: any
   configurationStatus: 'unconfigured' | 'partial' | 'complete'
 }
@@ -148,6 +148,7 @@ export function TriggerNode({ data }: NodeProps<TriggerNodeData>) {
         {/* Then text with flow indicator */}
         <div className={styles.flowIndicator}>
           <span className={styles.thenText}>Then</span>
+          <div className={styles.arrow}></div>
         </div>
 
         {/* Handle for connections */}
@@ -164,7 +165,7 @@ export function TriggerNode({ data }: NodeProps<TriggerNodeData>) {
         onClose={() => setIsActionModalOpen(false)}
         onSelect={(actionId, action, actionName, icon) => {
           if (data.onActionSelect) {
-            data.onActionSelect(actionId, action as 'MESSAGE' | 'OMNIAI', actionName, icon)
+            				data.onActionSelect(actionId, action as 'MESSAGE' | 'PROLYAI', actionName, icon)
           }
           setIsActionModalOpen(false)
         }}

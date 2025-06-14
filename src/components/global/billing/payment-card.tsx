@@ -28,7 +28,7 @@ const PaymentCard = ({ label, current, landing }: props) => {
         queryFn: onUserInfo,
     })
 
-    const { mutate: createPortal, isLoading: portalLoading } = useMutation({
+    const { mutate: createPortal, isPending: portalLoading } = useMutation({
         mutationFn: async () => {
             const res = await fetch('/api/payment/customer-portal', {
                 method: 'POST',
@@ -122,7 +122,7 @@ const PaymentCard = ({ label, current, landing }: props) => {
                             ? "text-indigo-700" 
                             : "from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
                         )}>
-                            Omni AI
+                            						Proly AI
                         </span>
                     ) : (
                         <div className="mb-1">

@@ -3,7 +3,7 @@
 import { client } from '@/lib/prisma'
 import { v4 } from 'uuid'
 import { withDatabaseRetry, db } from '@/lib/db-utils'
-import { Automation, Post, Keyword, ReplyMessage } from '@prisma/client'
+import { Automation, Post, Keyword, ReplyMessage, ACTION_TYPE } from '@prisma/client'
 
 // Define types for the returned automation data
 type AutomationWithRelations = Automation & {
@@ -218,7 +218,7 @@ export const updateAutomation = async (
 
 export const addListener = async (
   automationId: string,
-  actionType: 'OMNIAI' | 'MESSAGE',
+  actionType: ACTION_TYPE,
   prompt: string,
   message?: string
 ) => {
@@ -249,13 +249,13 @@ export const addListener = async (
           upsert: {
             create: {
               type: actionType,
-              status: actionType === 'OMNIAI' ? (prompt ? 'CONFIGURED' : 'UNCONFIGURED') : (message ? 'CONFIGURED' : 'UNCONFIGURED'),
+              status: actionType === ACTION_TYPE.PROLYAI ? (prompt ? 'CONFIGURED' : 'UNCONFIGURED') : (message ? 'CONFIGURED' : 'UNCONFIGURED'),
               prompt: prompt || '',
               message: message || '',
             },
             update: {
               type: actionType,
-              status: actionType === 'OMNIAI' ? (prompt ? 'CONFIGURED' : 'UNCONFIGURED') : (message ? 'CONFIGURED' : 'UNCONFIGURED'),
+              status: actionType === ACTION_TYPE.PROLYAI ? (prompt ? 'CONFIGURED' : 'UNCONFIGURED') : (message ? 'CONFIGURED' : 'UNCONFIGURED'),
               prompt: prompt || '',
               message: message || '',
             },

@@ -159,7 +159,7 @@ interface AutomationState {
     config?: any;
   }[];
   listener?: {
-    type: 'MESSAGE' | 'OMNIAI';
+    	type: 'MESSAGE' | 'PROLYAI';
     prompt?: string;
     reply?: string;
   };
@@ -190,7 +190,7 @@ interface AutomationChanges {
     }
   }[]
   listener?: {
-    type: 'MESSAGE' | 'OMNIAI'
+    	type: 'MESSAGE' | 'PROLYAI'
     status?: 'UNCONFIGURED' | 'CONFIGURED' | 'COMPLETED'
     prompt?: string
     message?: string
@@ -713,7 +713,7 @@ export const useAutomationWorkflow = (id: string) => {
 
 // Update useListener to use auto-save
 export const useListener = (id: string) => {
-  const [listener, setListener] = useState<'MESSAGE' | 'OMNIAI' | null>(null)
+  	const [listener, setListener] = useState<'MESSAGE' | 'PROLYAI' | null>(null)
   const { saveChanges } = useAutomationSync(id)
 
   const promptSchema = z.object({
@@ -734,7 +734,7 @@ export const useListener = (id: string) => {
     }
   }, [listener, saveChanges])
 
-  const onSetListener = useCallback((type: 'OMNIAI' | 'MESSAGE') => {
+  	const onSetListener = useCallback((type: 'PROLYAI' | 'MESSAGE') => {
     setListener(type)
   }, [])
 

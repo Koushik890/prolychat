@@ -19,7 +19,7 @@ export function Navbar() {
             <div className="relative h-10 w-40 -ml-2">
               <Image 
                 src="/logo.png"
-                alt="OmniSocial Logo"
+                					alt="Prolychat Logo"
                 fill
                 className="object-contain"
                 priority

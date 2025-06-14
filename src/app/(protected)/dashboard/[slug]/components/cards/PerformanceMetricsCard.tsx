@@ -4,7 +4,6 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { MessageSquare, Send } from 'lucide-react';
 import { motion, useMotionTemplate, useMotionValue } from 'framer-motion';
-import { BackgroundGradient } from '@/components/ui/background-gradient';
 import { Spinner } from '@/components/ui/spinner';
 
 interface PerformanceMetricsCardProps {
@@ -42,45 +41,23 @@ export function PerformanceMetricsCard({
   return (
     <div className={cn("h-full grid grid-cols-2 gap-6", className)}>
       {/* Comments Metric Card */}
-      <BackgroundGradient 
-        className="rounded-3xl overflow-hidden shadow-xl bg-opacity-0 p-0" 
-        containerClassName="h-full"
-      >
-        <div 
-          className="relative h-full flex"
-        >
-          {/* Main background gradient */}
+      <div className="relative h-full p-1 rounded-3xl bg-gradient-to-r from-[#00ccb1] via-[#7b61ff] to-[#ffc414] shadow-xl">
+        <div className="relative h-full w-full bg-white rounded-[20px] overflow-hidden">
+          {/* Glassmorphic overlay effects */}
           <div 
-            className="absolute inset-0 rounded-3xl"
+            className="absolute inset-0 rounded-[20px]"
             style={{
-              background: 'linear-gradient(to bottom right, rgba(240, 240, 255, 0.95), rgba(225, 225, 245, 0.9))',
-              backdropFilter: 'blur(8px)'
+              background: 'linear-gradient(to bottom right, rgba(248, 250, 252, 0.6), rgba(241, 245, 249, 0.4))',
+              backdropFilter: 'blur(4px)'
             }}
           ></div>
           
           {/* Glass effect overlay */}
-          <div className="absolute inset-0 bg-white/5 backdrop-blur-[6px] rounded-3xl"></div>
+          <div className="absolute inset-0 bg-white/5 backdrop-blur-[2px] rounded-[20px]"></div>
           
-          {/* Subtle edge highlight */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent rounded-3xl"></div>
-          
-          {/* Enhanced edge lighting */}
-          <div 
-            className="absolute inset-0 rounded-3xl pointer-events-none opacity-70"
-            style={{
-              boxShadow: 'inset 0 0 20px rgba(255, 255, 255, 0.4)'
-            }}
-          ></div>
-          
-          {/* Top highlight */}
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
-          
-          {/* Left highlight */}
-          <div className="absolute top-0 left-0 bottom-0 w-[1px] bg-gradient-to-b from-white/5 via-white/5 to-transparent"></div>
-          
-          {/* Interactive gradient effect - now always visible */}
+          {/* Interactive gradient effect */}
           <motion.div
-            className="absolute inset-0 opacity-60"
+            className="absolute inset-0 opacity-30"
             style={{
               background: useMotionTemplate`
                 radial-gradient(
@@ -135,48 +112,26 @@ export function PerformanceMetricsCard({
             </div>
           </div>
         </div>
-      </BackgroundGradient>
+      </div>
       
       {/* Direct Messages Metric Card */}
-      <BackgroundGradient 
-        className="rounded-3xl overflow-hidden shadow-xl bg-opacity-0 p-0" 
-        containerClassName="h-full"
-      >
-        <div 
-          className="relative h-full flex"
-        >
-          {/* Main background gradient */}
+      <div className="relative h-full p-1 rounded-3xl bg-gradient-to-r from-[#00ccb1] via-[#7b61ff] to-[#ffc414] shadow-xl">
+        <div className="relative h-full w-full bg-white rounded-[20px] overflow-hidden">
+          {/* Glassmorphic overlay effects */}
           <div 
-            className="absolute inset-0 rounded-3xl"
+            className="absolute inset-0 rounded-[20px]"
             style={{
-              background: 'linear-gradient(to bottom right, rgba(240, 240, 255, 0.95), rgba(225, 225, 245, 0.9))',
-              backdropFilter: 'blur(8px)'
+              background: 'linear-gradient(to bottom right, rgba(248, 250, 252, 0.6), rgba(241, 245, 249, 0.4))',
+              backdropFilter: 'blur(4px)'
             }}
           ></div>
           
           {/* Glass effect overlay */}
-          <div className="absolute inset-0 bg-white/5 backdrop-blur-[6px] rounded-3xl"></div>
+          <div className="absolute inset-0 bg-white/5 backdrop-blur-[2px] rounded-[20px]"></div>
           
-          {/* Subtle edge highlight */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent rounded-3xl"></div>
-          
-          {/* Enhanced edge lighting */}
-          <div 
-            className="absolute inset-0 rounded-3xl pointer-events-none opacity-70"
-            style={{
-              boxShadow: 'inset 0 0 20px rgba(255, 255, 255, 0.4)'
-            }}
-          ></div>
-          
-          {/* Top highlight */}
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
-          
-          {/* Left highlight */}
-          <div className="absolute top-0 left-0 bottom-0 w-[1px] bg-gradient-to-b from-white/5 via-white/5 to-transparent"></div>
-          
-          {/* Interactive gradient effect - now always visible */}
+          {/* Interactive gradient effect */}
           <motion.div
-            className="absolute inset-0 opacity-60"
+            className="absolute inset-0 opacity-30"
             style={{
               background: useMotionTemplate`
                 radial-gradient(
@@ -244,7 +199,7 @@ export function PerformanceMetricsCard({
             </div>
           </div>
         </div>
-      </BackgroundGradient>
+      </div>
     </div>
   );
 }

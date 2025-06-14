@@ -11,7 +11,7 @@ export function Logo({ className, collapsed = false }: LogoProps) {
     <div className={cn("flex items-center transition-all duration-300 ease-in-out", className)}>
       <Image 
         src="/logo.png"
-        alt="OmniSocial Logo"
+        		alt="Prolychat Logo"
         width={collapsed ? 40 : 180}
         height={collapsed ? 40 : 45}
         className="object-contain transition-all duration-300 ease-in-out"

@@ -1,4 +1,4 @@
-import { PlaneBlue, OmniAi, TinyInstagram } from '@/icons'
+import { PlaneBlue, ProlyAi, TinyInstagram } from '@/icons'
 import { v4 } from 'uuid'
 
 export type AutomationListenerProps = {
@@ -6,7 +6,7 @@ export type AutomationListenerProps = {
     label: string
     icon: JSX.Element
     description: string
-    type: 'OMNIAI' | 'MESSAGE'
+    	type: 'PROLYAI' | 'MESSAGE'
 }
 export type AutomationsTriggerProps = {
     id: string
@@ -43,9 +43,9 @@ export const AUTOMATION_LISTENERS: AutomationListenerProps[] = [
     },
     {
         id: v4(),
-        label: 'Let Omni ai take over',
-        icon: <OmniAi />,
+        		label: 'Let Proly AI take over',
+        		icon: <ProlyAi />,
         description: 'Tell AI about your project. (Upgrade to use this feature)',
-        type: 'OMNIAI',
+        		type: 'PROLYAI',
     },
 ]

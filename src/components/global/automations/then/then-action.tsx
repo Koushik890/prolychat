@@ -51,7 +51,7 @@ const ThenAction = ({ id }: Props) => {
         <TriggerButton label="Then">
             <div className="flex flex-col gap-y-2 ">
                 {AUTOMATION_LISTENERS.map((listener) =>
-                    listener.type === 'OMNIAI' ? (
+                    		listener.type === 'PROLYAI' ? (
                         <SubscriptionPlan
                             key={listener.type}
                             type="PRO"
@@ -98,8 +98,8 @@ const ThenAction = ({ id }: Props) => {
                 >
                     <Textarea
                         placeholder={
-                            Listener === 'OMNIAI'
-                                ? 'Add a prompt that your omni ai can use...'
+                            						Listener === 'PROLYAI'
+                                					? 'Add a prompt that your Proly AI can use...'
                                 : 'Add a message you want send to your customers'
                         }
                         name="prompt"

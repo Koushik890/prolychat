@@ -10,7 +10,7 @@ interface PlaceholderNodeProps {
   id: string
   data: {
     label?: string
-    onActionSelect?: (actionId: string, actionType: 'MESSAGE' | 'OMNIAI', actionName: string, icon: React.ComponentType<any>) => void
+    	onActionSelect?: (actionId: string, actionType: 'MESSAGE' | 'PROLYAI', actionName: string, icon: React.ComponentType<any>) => void
   }
 }
 
@@ -18,7 +18,7 @@ export function PlaceholderNode({ id, data }: PlaceholderNodeProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { setNodes, getNode } = useReactFlow()
 
-  const handleActionSelect = (actionId: string, action: 'MESSAGE' | 'OMNIAI', actionName: string, icon: React.ComponentType<any>) => {
+  	const handleActionSelect = (actionId: string, action: 'MESSAGE' | 'PROLYAI', actionName: string, icon: React.ComponentType<any>) => {
     const node = getNode(id)
     if (node) {
       setNodes(nodes => nodes.map(n => {

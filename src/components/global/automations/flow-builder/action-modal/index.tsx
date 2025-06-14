@@ -21,7 +21,7 @@ import styles from './action-modal.module.css'
 interface ActionModalProps {
   isOpen: boolean
   onClose: () => void
-  onSelect: (actionId: string, action: 'MESSAGE' | 'OMNIAI', actionName: string, icon: React.ComponentType<any>) => void
+  onSelect: (actionId: string, action: 'MESSAGE' | 'PROLYAI', actionName: string, icon: React.ComponentType<any>) => void
 }
 
 export function ActionModal({ isOpen, onClose, onSelect }: ActionModalProps) {
@@ -39,7 +39,7 @@ export function ActionModal({ isOpen, onClose, onSelect }: ActionModalProps) {
     return () => window.removeEventListener('keydown', handleEscape)
   }, [isOpen, onClose])
 
-  const handleSelect = (action: 'MESSAGE' | 'OMNIAI') => {
+  const handleSelect = (action: 'MESSAGE' | 'PROLYAI') => {
     const actionId = `action-${Date.now()}`
     const actionName = action === 'MESSAGE' ? 'Send Message' : 'AI Assistant'
     const icon = action === 'MESSAGE' ? MessageDotsIcon : BotAddIcon
@@ -173,13 +173,13 @@ export function ActionModal({ isOpen, onClose, onSelect }: ActionModalProps) {
             )}
             onClick={(e) => {
               e.stopPropagation()
-              handleSelect('OMNIAI')
+              handleSelect('PROLYAI')
             }}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
               e.stopPropagation()
-              if (e.key === 'Enter') handleSelect('OMNIAI')
+              if (e.key === 'Enter') handleSelect('PROLYAI')
             }}
           >
             <div className={cn(
@@ -196,10 +196,10 @@ export function ActionModal({ isOpen, onClose, onSelect }: ActionModalProps) {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-[15px] font-semibold text-gray-900 group-hover:text-purple-600 transition-colors duration-200">
-                Use OmniAI Assistant
+                Use Proly AI Assistant
               </h3>
               <p className="text-[13px] text-gray-600 group-hover:text-gray-700 transition-colors duration-200 mt-0.5">
-                Let OmniAI handle the conversation with smart responses
+                Let Proly AI handle the conversation with smart responses
               </p>
             </div>
           </Card>

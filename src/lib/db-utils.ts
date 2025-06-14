@@ -152,7 +152,7 @@ export const db = {
   $transaction: async <T>(
     fn: (prisma: typeof client) => Promise<T>
   ): Promise<T> => {
-    return executeWithRetry(() => client.$transaction(fn))
+    return executeWithRetry(() => client.$transaction(fn as any))
   }
 }
 

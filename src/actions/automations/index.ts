@@ -99,7 +99,7 @@ export const getAllAutomations = async () => {
         const listenerInfo = {
           id: listener.id,
           type: listener.type,
-          actionType: listener.type, // This is the ACTION_TYPE (MESSAGE or OMNIAI)
+          actionType: listener.type, // This is the ACTION_TYPE (MESSAGE or PROLYAI)
           dmCount,
           commentCount
         };
@@ -212,7 +212,7 @@ export const updateAutomationName = async (
 
 export const saveListener = async (
   autmationId: string,
-  listener: 'OMNIAI' | 'MESSAGE',
+  listener: 'PROLYAI' | 'MESSAGE',
   prompt: string,
   message?: string
 ) => {

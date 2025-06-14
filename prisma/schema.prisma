@@ -4,9 +4,10 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  directUrl         = env("DIRECT_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model User {
@@ -171,7 +172,7 @@ enum MEDIATYPE {
 }
 
 enum LISTENERS {
-  OMNIAI
+  PROLYAI
   MESSAGE
 }
 
@@ -190,7 +191,7 @@ enum AutomationStatus {
 
 enum ACTION_TYPE {
   MESSAGE
-  OMNIAI
+  PROLYAI
 }
 
 enum ACTION_STATUS {

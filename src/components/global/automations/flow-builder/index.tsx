@@ -386,7 +386,7 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
   }, [setNodes, setEdges, saveChanges, queryClient, id, showToast])
 
   // Handle action selection from modal
-  const handleActionSelect = React.useCallback(async (actionId: string, actionType: 'MESSAGE' | 'OMNIAI', actionName: string, icon: React.ComponentType<any>, config?: any) => {
+  	const handleActionSelect = React.useCallback(async (actionId: string, actionType: 'MESSAGE' | 'PROLYAI', actionName: string, icon: React.ComponentType<any>, config?: any) => {
     try {
       // First check the database state with proper typing
       const currentState = await queryClient.getQueryData(['automation-info', id]) as { data?: AutomationData }
@@ -560,7 +560,7 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
     // Save changes to the database
     saveChanges({
       listener: {
-        type: 'OMNIAI',
+        					type: 'PROLYAI',
         status: 'CONFIGURED',
         prompt
       }

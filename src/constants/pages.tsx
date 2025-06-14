@@ -9,7 +9,6 @@ import {
   export const PAGE_BREAD_CRUMBS: string[] = [
     'contacts',
     'automations',
-    'integrations',
     'settings',
   ]
   
@@ -20,7 +19,6 @@ import {
   export const PAGE_ICON: Props = {
     AUTOMATIONS: <AutomationDuoToneBlue />,
     CONTACTS: <ContactsDuoToneBlue />,
-    INTEGRATIONS: <RocketDuoToneBlue />,
     SETTINGS: <SettingsDuoToneWhite />,
     HOME: <HomeDuoToneBlue />,
   }
@@ -38,7 +36,7 @@ import {
       cta: 'Get Started',
     },
     {
-      name: 'Omni ai Plan',
+      		name: 'Proly AI Plan',
       description: 'Advanced features for power users',
       price: '$99',
       features: [

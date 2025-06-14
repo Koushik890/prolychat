@@ -28,32 +28,16 @@ export const createUser = async (
   lastname: string,
   email: string
 ) => {
-  // First check if user exists
-  const existingUser = await client.user.findUnique({
-    where: { clerkId },
-    include: { subscription: true }
-  });
-
-  if (existingUser) {
-    // If user exists, just update the details
-    return await client.user.update({
+  // Use upsert to handle the race condition atomically
+  try {
+    const result = await client.user.upsert({
       where: { clerkId },
-      data: {
+      update: {
         firstname,
         lastname,
         email,
       },
-      select: {
-        firstname: true,
-        lastname: true,
-      },
-    });
-  }
-
-  // If user doesn't exist, create new user with subscription
-  try {
-    return await client.user.create({
-      data: {
+      create: {
         clerkId,
         firstname,
         lastname,
@@ -70,23 +54,55 @@ export const createUser = async (
         lastname: true,
       },
     });
+    
+    return result;
   } catch (error: any) {
+    console.error('Error in createUser:', {
+      clerkId,
+      firstname,
+      lastname,
+      email,
+      error: error.message,
+      code: error.code
+    });
+    
+    // If we still get a unique constraint error, try a simple find and update
     if (error?.code === 'P2002') {
-      // If we hit a unique constraint error, someone else created the user
-      // between our check and create, so let's just update instead
-      return await client.user.update({
-        where: { clerkId },
-        data: {
-          firstname,
-          lastname,
-          email,
-        },
-        select: {
-          firstname: true,
-          lastname: true,
-        },
-      });
+      try {
+        // Wait a bit to avoid immediate retry conflicts
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        const existingUser = await client.user.findUnique({
+          where: { clerkId },
+          select: {
+            firstname: true,
+            lastname: true,
+          },
+        });
+        
+        if (existingUser) {
+          return existingUser;
+        }
+        
+        // If still not found, something is very wrong, but try to update anyway
+        return await client.user.update({
+          where: { clerkId },
+          data: {
+            firstname,
+            lastname,
+            email,
+          },
+          select: {
+            firstname: true,
+            lastname: true,
+          },
+        });
+      } catch (fallbackError: any) {
+        console.error('Fallback error in createUser:', fallbackError);
+        throw new Error(`Failed to create or update user: ${fallbackError.message}`);
+      }
     }
+    
     throw error; // Re-throw any other errors
   }
 }

@@ -30,7 +30,7 @@ interface Trigger {
 interface Listener {
   id?: string;
   type?: string;
-  actionType?: 'MESSAGE' | 'OMNIAI';
+  	actionType?: 'MESSAGE' | 'PROLYAI';
   automationId?: string;
   prompt?: string;
   message?: string;
@@ -121,10 +121,10 @@ export default function DashboardPage() {
           // Determine if this is a direct message trigger
           const hasDmTrigger = triggerTypes.includes('user-message');
           
-          // Get listener type - for metrics calculation we care about MESSAGE or OMNIAI
+          // Get listener type - for metrics calculation we care about MESSAGE or PROLYAI
           const actionType = automation.listener?.actionType;
           const isMsgAction = actionType === 'MESSAGE';
-          const isOmniAction = actionType === 'OMNIAI';
+          const isOmniAction = actionType === 'PROLYAI';
           
           console.log(`Automation action types:`, {
             name: automation.name,
@@ -393,8 +393,8 @@ export default function DashboardPage() {
         console.warn('Failed to set default trigger:', triggerResponse.data);
       }
       
-      // Set up the OMNIAI listener with an empty prompt to start
-      const listenerResponse = await saveListener(automationId, 'OMNIAI', '');
+              // Set up the PROLYAI listener with an empty prompt to start
+        const listenerResponse = await saveListener(automationId, 'PROLYAI', '');
       
       if (listenerResponse.status !== 200) {
         console.warn('Failed to set AI assistant automatically:', listenerResponse.data);

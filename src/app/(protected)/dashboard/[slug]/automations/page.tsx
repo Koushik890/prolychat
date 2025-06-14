@@ -49,7 +49,7 @@ interface AutomationData {
   userId: string | null
   listener: {
     id: string
-    listener: 'OMNIAI' | 'MESSAGE'
+    	listener: 'PROLYAI' | 'MESSAGE'
     automationId: string
     prompt: string
     commentReply: string | null
