@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { ActionConfigSidebar, CardData } from '../action-config-sidebar'
 import { AiPromptModal } from '../ai-prompt-modal'
 import { ViewPromptModal } from '../view-prompt-modal'
+import { bufferToDataUrl } from '@/utils/image-utils'
 import styles from './action-node.module.css'
 
 // Small Card Preview Component for Action Node
@@ -123,26 +124,25 @@ export const ActionNode: React.FC<ActionNodeProps> = ({ data, onMessageUpdate, o
           buffer = data.listener.messageData.cardImage
         } else if (data.listener.messageData.cardImage instanceof Uint8Array) {
           buffer = Buffer.from(data.listener.messageData.cardImage)
-                  } else {
-            // Safe handling of array-like structures
-            try {
-              const imageData = data.listener.messageData.cardImage
-              if (Array.isArray(imageData)) {
-                buffer = Buffer.from(imageData)
-              } else if (typeof imageData === 'object' && imageData !== null && 'length' in imageData) {
-                // Convert array-like object to actual array
-                buffer = Buffer.from(Array.from(imageData as ArrayLike<number>))
-              } else {
-                console.warn('Unexpected cardImage data type:', typeof imageData, imageData)
-              }
-            } catch (error) {
-              console.warn('Failed to convert cardImage to Buffer:', error)
+                          } else {
+          // Safe handling of array-like structures
+          try {
+            const rawImageData = data.listener.messageData.cardImage
+            if (Array.isArray(rawImageData)) {
+              buffer = Buffer.from(rawImageData)
+            } else if (typeof rawImageData === 'object' && rawImageData !== null && 'length' in rawImageData) {
+              // Convert array-like object to actual array
+              buffer = Buffer.from(Array.from(rawImageData as ArrayLike<number>))
+            } else {
+              console.warn('Unexpected cardImage data type:', typeof rawImageData, rawImageData)
             }
+          } catch (error) {
+            console.warn('Failed to convert cardImage to Buffer:', error)
           }
+        }
         
         if (buffer) {
-          const base64 = buffer.toString('base64')
-          imageData = `data:image/jpeg;base64,${base64}`
+          imageData = bufferToDataUrl(buffer)
         }
       }
 

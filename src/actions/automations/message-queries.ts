@@ -1,6 +1,7 @@
 import { client } from '@/lib/prisma'
 import { CardData, MessageData } from '@/types/automation'
 import { withDatabaseRetry } from '@/lib/db-utils'
+import { bufferToDataUrl } from '@/utils/image-utils'
 
 export const createOrUpdateMessage = async (
   listenerId: string,
@@ -218,14 +219,14 @@ export const getCardDataFromMessage = (message: MessageData): CardData | null =>
     } else {
       // Safe handling of array-like structures
       try {
-        const imageData = message.cardImage
-        if (Array.isArray(imageData)) {
-          buffer = Buffer.from(imageData)
-        } else if (typeof imageData === 'object' && imageData !== null && 'length' in imageData) {
+        const rawImageData = message.cardImage
+        if (Array.isArray(rawImageData)) {
+          buffer = Buffer.from(rawImageData)
+        } else if (typeof rawImageData === 'object' && rawImageData !== null && 'length' in rawImageData) {
           // Convert array-like object to actual array
-          buffer = Buffer.from(Array.from(imageData as ArrayLike<number>))
+          buffer = Buffer.from(Array.from(rawImageData as ArrayLike<number>))
         } else {
-          console.warn('Unexpected cardImage data type:', typeof imageData, imageData)
+          console.warn('Unexpected cardImage data type:', typeof rawImageData, rawImageData)
         }
       } catch (error) {
         console.warn('Failed to convert cardImage to Buffer:', error)
@@ -233,8 +234,7 @@ export const getCardDataFromMessage = (message: MessageData): CardData | null =>
     }
     
     if (buffer) {
-      const base64 = buffer.toString('base64')
-      imageData = `data:image/jpeg;base64,${base64}`
+      imageData = bufferToDataUrl(buffer)
     }
   }
 

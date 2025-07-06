@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { X, Type, Image, Video, Clock, PlayCircle, LayoutGrid, FileImage, CreditCard, Zap, MessageCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useParams } from 'next/navigation'
 import { TextConfigModal } from '../text-config-modal'
 import { CardConfigModal, CardData } from '../card-config-modal'
 import styles from './action-config-sidebar.module.css'
@@ -169,6 +170,21 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
   const [selectedCardData, setSelectedCardData] = useState<CardData | null>(null)
   const [isDeletingMessage, setIsDeletingMessage] = useState(false)
   const { showToast } = useToast()
+  const params = useParams()
+  
+  // Helper function to get automation ID safely
+  const getAutomationId = (): string => {
+    if (params?.id && typeof params.id === 'string') {
+      return params.id
+    }
+    // Fallback to URL parsing if params not available
+    const pathSegments = window.location.pathname.split('/')
+    const automationIndex = pathSegments.findIndex(segment => segment === 'automations')
+    if (automationIndex !== -1 && automationIndex + 1 < pathSegments.length) {
+      return pathSegments[automationIndex + 1]
+    }
+    throw new Error('Unable to determine automation ID')
+  }
 
   useEffect(() => {
     if (initialMessage) {
@@ -199,7 +215,7 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
   const handleTextSave = async (text: string) => {
     try {
       // Save text data to database
-      const automationId = window.location.pathname.split('/')[4] // Extract automation ID from URL
+      const automationId = getAutomationId()
       const { saveTextMessage } = await import('@/actions/automations')
       
       const result = await saveTextMessage(automationId, text)
@@ -232,7 +248,7 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
   const handleCardSave = async (cardData: CardData) => {
     try {
       // Save card data to database
-      const automationId = window.location.pathname.split('/')[4] // Extract automation ID from URL
+      const automationId = getAutomationId()
       const { saveCardMessage } = await import('@/actions/automations')
       
       const result = await saveCardMessage(automationId, cardData)
@@ -308,8 +324,8 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
       setIsDeletingMessage(true)
       showToast('loading', 'Deleting message...', true)
       
-      // Extract automation ID from URL
-      const automationId = window.location.pathname.split('/')[4]
+      // Get automation ID using robust method
+      const automationId = getAutomationId()
       
       // Delete from database
       const { deleteAutomationMessage } = await import('@/actions/automations')
@@ -333,15 +349,15 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
         onSelect('text', { message: null, status: 'UNCONFIGURED' })
         onMessageDelete?.()
       }
-          } catch (error) {
-        console.error('Error deleting message:', error)
-        showToast('success', 'Error deleting message', true)
-        // Still update UI for better UX, but log the error
-        setSelectedText(null)
-        setSelectedActionType(null)
-        setSelectedCardData(null)
-        onSelect('text', { message: null, status: 'UNCONFIGURED' })
-        onMessageDelete?.()
+    } catch (error) {
+      console.error('Error deleting message:', error)
+      showToast('success', 'Error deleting message', true)
+      // Still update UI for better UX, but log the error
+      setSelectedText(null)
+      setSelectedActionType(null)
+      setSelectedCardData(null)
+      onSelect('text', { message: null, status: 'UNCONFIGURED' })
+      onMessageDelete?.()
     } finally {
       setIsDeletingMessage(false)
     }
