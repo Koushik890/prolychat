@@ -64,10 +64,11 @@ export function PlaceholderNode({ id, data }: PlaceholderNodeProps) {
           }
         }}
       >
+        {/* Handle for connections - invisible but functional */}
         <Handle
           type="target"
           position={Position.Left}
-          className={styles.handle}
+          className={styles.hiddenHandle}
           aria-label="Connection handle"
         />
         <div className={styles.content}>

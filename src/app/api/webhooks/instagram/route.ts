@@ -68,6 +68,21 @@ async function trackAutomationActivity(
   return trackingSuccessful;
 }
 
+// Helper function to get message text from listener
+function getListenerMessage(listener: any): string {
+  // Try to get from messageData first (new system)
+  if (listener.messageData) {
+    if (listener.messageData.type === 'TEXT' && listener.messageData.textContent) {
+      return listener.messageData.textContent;
+    } else if (listener.messageData.type === 'CARD' && listener.messageData.cardTitle) {
+      return `Card: ${listener.messageData.cardTitle}`;
+    }
+  }
+  
+  // Default fallback message if no message data is available
+  return 'Thank you for your comment!';
+}
+
 // Cache to store Instagram IDs to usernames from webhooks
 const usernameCache = new Map<string, string>();
 
@@ -655,8 +670,12 @@ export async function POST(req: NextRequest) {
                 webhook_payload.entry[0].changes[0].value.from.id
               )
 
+              // Load the full automation data to get messageData
+              const fullAutomation = await findAutomation(automation.id)
+              const listenerToUse = fullAutomation?.listener || automation.listener
+
               // First, try to send a direct message
-              const dmMessage = automation.listener.message || 'Thank you for your comment!'
+              const dmMessage = getListenerMessage(listenerToUse)
               let dmSent = false
               let dmError = null
               
@@ -959,6 +978,10 @@ export async function POST(req: NextRequest) {
                 if (fullAutomation.listener?.type) {
                   automation.listener.type = fullAutomation.listener.type
                 }
+                // Also update the full listener data to include messageData
+                if (fullAutomation.listener) {
+                  automation.listener = fullAutomation.listener
+                }
               }
             }
             
@@ -969,7 +992,7 @@ export async function POST(req: NextRequest) {
               const direct_message = await sendDM(
                 webhook_payload.entry[0].id,
                 webhook_payload.entry[0].messaging[0].sender.id,
-                automation.listener.message || '',
+                getListenerMessage(automation.listener),
                 automation.User?.integrations[0].token!,
                 automation.User?.integrations[0].id
               )
@@ -1444,7 +1467,7 @@ export async function POST(req: NextRequest) {
 
                 // First, try to send a direct message
                 const commentId = webhook_payload.entry[0].changes[0].value.id
-                const dmMessage = automation.listener.message || 'Thank you for your comment!'
+                const dmMessage = getListenerMessage(automation.listener)
                 const token = automation.User?.integrations[0].token!
                 let dmSent = false
                 let dmError = null

@@ -2,256 +2,258 @@
 
 import React, { useState } from 'react'
 import SettingsHeader from '@/components/global/settings/settings-header'
-import { useParams, useSearchParams, useRouter } from 'next/navigation'
-import Billing from '@/components/global/billing'
+import { useParams } from 'next/navigation'
+
 import { cn } from '@/lib/utils'
-import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { DollarSign, CheckCircle, Users, Loader2 } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { useQueryUser } from '@/hooks/user-queries'
-import { SUBSCRIPTION_PLAN, SUBSCRIPTION_STATUS } from '@prisma/client'
+import { SUBSCRIPTION_PLAN } from '@prisma/client'
+import styles from './payment.module.css'
 import { useLemonSqueezy } from '@/hooks/use-lemonsqueezy'
-import { format } from 'date-fns'
+import { useUser } from '@clerk/nextjs'
+import { toast } from 'sonner'
 
 const PaymentSettingsPage = () => {
   const params = useParams()
-  const searchParams = useSearchParams()
-  const router = useRouter()
   const userSlug = params?.slug as string || ''
-  const tab = searchParams.get('tab') || 'overview'
-  const { data: userData, isLoading: isUserLoading } = useQueryUser()
-  const { redirectToCustomerPortal, isLoading: isPortalLoading } = useLemonSqueezy()
-  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
-
-  const tabs = [
-    {
-      label: 'Overview',
-      value: 'overview',
-      href: `/dashboard/${userSlug}/settings/payment?tab=overview`
-    },
-    {
-      label: 'All plans',
-      value: 'all-plans',
-      href: `/dashboard/${userSlug}/settings/payment?tab=all-plans`
-    }
-  ]
-
-  // Define the font family to match SettingsHeader
-  const fontFamily = 'var(--font-inter), -apple-system, BlinkMacSystemFont, "Apple Color Emoji", Inter, Roboto, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif'
+  const { data: userData } = useQueryUser()
+  const [billingCycle, setBillingCycle] = useState<"annual" | "monthly">("annual")
   
-  // Add inline styles to ensure font overrides work
-  const headingStyle = {
-    fontFamily: fontFamily
+  // LemonSqueezy integration
+  const { user } = useUser()
+  const { createCheckoutSession, isLoading } = useLemonSqueezy()
+
+  const plans = {
+    starter: {
+      name: "Starter Plan",
+      description: "For Small Teams & Startups",
+      monthlyPrice: 0,
+      annualPrice: 0,
+      features: [
+        "AI-Powered Contact Management",
+        "Email & SMS Campaign Automation",
+        "Basic Sales Pipeline Tracking",
+        "5 AI-Generated Campaign",
+        "Essential Integrations",
+        "Standard Support",
+      ],
+    },
+    growth: {
+      name: "Growth Plan",
+      description: "For Scaling Teams & Businesses",
+      monthlyPrice: 5,
+      annualPrice: 4,
+      features: [
+        "Unlimited Contacts & Custom Segmentation",
+        "Multi-Channel Campaign Automation",
+        "AI-Driven Lead Analytics",
+        "Smart Workflow Automation",
+        "Team Collaboration",
+        "Priority Support",
+      ],
+      basePlan: "Starter",
+    },
   }
 
-  // Get subscription data from user profile
+  // Get subscription data for current plan badges
   const subscription = userData?.data?.subscription
   const currentPlan = subscription?.plan || SUBSCRIPTION_PLAN.FREE
-  const subscriptionStatus = subscription?.subscriptionStatus
-  
-  // Format renewal date - use current date + 30 days if no subscription data
-  const renewalDate = subscription?.updatedAt 
-    ? format(new Date(new Date(subscription.updatedAt).setMonth(new Date(subscription.updatedAt).getMonth() + 1)), 'MMM dd, yyyy')
-    : format(new Date(new Date().setDate(new Date().getDate() + 30)), 'MMM dd, yyyy')
-  
-  // Determine pricing based on plan
-  const planPrice = currentPlan === SUBSCRIPTION_PLAN.PRO ? '$99' : 'Free'
 
-  // Format plan name for display
-  const planName = currentPlan === SUBSCRIPTION_PLAN.PRO 
-    ? 'Pro plan monthly' 
-    : 'Free plan'
+  // Handle Growth plan checkout
+  const handleGrowthPlanCheckout = async () => {
+    if (!user?.id || !user?.emailAddresses?.[0]?.emailAddress) {
+      toast.error('Please sign in to upgrade your plan')
+      return
+    }
 
-  // Features available based on current plan
-  const planFeatures = currentPlan === SUBSCRIPTION_PLAN.PRO
-    ? [
-        					'Access to Proly AI for automated content management',
-        'Advanced analytics and insights',
-        'Unlimited automations for social media',
-        'Priority customer support'
-      ]
-    : [
-        'Set up billable rates for detailed project overviews',
-        'Define tasks to break up your projects',
-        'Invite your team members'
-      ]
-
-  const handleManageBilling = async () => {
-    if (currentPlan === SUBSCRIPTION_PLAN.FREE) {
-      // Redirect to All plans tab
-      router.push(`/dashboard/${userSlug}/settings/payment?tab=all-plans`)
-    } else {
-      // Redirect to customer portal
-      await redirectToCustomerPortal()
+    try {
+      await createCheckoutSession({
+        userId: user.id,
+        userEmail: user.emailAddresses[0].emailAddress,
+        plan: SUBSCRIPTION_PLAN.PRO,
+        billingCycle: billingCycle === 'annual' ? 'yearly' : 'monthly',
+      })
+    } catch (error) {
+      console.error('Checkout error:', error)
+      toast.error('Failed to start checkout process. Please try again.')
     }
   }
 
-  const isLoading = isUserLoading || isPortalLoading
-
   return (
-    <div className="space-y-6 font-sans">
-      {/* Header and main navigation */}
-      <div className="settings-header-with-subnav">
+    <div className={styles.paymentPageContainer}>
+      {/* Sticky Header */}
+      <div className={styles.stickyHeaderContainer}>
         <SettingsHeader userSlug={userSlug} />
-        
-        {/* Payment tabs navigation - positioned to appear connected to the header */}
-        <div className="bg-white/75 backdrop-blur-md border-b border-gray-200/20 -mt-[2px] -mx-8 w-[calc(100%+4rem)]">
-          <div className="px-8 pb-0">
-            <nav className="flex space-x-8" aria-label="Payment tabs">
-              {tabs.map((item) => (
-                <Link
-                  key={item.value}
-                  href={item.href}
-                  className={cn(
-                    'py-4 px-1 text-sm font-medium border-b-2 -mb-[2px] whitespace-nowrap',
-                    tab === item.value
-                      ? 'border-purple-500 text-purple-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  )}
-                  style={headingStyle}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
-        </div>
       </div>
       
-      <div className="max-w-5xl mx-auto px-4 pb-16 pt-4">
-        {tab === 'overview' ? (
-          <div className="grid md:grid-cols-2 gap-8" style={{ marginBottom: '2rem' }}>
-            {/* Plan details card */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <div className="p-6">
-                <h2 className="text-xl font-medium text-gray-900 mb-1">My Plan</h2>
-                <p className="text-base text-gray-600 mb-4">
-                  {subscriptionStatus === SUBSCRIPTION_STATUS.ACTIVE 
-                    ? `Your subscription will renew on ${renewalDate}`
-                    : currentPlan === SUBSCRIPTION_PLAN.PRO && subscriptionStatus === SUBSCRIPTION_STATUS.CANCEL_AT_PERIOD_END
-                      ? `Your subscription will end on ${renewalDate}`
-                      : currentPlan === SUBSCRIPTION_PLAN.FREE
-                        ? 'You are currently on the free plan'
-                        : `Your subscription will renew on ${renewalDate}`
-                  }
+      {/* Scrollable Content */}
+      <div className={styles.scrollableContent}>
+        {/* Plans & Pricing Section - Full Width */}
+        <div id="pricing-section" className={styles.pricingSection}>
+          <div className={`${styles.pricingContainer} ${styles.pricingContent}`}>
+            <div
+              className={styles.pricingInner}
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at top left, rgba(244, 235, 255, 0.4), transparent 30%), radial-gradient(circle at bottom right, rgba(244, 235, 255, 0.4), transparent 30%)",
+              }}
+            >
+              <div
+                className="absolute inset-0 z-0"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(to right, #faf7ff 1px, transparent 1px), linear-gradient(to bottom, #faf7ff 1px, transparent 1px)",
+                  backgroundSize: "40px 40px",
+                  opacity: 0.5,
+                }}
+              />
+              <div className="relative z-10 mx-auto max-w-4xl text-center">
+                <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
+                  Choose a Plan That
+                  <br />
+                  <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+                    Scales With You.
+                  </span>
+                </h1>
+                <p className="mt-6 text-lg leading-8 text-gray-600">
+                  Find the perfect plan to streamline your marketing, automate campaigns, and drive smarter collaboration. No
+                  hidden fees, cancel anytime.
                 </p>
-                
-                {currentPlan === SUBSCRIPTION_PLAN.PRO && subscriptionStatus === SUBSCRIPTION_STATUS.ACTIVE && (
-                  <Link 
-                    href="#" 
-                    className="text-purple-500 font-medium hover:text-purple-600"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      handleManageBilling()
-                    }}
-                  >
-                    Cancel Subscription
-                  </Link>
-                )}
-              </div>
-              
-              <div className="border-t border-gray-100">
-                <div className="p-6">
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <div className="text-sm font-medium text-gray-500 uppercase mb-2">CURRENT PLAN</div>
-                      <div className="text-gray-900">{planName}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-gray-500 uppercase mb-2">COST</div>
-                      <div className="flex items-center">
-                        <span className="text-gray-900">{planPrice}</span>
-                        <button className="ml-2 text-gray-400 hover:text-gray-500 bg-gray-100 rounded-full h-5 w-5 flex items-center justify-center">
-                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M7 10V7M7 4H7.005M13 7C13 10.3137 10.3137 13 7 13C3.68629 13 1 10.3137 1 7C1 3.68629 3.68629 1 7 1C10.3137 1 13 3.68629 13 7Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="px-6 pb-6">
-                  <div className="flex justify-center">
-                    <Button 
-                      className="w-9/12 h-10 mt-3 rounded-lg text-white text-base font-medium hover:bg-[#b43cb4]" 
-                      style={{ backgroundColor: "#c84cc8", borderColor: "#c84cc8" }}
-                      onClick={handleManageBilling}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <span className="flex items-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Loading...
-                        </span>
-                      ) : (
-                        currentPlan === SUBSCRIPTION_PLAN.FREE ? 'Upgrade Plan' : 'Manage Billing'
+
+                <div className="mt-10 flex justify-center">
+                  <div className="inline-flex rounded-full bg-gray-100 p-1">
+                    <Button
+                      onClick={() => setBillingCycle("annual")}
+                      className={cn(
+                        "rounded-full px-6 py-2 text-sm font-semibold",
+                        billingCycle === "annual"
+                          ? "bg-white text-gray-900 shadow-sm"
+                          : "bg-transparent text-gray-600 hover:bg-white/50",
                       )}
+                    >
+                      Annual
+                      <span className="ml-2 inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-600">
+                        -20%
+                      </span>
+                    </Button>
+                    <Button
+                      onClick={() => setBillingCycle("monthly")}
+                      className={cn(
+                        "rounded-full px-6 py-2 text-sm font-semibold",
+                        billingCycle === "monthly"
+                          ? "bg-white text-gray-900 shadow-sm"
+                          : "bg-transparent text-gray-600 hover:bg-white/50",
+                      )}
+                    >
+                      Monthly
                     </Button>
                   </div>
                 </div>
-              </div>
-            </div>
-            
-            {/* Plan features card */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-medium text-gray-900">
-                    {currentPlan === SUBSCRIPTION_PLAN.PRO
-                      ? 'You are using Pro'
-                      : 'You are using Free'
-                    }
-                  </h2>
-                  <span className={cn(
-                    "text-xs font-medium px-2.5 py-0.5 rounded",
-                    currentPlan === SUBSCRIPTION_PLAN.PRO
-                      ? "bg-purple-100 text-purple-800"
-                      : "bg-gray-100 text-gray-800"
-                  )}>
-                    {currentPlan === SUBSCRIPTION_PLAN.PRO ? 'PRO' : 'FREE'}
-                  </span>
                 </div>
-                <p className="text-base text-gray-600 mb-6">Here are some of the things you can do now:</p>
                 
-                <ul className="space-y-6">
-                  {planFeatures.map((feature, index) => (
-                    <li key={index} className="flex items-start">
-                      <div className="flex-shrink-0 text-gray-400 mr-4">
-                        {index === 0 ? (
-                          <DollarSign className="h-5 w-5 text-gray-400" />
-                        ) : index === 1 ? (
-                          <CheckCircle className="h-5 w-5 text-gray-400" />
-                        ) : (
-                          <Users className="h-5 w-5 text-gray-400" />
-                        )}
+              <div className="relative z-10 mt-16 grid w-full max-w-4xl gap-8 md:grid-cols-2">
+                {/* Starter Plan */}
+                <div className="flex flex-col rounded-2xl bg-white relative" style={{ 
+                  border: '1px solid #e5e7eb',
+                  boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
+                }}>
+                  <div className="p-6">
+                    <p className="text-sm font-semibold text-gray-500">{plans.starter.description}</p>
+                    <h3 className="mt-2 text-3xl font-bold text-gray-900">{plans.starter.name}</h3>
                       </div>
-                      <span className="text-sm text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                
-                <div className="flex justify-center">
-                  <Button 
-                    variant="outline" 
-                    className="mt-10 w-9/12 h-10 border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg font-medium text-sm"
-                    onClick={() => router.push(`/dashboard/${userSlug}/settings/payment?tab=all-plans`)}
-                  >
-                    {currentPlan === SUBSCRIPTION_PLAN.PRO 
-                      ? 'View all available plans' 
-                      : 'Get more insights with our Premium plan'
-                    }
-                  </Button>
+                  <div className="flex flex-1 flex-col justify-between p-6 pt-0">
+                      <div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-5xl font-bold tracking-tight text-gray-900">
+                          ${billingCycle === "annual" ? plans.starter.annualPrice : plans.starter.monthlyPrice}
+                        </span>
+                        {billingCycle === "annual" && (
+                          <span className="text-xl font-medium text-gray-500 line-through">
+                            ${plans.starter.monthlyPrice}
+                          </span>
+                        )}
+                        <span className="text-sm text-gray-500">/month</span>
+                      </div>
+                      <Button 
+                        variant={currentPlan === SUBSCRIPTION_PLAN.FREE ? "default" : "outline"} 
+                        disabled={currentPlan === SUBSCRIPTION_PLAN.FREE}
+                        className={cn(
+                          "mt-8 w-full py-6 px-8 text-base font-semibold",
+                          currentPlan === SUBSCRIPTION_PLAN.FREE 
+                            ? "bg-purple-600 text-white cursor-not-allowed opacity-75" 
+                            : "bg-transparent hover:bg-gray-50"
+                        )}
+                      >
+                        {currentPlan === SUBSCRIPTION_PLAN.FREE ? 'Current Plan' : 'Get Started'}
+                      </Button>
+                      <ul className="mt-8 space-y-4 text-sm text-gray-600">
+                        {plans.starter.features.map((feature) => (
+                          <li key={feature} className="flex items-center gap-3">
+                            <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: '#f3e8ff' }}>
+                              <Check className="h-3 w-3" style={{ color: '#8b5cf6' }} />
+                            </div>
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                  </div>
+                </div>
+              </div>
+              
+                {/* Growth Plan - Highlighted */}
+                <div className="relative flex flex-col rounded-2xl border-2 border-purple-500 shadow-2xl bg-white">
+                  <div className="absolute inset-x-0 top-0 h-48 rounded-t-2xl bg-gradient-to-b from-purple-100/80 to-transparent" />
+                  <div className="relative p-6">
+                    <p className="text-sm font-semibold text-gray-500">{plans.growth.description}</p>
+                    <h3 className="mt-2 text-3xl font-bold text-gray-900">{plans.growth.name}</h3>
+                  </div>
+                  <div className="relative flex flex-1 flex-col justify-between p-6 pt-0">
+                    <div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-5xl font-bold tracking-tight text-gray-900">
+                          ${billingCycle === "annual" ? plans.growth.annualPrice : plans.growth.monthlyPrice}
+                        </span>
+                        {billingCycle === "annual" && (
+                          <span className="text-xl font-medium text-gray-500 line-through">${plans.growth.monthlyPrice}</span>
+                        )}
+                        <span className="text-sm text-gray-500">/month</span>
+                        </div>
+                      <Button 
+                        disabled={currentPlan === SUBSCRIPTION_PLAN.PRO || isLoading}
+                        onClick={currentPlan !== SUBSCRIPTION_PLAN.PRO ? handleGrowthPlanCheckout : undefined}
+                        className={cn(
+                          "mt-8 w-full py-6 px-8 text-base font-semibold text-white",
+                          currentPlan === SUBSCRIPTION_PLAN.PRO 
+                            ? "bg-purple-600 cursor-not-allowed opacity-75" 
+                            : "bg-gray-900 hover:bg-gray-800"
+                        )}
+                      >
+                        {isLoading 
+                          ? 'Processing...' 
+                          : currentPlan === SUBSCRIPTION_PLAN.PRO 
+                            ? 'Current Plan' 
+                            : 'Get Started'
+                        }
+                      </Button>
+                      <p className="mt-8 text-sm font-semibold text-gray-700">Everything in {plans.growth.basePlan}, PLUS:</p>
+                      <ul className="mt-4 space-y-4 text-sm text-gray-600">
+                        {plans.growth.features.map((feature) => (
+                          <li key={feature} className="flex items-center gap-3">
+                            <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: '#f3e8ff' }}>
+                              <Check className="h-3 w-3" style={{ color: '#8b5cf6' }} />
+                            </div>
+                            <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div>
-            {/* All plans content */}
-            <Billing />
-          </div>
-        )}
+            </div>
+        </div>
       </div>
     </div>
   )

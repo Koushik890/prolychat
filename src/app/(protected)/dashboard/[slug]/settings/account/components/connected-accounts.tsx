@@ -592,7 +592,7 @@ const ConnectedAccounts: React.FC<ConnectedAccountsProps> = ({
           <div className="mt-4 flex justify-end">
             <Button
               onClick={handleManageAllConnections}
-              className="provider-action disconnect"
+              className="manage-all-connections-btn"
             >
               Manage All Connections
             </Button>

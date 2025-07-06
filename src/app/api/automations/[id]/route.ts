@@ -85,7 +85,13 @@ export async function PATCH(request: Request, { params }: Context) {
         // First check if the automation exists and has a listener
         const automation = await client.automation.findUnique({
           where: { id },
-          include: { listener: true }
+          include: { 
+            listener: {
+              include: {
+                messageData: true
+              }
+            }
+          }
         });
 
         if (!automation) {
@@ -113,7 +119,11 @@ export async function PATCH(request: Request, { params }: Context) {
                 replyMessages: true
               }
             },
-            listener: true
+            listener: {
+              include: {
+                messageData: true
+              }
+            }
           }
         });
 
@@ -150,18 +160,16 @@ export async function PATCH(request: Request, { params }: Context) {
         upsert: {
           create: {
             type: body.listener.type,
-            status: body.listener.message ? 'CONFIGURED' : 'UNCONFIGURED',
+            status: 'UNCONFIGURED', // Will be updated by message API
             prompt: body.listener.prompt || null,
-            message: body.listener.message || null,
             commentReply: body.listener.commentReply || null,
             dmCount: body.listener.dmCount || 0,
             commentCount: body.listener.commentCount || 0
           },
           update: {
             type: body.listener.type,
-            status: body.listener.message ? 'CONFIGURED' : 'UNCONFIGURED',
+            status: 'UNCONFIGURED', // Will be updated by message API
             prompt: body.listener.prompt || null,
-            message: body.listener.message || null,
             commentReply: body.listener.commentReply || null,
             dmCount: body.listener.dmCount || 0,
             commentCount: body.listener.commentCount || 0
@@ -182,7 +190,11 @@ export async function PATCH(request: Request, { params }: Context) {
             replyMessages: true
           }
         },
-        listener: true
+        listener: {
+          include: {
+            messageData: true
+          }
+        }
       }
     });
 

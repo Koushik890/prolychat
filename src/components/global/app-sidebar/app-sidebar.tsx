@@ -83,32 +83,40 @@ export function AppSidebar({ onCollapse, defaultExpanded = true }: AppSidebarPro
       <div className="flex h-full flex-col">
         {/* Logo Section with Divider */}
         <div className="relative h-[70px] overflow-visible">
-          <div className={`flex h-full items-center justify-between transition-all duration-300 ${
+          <div className={`flex h-full items-center transition-all duration-300 ${
             isExpanded ? "pr-2 pl-4" : "pr-1 pl-3"
           }`}>
-            <div className={`relative transition-all duration-300 ${
-              isExpanded ? "h-[40px] w-[110px]" : "h-[24px] w-[24px]"
+            {/* Logo Container - Centered */}
+            <div className={`flex-1 flex items-center justify-center transition-all duration-300 ${
+              isExpanded ? "h-[40px]" : "h-[28px]"
             }`}>
-              <Image
-                src="/logo.png"
-                alt="Logo"
-                fill
-                className={`rounded-lg object-contain transition-all duration-300 ${
-                  isExpanded ? "opacity-100" : "opacity-0"
-                }`}
-                priority
-              />
-              <Image
-                src="/logo_1.png"
-                alt="Collapsed Logo"
-                fill
-                className={`absolute left-0 top-0 rounded-lg object-contain transition-all duration-300 ${
-                  isExpanded ? "opacity-0" : "opacity-100"
-                }`}
-                priority
-              />
+              <div className="flex items-center gap-2">
+                {/* Logomark - always visible */}
+                <Image
+                  src="/Prolychat_lm_black.png"
+                  alt="Prolychat Logomark"
+                  width={isExpanded ? 38 : 28}
+                  height={isExpanded ? 38 : 28}
+                  className="object-contain transition-all duration-300"
+                  priority
+                />
+                {/* Wordmark - only visible when expanded */}
+                {isExpanded && (
+                  <Image
+                    src="/prolychat_bl.png"
+                    alt="Prolychat"
+                    width={110}
+                    height={38}
+                    className="object-contain transition-all duration-300"
+                    priority
+                  />
+                )}
+              </div>
             </div>
-            <SidebarToggle isExpanded={isExpanded} onToggle={() => setIsExpanded(!isExpanded)} />
+            {/* Toggle Button - Always on the right */}
+            <div className="flex-shrink-0">
+              <SidebarToggle isExpanded={isExpanded} onToggle={() => setIsExpanded(!isExpanded)} />
+            </div>
           </div>
         </div>
 

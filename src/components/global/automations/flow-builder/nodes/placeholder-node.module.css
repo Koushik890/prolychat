@@ -85,6 +85,23 @@
   box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2);
   transition: all 0.2s ease;
   z-index: 10;
+  opacity: 0.6;
+  pointer-events: auto;
+}
+
+.hiddenHandle {
+  width: 12px;
+  height: 12px;
+  background: transparent;
+  border: none;
+  position: absolute;
+  left: -7px !important;
+  top: 50% !important;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  z-index: 10;
+  opacity: 0;
+  pointer-events: auto;
 }
 
 /* Hover states */
@@ -115,6 +132,14 @@
   background: #6d28d9;
   transform: translateY(-50%) scale(1.1);
   box-shadow: 0 2px 6px rgba(109, 40, 217, 0.3);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.placeholderNode:hover .hiddenHandle {
+  /* Keep hidden handle invisible even on hover */
+  opacity: 0;
+  pointer-events: auto;
 }
 
 /* Focus states */

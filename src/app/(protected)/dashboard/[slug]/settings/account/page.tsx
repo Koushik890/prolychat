@@ -166,69 +166,73 @@ export default function AccountSettingsPage() {
   }
 
   return (
-    <div className={`space-y-8 font-sans ${styles.accountSettings}`}>
-      <SettingsHeader 
-        userSlug={userSlug}
-        title="Settings"
-        description=""
-      />
+    <div className={styles.accountPageContainer}>
+      {/* Sticky Header */}
+      <div className={styles.stickyHeaderContainer}>
+        <SettingsHeader userSlug={userSlug} />
+      </div>
       
-      <div className="max-w-4xl mx-auto px-4 pb-16">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      {/* Scrollable Content */}
+      <div className={styles.scrollableContent}>
+        <div className={`min-height: calc(100vh - 120px) w-full ${styles.accountSettings}`}>
+          <div className="max-w-4xl mx-auto px-6 py-8 pb-16 space-y-8">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-16">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+              </div>
+            ) : (
+              <motion.div 
+                className="space-y-10"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                <motion.div variants={itemVariants}>
+                  <NameForm 
+                    initialFirstName={userData.firstName}
+                    initialLastName={userData.lastName}
+                    onSuccess={handleFormSuccess}
+                  />
+                </motion.div>
+                
+                <motion.div variants={itemVariants}>
+                  <EmailSection email={userData.email} />
+                </motion.div>
+                
+                <motion.div variants={itemVariants}>
+                  <PasswordSection />
+                </motion.div>
+                
+                <motion.div variants={itemVariants}>
+                  <ConnectedAccounts 
+                    integrations={[
+                      // Use static provider info - the component will check connections dynamically
+                      { 
+                        provider: 'Google', 
+                        connected: false, 
+                        id: 'google' 
+                      },
+                      { 
+                        provider: 'Apple', 
+                        connected: false, 
+                        id: 'apple' 
+                      }
+                    ]}
+                  />
+                </motion.div>
+              </motion.div>
+            )}
+            
+            {/* Toast notification */}
+            {toastState.status !== 'idle' && (
+              <Toast 
+                status={toastState.status} 
+                message={toastState.message || ''} 
+                onClose={handleToastClose}
+              />
+            )}
           </div>
-        ) : (
-          <motion.div 
-            className="space-y-8"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <motion.div variants={itemVariants}>
-              <NameForm 
-                initialFirstName={userData.firstName}
-                initialLastName={userData.lastName}
-                onSuccess={handleFormSuccess}
-              />
-            </motion.div>
-            
-            <motion.div variants={itemVariants}>
-              <EmailSection email={userData.email} />
-            </motion.div>
-            
-            <motion.div variants={itemVariants}>
-              <PasswordSection />
-            </motion.div>
-            
-            <motion.div variants={itemVariants}>
-              <ConnectedAccounts 
-                integrations={[
-                  // Use static provider info - the component will check connections dynamically
-                  { 
-                    provider: 'Google', 
-                    connected: false, 
-                    id: 'google' 
-                  },
-                  { 
-                    provider: 'Apple', 
-                    connected: false, 
-                    id: 'apple' 
-                  }
-                ]}
-              />
-            </motion.div>
-          </motion.div>
-        )}
-        
-        {/* Toast notification */}
-        {toastState.status !== 'idle' && (
-          <Toast 
-            status={toastState.status} 
-            message={toastState.message || ''} 
-            onClose={handleToastClose}
-          />
-        )}
+        </div>
       </div>
     </div>
   )

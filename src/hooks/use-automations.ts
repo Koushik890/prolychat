@@ -193,7 +193,6 @@ interface AutomationChanges {
     	type: 'MESSAGE' | 'PROLYAI'
     status?: 'UNCONFIGURED' | 'CONFIGURED' | 'COMPLETED'
     prompt?: string
-    message?: string
     commentReply?: string | null
     dmCount?: number
     commentCount?: number
@@ -271,7 +270,7 @@ export const useAutomationSync = (id: string) => {
             id, 
             changes.listener.type,
             changes.listener.prompt || '',
-            changes.listener.message || undefined
+            undefined
           );
           
           if (!result) {
@@ -727,8 +726,7 @@ export const useListener = (id: string) => {
         listener: {
           type: listener,
           status: 'CONFIGURED',
-          prompt: data.prompt,
-          message: data.message
+          prompt: data.prompt
         }
       })
     }
