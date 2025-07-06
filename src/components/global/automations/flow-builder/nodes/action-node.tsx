@@ -68,7 +68,6 @@ interface ActionNodeProps {
       commentReply: string | null
       dmCount: number
       commentCount: number
-      message?: string // Legacy support for display
       messageData?: {
         type: 'TEXT' | 'CARD'
         textContent?: string
@@ -95,12 +94,12 @@ export const ActionNode: React.FC<ActionNodeProps> = ({ data, onMessageUpdate, o
   const [isViewPromptModalOpen, setIsViewPromptModalOpen] = useState(false)
   const isMessageAction = data.listener.listener === 'MESSAGE'
   
-  // Determine if there's a configured message based on messageData or legacy message field
+  // Determine if there's a configured message based on messageData
   const hasConfiguredMessage = isMessageAction 
-    ? (data.listener.messageData?.textContent || data.listener.messageData?.cardTitle || data.listener.message)
+    ? (data.listener.messageData?.textContent || data.listener.messageData?.cardTitle)
     : data.listener.prompt
 
-  // Extract display data from messageData or fallback to legacy fields
+  // Extract display data from messageData
   const getMessageDisplayText = () => {
     if (data.listener.messageData) {
       if (data.listener.messageData.type === 'TEXT') {
@@ -109,7 +108,7 @@ export const ActionNode: React.FC<ActionNodeProps> = ({ data, onMessageUpdate, o
         return `Card: ${data.listener.messageData.cardTitle || 'Untitled'}`
       }
     }
-    return data.listener.message || ''
+    return ''
   }
 
   const getCardDataFromMessage = () => {
@@ -118,19 +117,33 @@ export const ActionNode: React.FC<ActionNodeProps> = ({ data, onMessageUpdate, o
       
       // Convert buffer/uint8array to base64 if image is stored as binary data
       if (data.listener.messageData.cardImage) {
-        let buffer: Buffer
+        let buffer: Buffer | null = null
         
         if (data.listener.messageData.cardImage instanceof Buffer) {
           buffer = data.listener.messageData.cardImage
         } else if (data.listener.messageData.cardImage instanceof Uint8Array) {
           buffer = Buffer.from(data.listener.messageData.cardImage)
-        } else {
-          // Handle other array-like structures
-          buffer = Buffer.from(data.listener.messageData.cardImage as any)
-        }
+                  } else {
+            // Safe handling of array-like structures
+            try {
+              const imageData = data.listener.messageData.cardImage
+              if (Array.isArray(imageData)) {
+                buffer = Buffer.from(imageData)
+              } else if (typeof imageData === 'object' && imageData !== null && 'length' in imageData) {
+                // Convert array-like object to actual array
+                buffer = Buffer.from(Array.from(imageData as ArrayLike<number>))
+              } else {
+                console.warn('Unexpected cardImage data type:', typeof imageData, imageData)
+              }
+            } catch (error) {
+              console.warn('Failed to convert cardImage to Buffer:', error)
+            }
+          }
         
-        const base64 = buffer.toString('base64')
-        imageData = `data:image/jpeg;base64,${base64}`
+        if (buffer) {
+          const base64 = buffer.toString('base64')
+          imageData = `data:image/jpeg;base64,${base64}`
+        }
       }
 
       return {
@@ -147,8 +160,7 @@ export const ActionNode: React.FC<ActionNodeProps> = ({ data, onMessageUpdate, o
 
   const handleConfigSelect = (actionType: string, config?: any) => {
     if (actionType === 'text' && config?.message) {
-      // Update both legacy message field and new messageData structure
-      data.listener.message = config.message
+      // Update messageData structure
       data.listener.actionType = 'text'
       data.listener.cardData = undefined
       
@@ -172,7 +184,6 @@ export const ActionNode: React.FC<ActionNodeProps> = ({ data, onMessageUpdate, o
     } else if (actionType === 'card' && config?.cardData) {
       data.listener.cardData = config.cardData
       data.listener.actionType = 'card'
-      data.listener.message = `Card: ${config.cardData.title || 'Untitled'}`
       
       // Update messageData to maintain consistency
       if (!data.listener.messageData) {
@@ -197,7 +208,7 @@ export const ActionNode: React.FC<ActionNodeProps> = ({ data, onMessageUpdate, o
         data.listener.messageData.textContent = undefined
       }
       
-      onMessageUpdate?.(data.id, data.listener.message)
+      onMessageUpdate?.(data.id, `Card: ${config.cardData.title || 'Untitled'}`)
     }
     setIsConfigOpen(false)
   }
@@ -205,7 +216,6 @@ export const ActionNode: React.FC<ActionNodeProps> = ({ data, onMessageUpdate, o
   const handleMessageDelete = () => {
     if (isMessageAction) {
       // Reset all message-related data
-      data.listener.message = ''
       data.listener.messageData = undefined
       data.listener.cardData = undefined
       data.listener.actionType = undefined

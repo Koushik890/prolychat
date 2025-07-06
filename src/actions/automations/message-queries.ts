@@ -209,19 +209,33 @@ export const getCardDataFromMessage = (message: MessageData): CardData | null =>
   
   // Convert buffer/uint8array to base64 if image is stored as binary data
   if (message.cardImage) {
-    let buffer: Buffer
+    let buffer: Buffer | null = null
     
     if (message.cardImage instanceof Buffer) {
       buffer = message.cardImage
     } else if (message.cardImage instanceof Uint8Array) {
       buffer = Buffer.from(message.cardImage)
     } else {
-      // Handle other array-like structures
-      buffer = Buffer.from(message.cardImage as any)
+      // Safe handling of array-like structures
+      try {
+        const imageData = message.cardImage
+        if (Array.isArray(imageData)) {
+          buffer = Buffer.from(imageData)
+        } else if (typeof imageData === 'object' && imageData !== null && 'length' in imageData) {
+          // Convert array-like object to actual array
+          buffer = Buffer.from(Array.from(imageData as ArrayLike<number>))
+        } else {
+          console.warn('Unexpected cardImage data type:', typeof imageData, imageData)
+        }
+      } catch (error) {
+        console.warn('Failed to convert cardImage to Buffer:', error)
+      }
     }
     
-    const base64 = buffer.toString('base64')
-    imageData = `data:image/jpeg;base64,${base64}`
+    if (buffer) {
+      const base64 = buffer.toString('base64')
+      imageData = `data:image/jpeg;base64,${base64}`
+    }
   }
 
   return {

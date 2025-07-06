@@ -79,8 +79,8 @@ function getListenerMessage(listener: any): string {
     }
   }
   
-  // Fallback to legacy message field
-  return listener.message || 'Thank you for your comment!';
+  // Default fallback message if no message data is available
+  return 'Thank you for your comment!';
 }
 
 // Cache to store Instagram IDs to usernames from webhooks

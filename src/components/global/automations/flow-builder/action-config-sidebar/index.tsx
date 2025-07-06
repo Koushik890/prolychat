@@ -336,12 +336,12 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
           } catch (error) {
         console.error('Error deleting message:', error)
         showToast('success', 'Error deleting message', true)
-      // Still update UI for better UX, but log the error
-      setSelectedText(null)
-      setSelectedActionType(null)
-      setSelectedCardData(null)
-      onSelect('text', { message: null, status: 'UNCONFIGURED' })
-      onMessageDelete?.()
+        // Still update UI for better UX, but log the error
+        setSelectedText(null)
+        setSelectedActionType(null)
+        setSelectedCardData(null)
+        onSelect('text', { message: null, status: 'UNCONFIGURED' })
+        onMessageDelete?.()
     } finally {
       setIsDeletingMessage(false)
     }

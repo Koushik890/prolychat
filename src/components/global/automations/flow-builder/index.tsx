@@ -449,7 +449,6 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
           type: actionType,
           status: config?.message ? 'CONFIGURED' : 'UNCONFIGURED',
           prompt: '',
-          message: config?.message || '',
           commentReply: null,
           dmCount: 0,
           commentCount: 0
@@ -542,8 +541,7 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
     saveChanges({
       listener: {
         type: 'MESSAGE',
-        status: 'CONFIGURED',
-        message
+        status: 'CONFIGURED'
       }
     })
   }, [setNodes, saveChanges])
@@ -818,7 +816,6 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
           listener: {
             listener: automationData.listener.type, // Use the correct field from database
             prompt: automationData.listener.prompt || '',
-            message: automationData.listener.messageData?.textContent || '',
             commentReply: automationData.listener.commentReply,
             dmCount: automationData.listener.dmCount,
             commentCount: automationData.listener.commentCount,
