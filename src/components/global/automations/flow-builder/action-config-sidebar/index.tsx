@@ -341,7 +341,6 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
         showToast('success', 'Message deleted successfully', true)
       } else {
         console.error('Failed to delete message:', result.data)
-        showToast('success', 'Failed to delete message', true)
         // Still update UI for better UX, but log the error
         setSelectedText(null)
         setSelectedActionType(null)
@@ -351,7 +350,6 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
       }
     } catch (error) {
       console.error('Error deleting message:', error)
-      showToast('success', 'Error deleting message', true)
       // Still update UI for better UX, but log the error
       setSelectedText(null)
       setSelectedActionType(null)
