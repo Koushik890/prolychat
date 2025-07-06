@@ -11,6 +11,8 @@ interface LemonSqueezyCheckoutSessionParams {
 }
 
 export async function createLemonSqueezyCheckoutSession({ storeId, variantId, userEmail, userId }: LemonSqueezyCheckoutSessionParams) {
+  console.log(`Creating LemonSqueezy checkout session with variant: ${variantId}`);
+  
   const { data: session, error } = await createCheckout(storeId, variantId, {
     checkoutData: {
       email: userEmail,
@@ -21,12 +23,15 @@ export async function createLemonSqueezyCheckoutSession({ storeId, variantId, us
   });
 
   if (error) {
+    console.error('LemonSqueezy checkout creation error:', error);
     throw error;
   }
 
   if (!session) {
     throw new Error('Checkout session not created');
   }
+
+  console.log(`Checkout session created successfully. URL: ${session.data.attributes.url}`);
 
   return {
     url: session.data.attributes.url,

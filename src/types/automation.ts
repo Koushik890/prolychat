@@ -97,3 +97,44 @@ export interface AutomationAction {
 }
 
 export type TriggerConfigurationStatus = 'unconfigured' | 'partial' | 'complete'
+
+export interface CardData {
+  image?: string
+  title: string
+  subtitle: string
+  link?: string
+  buttonAction?: 'message' | 'ai' | 'website'
+  buttonTitle?: string
+}
+
+export interface MessageData {
+  id?: string
+  listenerId: string
+  type: 'TEXT' | 'CARD'
+  textContent?: string
+  cardTitle?: string
+  cardSubtitle?: string
+  cardButtonLabel?: string
+  cardImage?: Buffer
+  cardImageUrl?: string
+  cardButtonAction?: string
+  cardLink?: string
+  createdAt?: Date
+  updatedAt?: Date
+}
+
+export interface ListenerWithMessage {
+  id: string
+  automationId: string
+  type: 'MESSAGE' | 'PROLYAI' | 'CARD'
+  status: 'UNCONFIGURED' | 'CONFIGURED' | 'COMPLETED'
+  prompt?: string
+  message?: string
+  commentReply?: string
+  dmCount: number
+  commentCount: number
+  metadata?: any
+  createdAt: Date
+  updatedAt: Date
+  messageData?: MessageData
+}

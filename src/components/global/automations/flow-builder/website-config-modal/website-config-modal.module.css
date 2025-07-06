@@ -1,0 +1,281 @@
+@keyframes contentShow {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes overlayShow {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.dialogOverlay {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  position: fixed;
+  inset: 0;
+  z-index: 60; /* Same as ButtonActionModal */
+  pointer-events: auto;
+}
+
+.dialogContent {
+  background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.96));
+  border-radius: 28px;
+  box-shadow: 
+    0 8px 60px -12px rgba(0, 0, 0, 0.15),
+    0 4px 16px rgba(124, 58, 237, 0.1);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  position: fixed;
+  top: 50%;
+  left: calc(50% + 260px); /* Same position as ButtonActionModal */
+  transform: translate(-50%, -50%);
+  width: 90vw;
+  max-width: 520px;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: contentShow 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 61; /* Same as ButtonActionModal */
+  pointer-events: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.dialogContent::-webkit-scrollbar {
+  display: none; /* WebKit */
+}
+
+@media (max-width: 1200px) {
+  .dialogContent {
+    left: calc(50% + 160px);
+  }
+}
+
+@media (max-width: 768px) {
+  .dialogContent {
+    left: 50%;
+    top: calc(50% + 200px);
+    max-height: 60vh;
+  }
+}
+
+.dialogHeader {
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: slideDown 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 150ms;
+  padding: 1.5rem 1.5rem 1rem;
+  background: linear-gradient(to bottom, 
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.9) 60%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(124, 58, 237, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.dialogBody {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: slideUp 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 250ms;
+  padding: 1rem 1.5rem 1.5rem;
+}
+
+/* Form Fields */
+.fieldContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.fieldLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.textInput {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 0.875rem;
+  color: #374151;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.textInput:focus {
+  outline: none;
+  border-color: rgba(124, 58, 237, 0.5);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.textInput::placeholder {
+  color: #9ca3af;
+}
+
+/* URL Input Container */
+.urlInputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.urlInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.urlIcon {
+  position: absolute;
+  left: 0.75rem;
+  width: 16px;
+  height: 16px;
+  color: #6b7280;
+  z-index: 1;
+}
+
+.urlInput {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 0.875rem;
+  color: #374151;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.urlInput:focus {
+  outline: none;
+  border-color: rgba(124, 58, 237, 0.5);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.urlInput::placeholder {
+  color: #9ca3af;
+}
+
+.urlInputError {
+  border-color: #ef4444;
+  background: rgba(254, 242, 242, 0.8);
+}
+
+.urlInputError:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.errorMessage {
+  font-size: 0.75rem;
+  color: #ef4444;
+  margin-top: 0.25rem;
+  padding-left: 0.25rem;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(124, 58, 237, 0.08);
+}
+
+.removeButton {
+  padding: 0.625rem 1.25rem;
+  border: 1px solid #ef4444;
+  border-radius: 12px;
+  background: rgba(254, 242, 242, 0.8);
+  color: #dc2626;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.removeButton:hover {
+  background: rgba(254, 226, 226, 0.9);
+  border-color: #dc2626;
+  transform: translateY(-1px);
+}
+
+.removeButton:active {
+  transform: translateY(0);
+}
+
+.doneButton {
+  padding: 0.625rem 1.5rem;
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  border-radius: 12px;
+  background: linear-gradient(to bottom, rgba(124, 58, 237, 0.9), rgba(124, 58, 237, 1));
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.doneButton:hover {
+  background: linear-gradient(to bottom, rgba(124, 58, 237, 1), rgba(109, 40, 217, 1));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+.doneButton:active {
+  transform: translateY(0);
+}
+
+.doneButton:disabled {
+  background: rgba(156, 163, 175, 0.5);
+  border-color: rgba(156, 163, 175, 0.3);
+  color: rgba(156, 163, 175, 0.8);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+@keyframes slideDown {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+} 

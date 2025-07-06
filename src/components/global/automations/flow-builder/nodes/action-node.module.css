@@ -2,7 +2,8 @@
   min-width: 406px;
   max-width: 406px;
   min-height: 203px;
-  max-height: 203px;
+  /* Allow height to expand based on content */
+  height: auto;
   background-color: #ffffff !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08),
               0 2px 8px rgba(168, 85, 247, 0.06);
@@ -17,6 +18,17 @@
   isolation: isolate;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+}
+
+/* Expanded state for card content - allows dynamic height expansion */
+.cardExpanded {
+  min-width: 500px !important;
+  max-width: 500px !important;
+  min-height: 360px !important;
+  /* Removed max-height to allow dynamic expansion for card content */
+  height: auto !important;
+  padding: 1.5rem !important;
+  padding-bottom: 3rem !important;
 }
 
 .actionNode::before {
@@ -225,12 +237,37 @@
   box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2);
   transition: all 0.2s ease;
   z-index: 10;
+  opacity: 0.6;
+  pointer-events: auto;
+}
+
+.hiddenHandle {
+  width: 12px;
+  height: 12px;
+  background: transparent;
+  border: none;
+  position: absolute;
+  left: -7px !important;
+  top: 50% !important;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  z-index: 10;
+  opacity: 0;
+  pointer-events: auto;
 }
 
 .actionNode:hover .handle {
   background: #6d28d9;
   transform: translateY(-50%) scale(1.1);
   box-shadow: 0 2px 6px rgba(109, 40, 217, 0.3);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.actionNode:hover .hiddenHandle {
+  /* Keep hidden handle invisible even on hover */
+  opacity: 0;
+  pointer-events: auto;
 }
 
 .messageContent {
@@ -242,6 +279,7 @@
 .viewPromptButton {
   width: 100%;
   height: auto;
+  min-height: auto;
   padding: 0.75rem 1rem;
   background-color: #ffffff !important;
   border: 1px solid rgba(168, 85, 247, 0.15);
@@ -249,6 +287,14 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   transition: all 0.2s ease;
   text-align: left;
+  display: flex;
+  align-items: flex-start;
+}
+
+/* Enhanced styling for card content in expanded state */
+.cardExpanded .viewPromptButton {
+  padding: 1rem !important;
+  border-radius: 16px !important;
 }
 
 .viewPromptButton::before {
@@ -276,6 +322,10 @@
   font-weight: 500;
   justify-content: flex-start;
   background-color: #ffffff !important;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .configuredMessage {
@@ -293,6 +343,110 @@
 
 .configuredMessage::after {
   display: none;
+}
+
+/* Action Node Card Preview Styles */
+.actionCardPreview {
+  width: 100%;
+  height: auto;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  padding: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+  overflow: visible;
+}
+
+.actionCardImageContainer {
+  width: 100%;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+}
+
+.actionCardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.actionCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.actionCardTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+}
+
+.actionCardSubtitle {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.actionCardButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem 0.5rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border-radius: 6px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.025em;
+  margin-top: 0.25rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Enhanced card preview styles for expanded action node */
+.cardExpanded .actionCardPreview {
+  padding: 1rem !important;
+  border-radius: 16px !important;
+}
+
+.cardExpanded .actionCardImageContainer {
+  height: 80px !important;
+  border-radius: 12px !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.cardExpanded .actionCardTitle {
+  font-size: 1rem !important;
+  line-height: 1.4 !important;
+  -webkit-line-clamp: 2 !important;
+}
+
+.cardExpanded .actionCardSubtitle {
+  font-size: 0.875rem !important;
+  line-height: 1.4 !important;
+  -webkit-line-clamp: 3 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.cardExpanded .actionCardButton {
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.75rem !important;
+  border-radius: 8px !important;
+  margin-top: 0.5rem !important;
 }
 
 .configured {

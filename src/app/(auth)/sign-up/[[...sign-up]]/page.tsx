@@ -364,7 +364,12 @@ import React from 'react'
 type Props = {}
 
 const Page = (props: Props) => {
-  return <SignUp />
+  return (
+    <SignUp 
+      forceRedirectUrl="/dashboard"
+      signInUrl="/sign-in"
+    />
+  )
 }
 
 export default Page

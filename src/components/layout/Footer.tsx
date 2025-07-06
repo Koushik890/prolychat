@@ -7,12 +7,23 @@ export function Footer() {
     <footer className="mt-20 bg-gray-100 py-12 px-4">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
         <div className="flex flex-col justify-center space-y-4">
-          <Link href="/" className="flex items-center">
-            <div className="relative h-10 w-40">
+          <Link href="/" className="flex items-center justify-center md:justify-start">
+            <div className="flex items-center justify-center gap-2">
+              {/* Logomark */}
               <Image 
-                src="/logo.png"
-                			alt="Prolychat Logo"
-                fill
+                src="/Prolychat_lm_black.png"
+                alt="Prolychat Logomark"
+                width={38}
+                height={38}
+                className="object-contain"
+                priority
+              />
+              {/* Wordmark */}
+              <Image 
+                src="/prolychat_bl.png"
+                alt="Prolychat"
+                width={120}
+                height={38}
                 className="object-contain"
                 priority
               />

@@ -29,9 +29,10 @@ export const DashboardLayoutContent = ({ children, slug }: ContentProps) => {
   // Check if we're on the contacts page to prevent unnecessary scrolling
   const isContactsPage = pathname.includes('/contacts');
   
-  // Set data-path attribute on body for CSS targeting
+  // Set data attributes on body for CSS targeting
   useEffect(() => {
     document.body.setAttribute('data-path', pathname);
+    document.body.setAttribute('data-sidebar-collapsed', isCollapsed.toString());
     
     // Handle overflow directly
     if (isContactsPage) {
@@ -44,17 +45,18 @@ export const DashboardLayoutContent = ({ children, slug }: ContentProps) => {
     
     return () => {
       document.body.removeAttribute('data-path');
+      document.body.removeAttribute('data-sidebar-collapsed');
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
     };
-  }, [pathname, isContactsPage]);
+  }, [pathname, isContactsPage, isCollapsed]);
 
   return (
     <ToastProvider>
       <InstagramConnectionChecker>
         <div className={cn(
           "min-h-screen relative no-scrollbar", 
-          (isPaymentSettingsPage || isContactsPage) && "overflow-hidden"
+          isContactsPage && "overflow-hidden"
         )}>
           <div className="absolute inset-0 no-scrollbar" style={{ backgroundColor: '#f5f5f5' }} />
           {showGridPattern && (
@@ -82,9 +84,9 @@ export const DashboardLayoutContent = ({ children, slug }: ContentProps) => {
               className={cn(
                 "flex-1 min-h-screen w-full transition-all duration-300 no-scrollbar",
                 isCollapsed ? "pl-[72px]" : "pl-[250px]",
-                (isPaymentSettingsPage || isContactsPage) && "overflow-hidden"
+                isContactsPage && "overflow-hidden"
               )}
-              style={isPaymentSettingsPage ? { height: '100vh' } : isContactsPage ? { height: '100vh', overflow: 'hidden' } : {}}
+              style={isContactsPage ? { height: '100vh', overflow: 'hidden' } : {}}
             >
               <InfoBar slug={slug} />
               <div className={cn(

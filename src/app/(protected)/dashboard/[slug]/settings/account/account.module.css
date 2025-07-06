@@ -35,59 +35,196 @@
   font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Apple Color Emoji", Inter, Roboto, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif !important;
 }
 
+/* Account page container with sticky header layout - matching payment page */
+.accountPageContainer {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  margin: -2rem;
+  margin-top: -2rem;
+}
+
+/* Sticky header container - exact copy from payment page */
+.stickyHeaderContainer {
+  position: fixed;
+  top: 0;
+  left: 250px; /* Account for expanded sidebar width */
+  right: 0;
+  z-index: 50;
+  /* Remove background here - let the header component handle it */
+  transition: all 0.2s ease-in-out;
+}
+
+/* When sidebar is collapsed - adjust sticky header position */
+body[data-sidebar-collapsed="true"] .stickyHeaderContainer {
+  left: 72px; /* Account for collapsed sidebar width */
+}
+
+/* Scrollable content container - exact copy from payment page */
+.scrollableContent {
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-top: var(--header-height, 120px);
+  scroll-behavior: smooth;
+}
+
+/* Auto-adjust padding based on actual header height */
+.scrollableContent::before {
+  content: '';
+  display: block;
+  height: 0;
+}
+
+/* Updated account settings with payment page theme */
 .accountSettings {
-  --card-border-radius: 12px;
-  --primary-color: #4f46e5;
-  --primary-hover: #4338ca;
+  --card-border-radius: 16px;
+  --primary-color: #9333ea; /* Purple-600 */
+  --primary-hover: #7c3aed; /* Purple-700 */
+  --primary-light: #f3e8ff; /* Purple-50 */
   --success-color: #10b981;
   --error-color: #ef4444;
-  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --input-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --input-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   --transition-standard: all 0.2s ease-in-out;
+  
+  /* Apply purple gradient background like payment page */
+  background-image: radial-gradient(circle at top left, rgba(244, 235, 255, 0.4), transparent 30%), 
+                    radial-gradient(circle at bottom right, rgba(244, 235, 255, 0.4), transparent 30%);
+  min-height: 100vh;
+  position: relative;
+  background-color: white;
+  color: rgb(31 41 55);
+}
+
+/* Add grid pattern background */
+.accountSettings::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: linear-gradient(to right, #faf7ff 1px, transparent 1px), 
+                    linear-gradient(to bottom, #faf7ff 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ensure content appears above background */
+.accountSettings > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure smooth scrolling on all browsers - matching payment page */
+.scrollableContent {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.scrollableContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollableContent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollableContent::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.scrollableContent::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.8);
+}
+
+/* Handle mobile view where sidebar becomes an overlay - matching payment page */
+@media (max-width: 768px) {
+  .stickyHeaderContainer {
+    left: 0;
+    right: 0;
+  }
 }
 
 .accountSettings :global(.form-card) {
   background-color: white;
   border-radius: var(--card-border-radius);
-  border: 1px solid rgba(229, 231, 235, 1);
-  padding: 1.5rem;
-  box-shadow: var(--card-shadow);
+  border: 2px solid #a855f7; /* Purple-500 border like pricing cards */
+  padding: 2rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); /* Enhanced shadow like pricing cards */
   transition: var(--transition-standard);
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.95);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Add purple gradient overlay like pricing cards */
+.accountSettings :global(.form-card::before) {
+  content: '';
+  position: absolute;
+  inset: 0;
+  top: 0;
+  height: 12rem; /* 48 in Tailwind (h-48) */
+  border-radius: 1rem 1rem 0 0; /* rounded-t-2xl */
+  background: linear-gradient(to bottom, rgba(243, 232, 255, 0.8), transparent); /* from-purple-100/80 to-transparent */
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ensure content appears above the gradient overlay */
+.accountSettings :global(.form-card > *) {
+  position: relative;
+  z-index: 1;
 }
 
 .accountSettings :global(.form-card:hover) {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 20px 25px -5px rgba(147, 51, 234, 0.1);
+  transform: translateY(-2px);
+  border-color: #9333ea; /* Slightly darker purple on hover */
 }
 
 .accountSettings :global(.form-header) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(244, 235, 255, 0.6);
 }
 
 .accountSettings :global(.form-title) {
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: rgb(17, 24, 39);
   margin: 0;
+  background: linear-gradient(135deg, #9333ea, #c084fc);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .accountSettings :global(.form-description) {
   color: rgb(107, 114, 128);
   font-size: 0.875rem;
-  margin-top: 0.25rem;
+  margin-top: 0.5rem;
+  line-height: 1.5;
 }
 
 .accountSettings :global(.form-content) {
   display: grid;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .accountSettings :global(.form-input) {
   width: 100%;
-  padding: 0.625rem 0.75rem;
-  border-radius: 0.375rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
   border: 1px solid rgb(209, 213, 219);
   box-shadow: var(--input-shadow);
   font-size: 0.875rem;
@@ -118,12 +255,15 @@ html[class~="dark"] .accountSettings :global(.form-input) {
 .accountSettings :global(.form-input:focus) {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+  box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.15);
+  ring: 3px;
+  ring-color: rgba(147, 51, 234, 0.15);
 }
 
 .accountSettings :global(.form-input:disabled) {
-  background-color: rgb(243, 244, 246);
+  background-color: rgb(249, 250, 251);
   cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .accountSettings :global(.form-label) {
@@ -131,31 +271,52 @@ html[class~="dark"] .accountSettings :global(.form-input) {
   font-weight: 500;
   color: rgb(55, 65, 81);
   display: block;
-  margin-bottom: 0.375rem;
+  margin-bottom: 0.5rem;
 }
 
 .accountSettings :global(.form-submit) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
   font-size: 0.875rem;
   border: none;
   cursor: pointer;
   transition: var(--transition-standard);
   background-color: var(--primary-color);
   color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.accountSettings :global(.form-submit::before) {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.accountSettings :global(.form-submit:hover::before) {
+  left: 100%;
 }
 
 .accountSettings :global(.form-submit:hover) {
   background-color: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 15px -3px rgba(147, 51, 234, 0.3);
 }
 
 .accountSettings :global(.form-submit:disabled) {
   opacity: 0.7;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .accountSettings :global(.form-submit svg) {
@@ -165,24 +326,31 @@ html[class~="dark"] .accountSettings :global(.form-input) {
 .accountSettings :global(.provider-card) {
   display: flex;
   align-items: center;
-  padding: 1rem;
-  border-radius: 0.375rem;
-  border: 1px solid rgb(229, 231, 235);
-  margin-bottom: 0.75rem;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(244, 235, 255, 0.8);
+  margin-bottom: 1rem;
   transition: var(--transition-standard);
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(5px);
 }
 
 .accountSettings :global(.provider-card:hover) {
-  background-color: rgb(249, 250, 251);
+  background-color: rgba(249, 250, 251, 0.9);
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(147, 51, 234, 0.1);
 }
 
 .accountSettings :global(.provider-icon) {
-  width: 2rem;
-  height: 2rem;
+  width: 2.5rem;
+  height: 2.5rem;
   margin-right: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: var(--primary-light);
+  border-radius: 0.5rem;
 }
 
 .accountSettings :global(.provider-info) {
@@ -190,7 +358,7 @@ html[class~="dark"] .accountSettings :global(.form-input) {
 }
 
 .accountSettings :global(.provider-name) {
-  font-weight: 500;
+  font-weight: 600;
   color: rgb(17, 24, 39);
   margin-bottom: 0.25rem;
 }
@@ -204,7 +372,8 @@ html[class~="dark"] .accountSettings :global(.form-input) {
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   font-weight: 500;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
+  border: none;
   cursor: pointer;
   transition: var(--transition-standard);
 }
@@ -216,56 +385,79 @@ html[class~="dark"] .accountSettings :global(.form-input) {
 
 .accountSettings :global(.provider-action.connect:hover) {
   background-color: var(--primary-hover);
+  transform: translateY(-1px);
 }
 
 .accountSettings :global(.provider-action.disconnect) {
-  background-color: transparent;
-  border: 1px solid rgb(209, 213, 219);
-  color: rgb(107, 114, 128);
+  background-color: white;
+  color: var(--error-color);
+  border: 1px solid var(--error-color);
 }
 
 .accountSettings :global(.provider-action.disconnect:hover) {
-  background-color: rgb(243, 244, 246);
+  background-color: var(--error-color);
+  color: white;
+  transform: translateY(-1px);
 }
 
-/* Toast styling */
+/* Special styling for "Manage All Connections" button to improve visibility */
+.accountSettings :global(.manage-all-connections-btn) {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+  border: 1px solid var(--primary-color) !important;
+  font-weight: 500;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.5rem;
+  transition: var(--transition-standard);
+}
+
+.accountSettings :global(.manage-all-connections-btn:hover) {
+  background-color: var(--primary-hover) !important;
+  color: white !important;
+  border: 1px solid var(--primary-hover) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(147, 51, 234, 0.2);
+}
+
 .accountSettings :global(.toast) {
   position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  z-index: 50;
+  top: 1rem;
+  right: 1rem;
   padding: 1rem 1.5rem;
   border-radius: 0.5rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-width: 20rem;
-  animation: slideIn 0.3s ease-out forwards;
+  z-index: 1000;
+  animation: slideIn 0.3s ease-out;
+  max-width: 20rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .accountSettings :global(.toast.success) {
-  background-color: var(--success-color);
+  background-color: rgba(16, 185, 129, 0.95);
   color: white;
 }
 
 .accountSettings :global(.toast.error) {
-  background-color: var(--error-color);
+  background-color: rgba(239, 68, 68, 0.95);
   color: white;
 }
 
 .accountSettings :global(.toast-message) {
-  margin-right: 1rem;
   font-size: 0.875rem;
-  font-weight: 500;
+  line-height: 1.5;
+  margin-right: 2rem;
 }
 
 .accountSettings :global(.toast-close) {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
   background: none;
   border: none;
-  color: white;
-  opacity: 0.8;
+  color: inherit;
   cursor: pointer;
+  opacity: 0.7;
   transition: opacity 0.2s;
 }
 
@@ -275,30 +467,50 @@ html[class~="dark"] .accountSettings :global(.form-input) {
 
 @keyframes slideIn {
   from {
-    transform: translateY(100%);
+    transform: translateX(100%);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateX(0);
     opacity: 1;
   }
+}
+
+/* Enhanced purple-themed buttons and accents */
+.accountSettings :global(button[class*="bg-"]) {
+  background-color: var(--primary-color) !important;
+}
+
+.accountSettings :global(button[class*="bg-"]:hover) {
+  background-color: var(--primary-hover) !important;
+}
+
+/* Purple check marks and icons */
+.accountSettings :global(.text-green-500),
+.accountSettings :global(.text-green-600) {
+  color: #8b5cf6 !important; /* Purple-500 */
+}
+
+.accountSettings :global(.bg-green-50),
+.accountSettings :global(.bg-green-100) {
+  background-color: #f3e8ff !important; /* Purple-50 */
 }
 
 /* Responsive design */
 @media (max-width: 640px) {
   .accountSettings :global(.form-card) {
-    padding: 1rem;
+    padding: 1.5rem;
   }
-  
+
   .accountSettings :global(.form-header) {
     flex-direction: column;
     align-items: flex-start;
+    gap: 0.5rem;
   }
-  
+
   .accountSettings :global(.toast) {
-    bottom: 1rem;
-    right: 1rem;
-    left: 1rem;
-    min-width: auto;
+    right: 0.5rem;
+    left: 0.5rem;
+    max-width: none;
   }
 }

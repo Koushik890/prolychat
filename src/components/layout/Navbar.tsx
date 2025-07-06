@@ -15,12 +15,23 @@ export function Navbar() {
     <div className="w-full px-2 py-2 sticky top-0 z-50">
       <nav className="flex items-center rounded-full bg-white/90 backdrop-blur-md border border-[#6F1FB6]/10 px-6 py-3 max-w-[1600px] mx-auto shadow-lg">
         <div className="flex-1">
-          <Link href="/" className="flex items-center">
-            <div className="relative h-10 w-40 -ml-2">
+          <Link href="/" className="flex items-center justify-start">
+            <div className="flex items-center justify-center gap-2 -ml-2">
+              {/* Logomark */}
               <Image 
-                src="/logo.png"
-                					alt="Prolychat Logo"
-                fill
+                src="/Prolychat_lm_black.png"
+                alt="Prolychat Logomark"
+                width={42}
+                height={42}
+                className="object-contain"
+                priority
+              />
+              {/* Wordmark */}
+              <Image 
+                src="/prolychat_bl.png"
+                alt="Prolychat"
+                width={140}
+                height={42}
                 className="object-contain"
                 priority
               />

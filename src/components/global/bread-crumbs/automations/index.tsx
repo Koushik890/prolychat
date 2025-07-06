@@ -108,13 +108,24 @@ const AutomationsBreadCrumb = ({ id }: Props) => {
               <SheetContent side="left" className="w-[300px] p-0">
                 <div className="flex flex-col gap-y-5 w-full h-full bg-gradient-to-b from-[#A288F7] via-[#A288F7]/95 to-[#F7C1E4] backdrop-filter backdrop-blur-xl">
                   <div className="flex items-center justify-center transition-all duration-300 mt-4 h-[40px] px-3">
-                    <Image 
-                      src="/logo.png"
-                      alt="Logo"
-                      width={150}
-                      height={32}
-                      className="transition-all duration-300"
-                    />
+                    <div className="flex items-center justify-center gap-2">
+                      {/* Logomark */}
+                      <Image 
+                        src="/Prolychat_lm_black.png"
+                        alt="Prolychat Logomark"
+                        width={32}
+                        height={32}
+                        className="object-contain transition-all duration-300"
+                      />
+                      {/* Wordmark */}
+                      <Image 
+                        src="/prolychat_bl.png"
+                        alt="Prolychat"
+                        width={115}
+                        height={32}
+                        className="object-contain transition-all duration-300"
+                      />
+                    </div>
                   </div>
                   <div className="flex flex-col py-3">
                     <Items />

@@ -231,6 +231,94 @@ export const saveListener = async (
   }
 }
 
+export const saveTextMessage = async (
+  automationId: string,
+  textContent: string
+) => {
+  const user = await onCurrentUser()
+  if (user.status !== 200 || !user.data) {
+    return { status: 401, data: 'Unauthorized' }
+  }
+
+  try {
+    // Import the function directly instead of making an HTTP call
+    const { saveListenerMessage } = await import('./queries')
+    
+    const result = await saveListenerMessage(automationId, 'TEXT', { textContent })
+    
+    if (result.status === 200) {
+      return { status: 200, data: 'Text message saved successfully' }
+    } else {
+      return { status: result.status, data: typeof result.data === 'string' ? result.data : 'Failed to save text message' }
+    }
+  } catch (error) {
+    console.error('Error saving text message:', error)
+    return { status: 500, data: 'Failed to save text message' }
+  }
+}
+
+export const saveCardMessage = async (
+  automationId: string,
+  cardData: any
+) => {
+  const user = await onCurrentUser()
+  if (user.status !== 200 || !user.data) {
+    return { status: 401, data: 'Unauthorized' }
+  }
+
+  try {
+    // Import the function directly instead of making an HTTP call
+    const { saveListenerMessage } = await import('./queries')
+
+    const result = await saveListenerMessage(automationId, 'CARD', { cardData })
+    
+    if (result.status === 200) {
+      return { status: 200, data: 'Card message saved successfully' }
+    } else {
+      return { status: result.status, data: typeof result.data === 'string' ? result.data : 'Failed to save card message' }
+    }
+  } catch (error) {
+    console.error('Error saving card message:', error)
+    return { status: 500, data: 'Failed to save card message' }
+  }
+}
+
+export const getAutomationMessage = async (automationId: string) => {
+  try {
+    // Import the function directly instead of making an HTTP call
+    const { getListenerMessage } = await import('./queries')
+    
+    const result = await getListenerMessage(automationId)
+    return result
+  } catch (error) {
+    console.error('Error getting automation message:', error)
+    return null
+  }
+}
+
+export const deleteAutomationMessage = async (automationId: string) => {
+  const user = await onCurrentUser()
+  if (user.status !== 200 || !user.data) {
+    return { status: 401, data: 'Unauthorized' }
+  }
+
+  try {
+    // Import the function directly instead of making an HTTP call
+    const { deleteListenerMessage } = await import('./queries')
+
+    const result = await deleteListenerMessage(automationId)
+    
+    if (result.status === 200) {
+      return { status: 200, data: 'Message deleted successfully' }
+    } else {
+      return { status: result.status, data: typeof result.data === 'string' ? result.data : 'Failed to delete message' }
+    }
+  } catch (error) {
+    console.error('Error deleting message:', error)
+    return { status: 500, data: 'Failed to delete message' }
+  }
+}
+
 export const saveTrigger = async (automationId: string, trigger: string[], config?: any) => {
   const user = await onCurrentUser()
   if (user.status !== 200 || !user.data) {

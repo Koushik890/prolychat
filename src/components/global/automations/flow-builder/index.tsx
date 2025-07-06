@@ -16,13 +16,15 @@ import ReactFlow, {
   BackgroundVariant,
   OnConnectStartParams,
   XYPosition,
-  NodeChange
+  NodeChange,
+  MarkerType
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { useQueryAutomation } from '@/hooks/user-queries'
 import { TriggerNode } from './nodes/trigger-node'
 import { ActionNode } from './nodes/action-node'
 import { PlaceholderNode } from './nodes/placeholder-node'
+import { CustomEdge, customEdgeTypes } from './custom-edge'
 import { AutomationData, TriggerConfig, TriggerConfigurationStatus } from '@/types/automation'
 import { Button } from '@/components/ui/button'
 import { MessageSquare, Bot, Instagram } from 'lucide-react'
@@ -353,7 +355,7 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
           id: 'edge-placeholder',
           source: 'trigger-1',
           target: 'placeholder-1',
-          type: 'smoothstep',
+          type: 'custom',
           animated: true,
           style: { stroke: '#94a3b8', strokeWidth: 2 }
         }]
@@ -429,7 +431,7 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
           id: `edge-${actionId}`,
           source: 'trigger-1',
           target: actionId,
-          type: 'smoothstep',
+          type: 'custom',
           animated: true,
           style: { stroke: '#94a3b8', strokeWidth: 2 }
         }
@@ -496,7 +498,7 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
           id: 'edge-placeholder',
           source: 'trigger-1',
           target: 'placeholder-1',
-          type: 'smoothstep',
+          type: 'custom',
           animated: true,
           style: { stroke: '#94a3b8', strokeWidth: 2 }
         }]
@@ -519,7 +521,16 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
             ...node.data,
             listener: {
               ...node.data.listener,
-              message
+              message,
+              // Also update messageData if it exists to maintain consistency
+              messageData: node.data.listener.messageData ? {
+                ...node.data.listener.messageData,
+                textContent: message,
+                type: 'TEXT' as const
+              } : {
+                type: 'TEXT' as const,
+                textContent: message
+              }
             }
           }
         }
@@ -807,10 +818,11 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
           listener: {
             listener: automationData.listener.type, // Use the correct field from database
             prompt: automationData.listener.prompt || '',
-            message: automationData.listener.message || '',
+            message: automationData.listener.messageData?.textContent || '',
             commentReply: automationData.listener.commentReply,
             dmCount: automationData.listener.dmCount,
-            commentCount: automationData.listener.commentCount
+            commentCount: automationData.listener.commentCount,
+            messageData: automationData.listener.messageData
           }
         }
       }
@@ -830,7 +842,7 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
         id: 'edge-1',
         source: 'trigger-1',
         target: 'action-1',
-        type: 'smoothstep',
+        type: 'custom',
         animated: true,
         style: { stroke: '#94a3b8', strokeWidth: 2 }
       })
@@ -851,7 +863,7 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
         id: 'edge-placeholder',
         source: 'trigger-1',
         target: 'placeholder-1',
-        type: 'smoothstep',
+        type: 'custom',
         animated: true,
         style: { stroke: '#94a3b8', strokeWidth: 2 }
       })
@@ -958,7 +970,7 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
             setEdges(eds => addEdge({
               ...params,
               target: actionNode.id,
-              type: 'smoothstep',
+              type: 'custom',
               animated: true,
               style: { stroke: '#94a3b8', strokeWidth: 2 }
             }, eds))
@@ -967,9 +979,15 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
           // Normal connection between trigger and action
           setEdges(eds => addEdge({
             ...params,
-            type: 'smoothstep',
+            type: 'custom',
             animated: true,
-            style: { stroke: '#94a3b8', strokeWidth: 2 }
+            style: { stroke: '#94a3b8', strokeWidth: 2 },
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              color: '#94a3b8',
+              width: 20,
+              height: 20
+            }
           }, eds))
         }
       } else {
@@ -1016,7 +1034,7 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
           id: 'edge-placeholder',
           source: 'trigger-1',
           target: 'placeholder-1',
-          type: 'smoothstep',
+          type: 'custom',
           animated: true,
           style: { stroke: '#94a3b8', strokeWidth: 2 }
         }]
@@ -1078,6 +1096,10 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
     ),
     placeholder: PlaceholderNode
   }), [handleMessageUpdate, handlePromptUpdate])
+
+  const edgeTypes = React.useMemo(() => ({
+    custom: CustomEdge,
+  }), [])
 
   // Replace the TriggerConfigurationSidebar with dynamic component
   const TriggerConfigComponent = selectedTriggerForConfig 
@@ -1162,15 +1184,22 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
         onConnect={onConnect}
         onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView
         fitViewOptions={{ padding: 0.2 }}
         className="w-full h-full bg-gray-50"
         minZoom={0.5}
         maxZoom={2}
         defaultEdgeOptions={{
-          type: 'smoothstep',
+          type: 'custom',
           animated: true,
-          style: { stroke: '#94a3b8', strokeWidth: 2 }
+          style: { stroke: '#94a3b8', strokeWidth: 2 },
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            color: '#94a3b8',
+            width: 20,
+            height: 20
+          }
         }}
         defaultViewport={{ x: 0, y: 0, zoom: 1 }}
         proOptions={proOptions}

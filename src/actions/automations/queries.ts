@@ -4,6 +4,13 @@ import { client } from '@/lib/prisma'
 import { v4 } from 'uuid'
 import { withDatabaseRetry, db } from '@/lib/db-utils'
 import { Automation, Post, Keyword, ReplyMessage, ACTION_TYPE } from '@prisma/client'
+import { CardData } from '@/types/automation'
+import { 
+  createOrUpdateMessage, 
+  getMessage, 
+  deleteMessage, 
+  getCardDataFromMessage 
+} from './message-queries'
 
 // Define types for the returned automation data
 type AutomationWithRelations = Automation & {
@@ -86,7 +93,11 @@ export const getAutomations = async (clerkId: string) => {
             replyMessages: true,
           },
         },
-        listener: true,
+        listener: {
+          include: {
+            messageData: true
+          }
+        },
       },
     }))
 
@@ -113,7 +124,11 @@ export const findAutomation = async (id: string) => {
               replyMessages: true
             }
           },
-          listener: true,
+          listener: {
+            include: {
+              messageData: true
+            }
+          },
           User: {
             select: {
               subscription: true,
@@ -220,7 +235,8 @@ export const addListener = async (
   automationId: string,
   actionType: ACTION_TYPE,
   prompt: string,
-  message?: string
+  message?: string,
+  cardData?: any
 ) => {
   if (!automationId) {
     return { status: 400, data: 'Automation ID is required' };
@@ -239,6 +255,14 @@ export const addListener = async (
       return { status: 404, data: 'Automation not found' };
     }
 
+    // Determine listener status based on action type and provided data
+    let status = 'UNCONFIGURED';
+    if (actionType === 'PROLYAI' && prompt) {
+      status = 'CONFIGURED';
+    } else if (actionType === 'MESSAGE' && (message || cardData)) {
+      status = 'CONFIGURED';
+    }
+
     const result = await withDatabaseRetry(() => client.automation.update({
       where: {
         id: automationId,
@@ -249,15 +273,13 @@ export const addListener = async (
           upsert: {
             create: {
               type: actionType,
-              status: actionType === ACTION_TYPE.PROLYAI ? (prompt ? 'CONFIGURED' : 'UNCONFIGURED') : (message ? 'CONFIGURED' : 'UNCONFIGURED'),
+              status: status as any,
               prompt: prompt || '',
-              message: message || '',
             },
             update: {
               type: actionType,
-              status: actionType === ACTION_TYPE.PROLYAI ? (prompt ? 'CONFIGURED' : 'UNCONFIGURED') : (message ? 'CONFIGURED' : 'UNCONFIGURED'),
+              status: status as any,
               prompt: prompt || '',
-              message: message || '',
             },
           },
         },
@@ -636,5 +658,106 @@ export const deleteAutomationQuery = async (id: string) => {
   } catch (error) {
     console.error('Error deleting automation:', error);
     throw error;
+  }
+}
+
+// New functions for handling message data (text and card)
+export const saveListenerMessage = async (
+  automationId: string,
+  messageType: 'TEXT' | 'CARD',
+  data: {
+    textContent?: string
+    cardData?: CardData
+  }
+) => {
+  try {
+    // First find the listener for this automation
+    const listener = await withDatabaseRetry(() =>
+      client.listener.findUnique({
+        where: { automationId }
+      })
+    )
+
+    if (!listener) {
+      return { status: 404, data: 'Listener not found' }
+    }
+
+    // Create or update the message data
+    const result = await createOrUpdateMessage(listener.id, messageType, data)
+    
+    if (result.status === 200) {
+      // Update automation timestamp
+      await withDatabaseRetry(() =>
+        client.automation.update({
+          where: { id: automationId },
+          data: { updatedAt: new Date() }
+        })
+      )
+    }
+
+    return result
+  } catch (error) {
+    console.error('Error saving listener message:', error)
+    return { 
+      status: 500, 
+      data: error instanceof Error ? error.message : 'Failed to save message' 
+    }
+  }
+}
+
+export const getListenerMessage = async (automationId: string) => {
+  try {
+    // Find the listener for this automation
+    const listener = await withDatabaseRetry(() =>
+      client.listener.findUnique({
+        where: { automationId }
+      })
+    )
+
+    if (!listener) {
+      return null
+    }
+
+    // Get the message data if it exists
+    return await getMessage(listener.id)
+  } catch (error) {
+    console.error('Error getting listener message:', error)
+    return null
+  }
+}
+
+export const deleteListenerMessage = async (automationId: string) => {
+  try {
+    // Find the listener for this automation
+    const listener = await withDatabaseRetry(() =>
+      client.listener.findUnique({
+        where: { automationId }
+      })
+    )
+
+    if (!listener) {
+      return { status: 404, data: 'Listener not found' }
+    }
+
+    // Delete the message data
+    const result = await deleteMessage(listener.id)
+    
+    if (result.status === 200) {
+      // Update automation timestamp
+      await withDatabaseRetry(() =>
+        client.automation.update({
+          where: { id: automationId },
+          data: { updatedAt: new Date() }
+        })
+      )
+    }
+
+    return result
+  } catch (error) {
+    console.error('Error deleting listener message:', error)
+    return { 
+      status: 500, 
+      data: error instanceof Error ? error.message : 'Failed to delete message' 
+    }
   }
 }

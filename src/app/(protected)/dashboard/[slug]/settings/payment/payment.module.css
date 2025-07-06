@@ -1,0 +1,116 @@
+/* Payment page container with sticky header layout */
+.paymentPageContainer {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  margin: -2rem;
+  margin-top: -2rem;
+}
+
+/* Sticky header container */
+.stickyHeaderContainer {
+  position: fixed;
+  top: 0;
+  left: 250px; /* Account for expanded sidebar width */
+  right: 0;
+  z-index: 50;
+  /* Remove background here - let the header component handle it */
+  transition: all 0.2s ease-in-out;
+}
+
+/* When sidebar is collapsed - adjust sticky header position */
+body[data-sidebar-collapsed="true"] .stickyHeaderContainer {
+  left: 72px; /* Account for collapsed sidebar width */
+}
+
+/* Scrollable content container */
+.scrollableContent {
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-top: var(--header-height, 120px);
+  scroll-behavior: smooth;
+}
+
+/* Auto-adjust padding based on actual header height */
+.scrollableContent::before {
+  content: '';
+  display: block;
+  height: 0;
+}
+
+.pricingSection {
+  width: 100vw;
+  position: relative;
+  margin-left: calc(-50vw + 50%);
+  margin-top: 0;
+}
+
+/* When sidebar is expanded (default state) */
+.pricingSection .pricingContent {
+  padding-left: 125px; /* Half of 250px sidebar width for centering */
+  padding-right: 125px;
+}
+
+/* When sidebar is collapsed - target body with data-sidebar-collapsed attribute */
+body[data-sidebar-collapsed="true"] .pricingSection .pricingContent {
+  padding-left: 36px; /* Half of 72px collapsed sidebar width for centering */
+  padding-right: 36px;
+}
+
+.pricingContainer {
+  min-height: calc(100vh - 120px);
+  width: 100%;
+  background-color: white;
+  color: rgb(31 41 55);
+}
+
+.pricingInner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  min-height: 100%;
+  padding-bottom: 2rem;
+  transition: padding-left 300ms ease, padding-right 300ms ease;
+}
+
+@media (min-width: 768px) {
+  .pricingInner {
+    padding: 3rem 1rem 2rem;
+  }
+}
+
+/* Ensure smooth scrolling on all browsers */
+.scrollableContent {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.scrollableContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollableContent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollableContent::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.scrollableContent::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.8);
+}
+
+/* Handle mobile view where sidebar becomes an overlay */
+@media (max-width: 768px) {
+  .stickyHeaderContainer {
+    left: 0;
+    right: 0;
+  }
+} 

@@ -90,7 +90,6 @@ model Listener {
   type         ACTION_TYPE   @default(MESSAGE)
   status       ACTION_STATUS @default(UNCONFIGURED)
   prompt       String?
-  message      String?
   commentReply String?
   dmCount      Int           @default(0)
   commentCount Int           @default(0)
@@ -98,6 +97,27 @@ model Listener {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   Automation   Automation    @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  messageData  Message?
+}
+
+model Message {
+  id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  listenerId       String       @unique @db.Uuid
+  type             MESSAGE_TYPE @default(TEXT)
+  textContent      String?
+  cardTitle        String?
+  cardSubtitle     String?
+  cardButtonLabel  String?
+  cardImage        Bytes?
+  cardImageUrl     String?
+  cardButtonAction String?
+  cardLink         String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  listener         Listener     @relation(fields: [listenerId], references: [id], onDelete: Cascade)
+
+  @@index([type])
+  @@index([listenerId])
 }
 
 model Trigger {
@@ -192,6 +212,7 @@ enum AutomationStatus {
 enum ACTION_TYPE {
   MESSAGE
   PROLYAI
+  CARD
 }
 
 enum ACTION_STATUS {
@@ -204,4 +225,9 @@ enum ContactStatus {
   Subscribed
   Paused
   Report
+}
+
+enum MESSAGE_TYPE {
+  TEXT
+  CARD
 }
