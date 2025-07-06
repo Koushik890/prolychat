@@ -175,8 +175,14 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
   
   // Helper function to get automation ID safely
   const getAutomationId = (): string => {
+    // Handle params.id when it's a string
     if (params?.id && typeof params.id === 'string') {
       return params.id
+    }
+    
+    // Handle params.id when it's an array (take first element)
+    if (params?.id && Array.isArray(params.id) && params.id.length > 0) {
+      return params.id[0]
     }
     
     // Fallback to URL parsing if params not available
@@ -189,7 +195,9 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
       }
     }
     
-    throw new Error('Unable to determine automation ID')
+    // Log error for debugging but don't crash the component
+    console.error('Unable to determine automation ID from params:', params, 'or pathname:', pathname)
+    return '' // Return empty string instead of throwing
   }
 
   useEffect(() => {
