@@ -51,12 +51,22 @@ export const createOrUpdateMessage = async (
       let imageUrl = null
       
       if (cardData.image) {
-        if (cardData.image.startsWith('data:image/')) {
-          // Convert base64 to buffer
-          const base64Data = cardData.image.split(',')[1]
+              if (cardData.image.startsWith('data:image/')) {
+        // Convert base64 to buffer
+        const base64Data = cardData.image.split(',')[1]
+        
+        // Validate base64 data exists and is not empty
+        if (!base64Data || base64Data.trim() === '') {
+          return { status: 400, data: 'Invalid base64 image data: missing or empty base64 content' }
+        }
+        
+        try {
           imageBuffer = Buffer.from(base64Data, 'base64')
+        } catch (error) {
+          return { status: 400, data: 'Invalid base64 image data: failed to decode base64 content' }
+        }
 
-        } else {
+      } else {
           // Store as URL if it's not base64
           imageUrl = cardData.image
           
