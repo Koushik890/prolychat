@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { X, Type, Image, Video, Clock, PlayCircle, LayoutGrid, FileImage, CreditCard, Zap, MessageCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import { TextConfigModal } from '../text-config-modal'
 import { CardConfigModal, CardData } from '../card-config-modal'
 import styles from './action-config-sidebar.module.css'
@@ -171,18 +171,24 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
   const [isDeletingMessage, setIsDeletingMessage] = useState(false)
   const { showToast } = useToast()
   const params = useParams()
+  const pathname = usePathname()
   
   // Helper function to get automation ID safely
   const getAutomationId = (): string => {
     if (params?.id && typeof params.id === 'string') {
       return params.id
     }
+    
     // Fallback to URL parsing if params not available
-    const pathSegments = window.location.pathname.split('/')
+    const pathSegments = pathname.split('/')
     const automationIndex = pathSegments.findIndex(segment => segment === 'automations')
     if (automationIndex !== -1 && automationIndex + 1 < pathSegments.length) {
-      return pathSegments[automationIndex + 1]
+      const extractedId = pathSegments[automationIndex + 1]
+      if (extractedId && extractedId.trim() !== '') {
+        return extractedId
+      }
     }
+    
     throw new Error('Unable to determine automation ID')
   }
 
