@@ -99,8 +99,8 @@ export const getShadowDatabaseUrl = () => {
  */
 export const RETRY_CONFIG = {
   maxRetries: 3,
-  baseDelay: 500,
-  maxDelay: 2000,
+  baseDelay: 150,
+  maxDelay: 800,
   exponentialBase: 1.5
 }
 

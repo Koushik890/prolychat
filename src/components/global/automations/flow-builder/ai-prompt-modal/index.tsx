@@ -72,9 +72,6 @@ export function AiPromptModal({
         showToast('loading', 'Saving prompt', true)
         window.addEventListener('beforeunload', preventReload)
 
-        // Add a small delay to simulate saving
-        await new Promise(resolve => setTimeout(resolve, 1500))
-
         // Call the save function
         await onSave(prompt)
 

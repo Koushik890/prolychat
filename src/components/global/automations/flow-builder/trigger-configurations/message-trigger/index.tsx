@@ -13,6 +13,7 @@ import { useQueryAutomation } from '@/hooks/user-queries'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-hot-toast'
 import { useToast } from '@/contexts/toast-context'
+import { cn } from '@/lib/utils'
 
 const MotionSheetContent = motion.create(SheetContent)
 
@@ -74,8 +75,7 @@ export function MessageTriggerConfig({
       // Update local state after successful save
       onTriggerConfig('user-message', config)
       
-      // Invalidate and refetch the automation data
-      await queryClient.invalidateQueries({ queryKey: ['automation-info', automationId] })
+      // Removed redundant invalidation - saveChanges already handles this
 
       // Remove reload prevention and show success
       window.removeEventListener('beforeunload', preventReload)
@@ -99,9 +99,13 @@ export function MessageTriggerConfig({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <MotionSheetContent 
-        side="right" 
-        className={styles.sidebar}
+      <MotionSheetContent
+        showCloseButton={false}
+        side="right"
+        className={cn(
+          'p-6 w-[420px] top-0 h-screen flex flex-col overflow-hidden',
+          styles.sidebar
+        )}
         initial={{ x: '100%', opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         exit={{ x: '100%', opacity: 0 }}

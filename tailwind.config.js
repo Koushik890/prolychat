@@ -6,7 +6,17 @@ module.exports = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      spacing: {
+        '4.5': '1.125rem', // 18px
+      },
+      width: {
+        '4.5': '1.125rem', // 18px
+      },
+      height: {
+        '4.5': '1.125rem', // 18px
+      },
+    },
   },
   plugins: [],
 }

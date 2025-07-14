@@ -7,7 +7,8 @@ import { motion } from 'framer-motion'
 import { useParams, usePathname } from 'next/navigation'
 import { TextConfigModal } from '../text-config-modal'
 import { CardConfigModal, CardData } from '../card-config-modal'
-import styles from './action-config-sidebar.module.css'
+import { SIDEBAR_ANIMATIONS, PURPLE_THEME, CLOSE_BUTTON_STYLES, HEADER_STYLES } from '../shared/animation-patterns'
+import { cn } from '@/lib/utils'
 import { useToast } from '@/contexts/toast-context'
 
 export type { CardData }
@@ -111,47 +112,64 @@ const CardPreview: React.FC<CardPreviewProps> = ({ cardData, onEdit, onDelete, i
   }
 
   return (
-    <div className={styles.cardPreview}>
+    <motion.div 
+      className={cn(
+        PURPLE_THEME.glassBackground,
+        PURPLE_THEME.border,
+        "rounded-2xl p-4 relative transition-all duration-200",
+        "hover:shadow-lg hover:-translate-y-0.5"
+      )}
+      {...SIDEBAR_ANIMATIONS.scaleOnHover}
+    >
       {cardData.image && (
-        <div className={styles.cardImageContainer}>
-          <img src={cardData.image} alt="Card preview" className={styles.cardImage} />
+        <div className="w-full h-32 rounded-xl overflow-hidden mb-3 bg-gradient-to-br from-gray-100 to-gray-200">
+          <img 
+            src={cardData.image} 
+            alt="Card preview" 
+            className="w-full h-full object-cover transition-transform duration-200 hover:scale-105" 
+          />
         </div>
       )}
-      <div className={styles.cardContent}>
+      <div className="mb-3">
         {cardData.title && (
-          <h3 className={styles.cardTitle}>{cardData.title}</h3>
+          <h3 className="text-base font-semibold text-gray-800 mb-2 line-clamp-2">{cardData.title}</h3>
         )}
         {cardData.subtitle && (
-          <p className={styles.cardSubtitle}>{cardData.subtitle}</p>
+          <p className="text-sm text-gray-600 mb-3 line-clamp-3">{cardData.subtitle}</p>
         )}
         {cardData.buttonAction && (
-          <div className={styles.cardButton}>
+          <div className="flex items-center justify-center w-full py-2 px-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-xs font-medium">
             {getButtonText()}
           </div>
         )}
       </div>
-      <div className={styles.cardPreviewActions}>
+      <div className="flex justify-between items-center gap-2 pt-3 border-t border-gray-100">
         <button 
           onClick={onEdit}
-          className={styles.cardEditButton}
+          className={cn(
+            "flex-1 py-2 px-3 text-xs font-medium rounded-lg transition-all duration-150",
+            PURPLE_THEME.button.base,
+            PURPLE_THEME.button.hover,
+            PURPLE_THEME.button.text
+          )}
           aria-label="Edit card"
         >
           Edit
         </button>
         <button 
           onClick={onDelete}
-          className={styles.cardDeleteButton}
+          className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 border border-red-200 text-red-500 hover:bg-red-100 hover:border-red-300 transition-all duration-150"
           aria-label="Delete card"
           disabled={isDeleting}
         >
           {isDeleting ? (
             <div className="w-3.5 h-3.5 border-2 border-red-300 border-t-red-600 rounded-full animate-spin"></div>
           ) : (
-            <X className={styles.cardDeleteIcon} />
+            <X className="w-3.5 h-3.5" />
           )}
         </button>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -218,8 +236,10 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
     if (option.isDisabled || selectedText) return // Disable click if there's already a selected message
 
     if (option.id === 'text') {
+      onClose() // Collapse the sidebar before opening text modal
       setIsTextModalOpen(true)
     } else if (option.id === 'card') {
+      onClose() // Collapse the sidebar before opening card modal
       setIsCardModalOpen(true)
     } else {
       onSelect(option.id)
@@ -379,52 +399,65 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
     <>
       <Sheet open={isOpen} onOpenChange={onClose}>
         <MotionSheetContent 
+          showCloseButton={false}
           side="right" 
-          className={styles.sidebar}
-          initial={{ x: '100%', opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: '100%', opacity: 0 }}
-          transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+          className={cn(
+            "p-6 w-[400px] top-0 h-screen",
+            PURPLE_THEME.glassBackground,
+            PURPLE_THEME.shadow,
+            PURPLE_THEME.border,
+            "border-l"
+          )}
+          {...SIDEBAR_ANIMATIONS.slideIn}
         >
+          {/* Gradient overlay */}
+          <div className={cn(
+            "absolute inset-0 pointer-events-none rounded-l-2xl",
+            PURPLE_THEME.gradientOverlay
+          )} />
+          
           <button 
             onClick={onClose} 
-            className={styles.closeButton}
+            className={cn(CLOSE_BUTTON_STYLES.base, "group")}
             aria-label="Close sidebar"
           >
-            <X className={styles.closeIcon} />
+            <X className={CLOSE_BUTTON_STYLES.icon} />
             <span className="sr-only">Close</span>
           </button>
-          <SheetHeader className={styles.header}>
-            <SheetTitle className={styles.title}>Configure Message</SheetTitle>
-            <p className={styles.subtitle}>Choose how you want to respond to the user</p>
+          
+          <SheetHeader className={HEADER_STYLES.container}>
+            <SheetTitle className={HEADER_STYLES.title}>Configure Message</SheetTitle>
+            <p className={HEADER_STYLES.subtitle}>Choose how you want to respond to the user</p>
           </SheetHeader>
 
           <motion.div 
-            className={styles.content}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            className="flex flex-col gap-8 overflow-y-auto max-h-[calc(100vh-8.5rem)] scrollbar-hide relative z-10"
+            {...SIDEBAR_ANIMATIONS.contentFadeIn}
           >
             {selectedText && (
               <motion.div 
-                className={styles.selectedAction}
+                className={cn(
+                  PURPLE_THEME.glassBackground,
+                  PURPLE_THEME.border,
+                  "rounded-2xl p-4 mb-4 relative"
+                )}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <div className={styles.selectedActionHeader}>
-                  <MessageCircle className={styles.selectedActionIcon} />
-                  <h4 className={styles.selectedActionTitle}>Selected Message</h4>
+                <div className="flex items-center gap-2 relative mb-3">
+                  <MessageCircle className="w-5 h-5 text-gray-600" />
+                  <h4 className="text-sm font-semibold text-gray-800 flex-grow">Selected Message</h4>
                   <button 
                     onClick={handleMessageDelete}
-                    className={styles.deleteButton}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-gray-100 transition-colors duration-200"
                     aria-label="Delete message"
                     disabled={isDeletingMessage}
                   >
                     {isDeletingMessage ? (
                       <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
                     ) : (
-                      <X className={styles.deleteIcon} />
+                      <X className="w-4 h-4 text-gray-500 hover:text-gray-700 transition-colors duration-200" />
                     )}
                   </button>
                 </div>
@@ -436,8 +469,8 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
                     isDeleting={isDeletingMessage}
                   />
                 ) : (
-                  <div className={styles.selectedActionContent}>
-                    <p className={styles.selectedActionText}>{selectedText}</p>
+                  <div className="flex items-start justify-between gap-4 py-2 px-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-800 leading-relaxed flex-1 break-words">{selectedText}</p>
                     <button 
                       onClick={() => {
                         if (selectedActionType === 'card') {
@@ -446,7 +479,12 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
                           setIsTextModalOpen(true)
                         }
                       }}
-                      className={styles.editButton}
+                      className={cn(
+                        "py-1.5 px-3 text-xs font-medium rounded-lg transition-all duration-150 whitespace-nowrap",
+                        PURPLE_THEME.button.base,
+                        PURPLE_THEME.button.hover,
+                        PURPLE_THEME.button.text
+                      )}
                       aria-label="Edit message"
                     >
                       Edit
@@ -457,36 +495,58 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
             )}
 
             {!selectedText && (
-              <div className={styles.section}>
-                <h4 className={styles.sectionTitle}>
-                  <Zap className={styles.sectionIcon} />
+              <div className="flex flex-col gap-4">
+                <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2">
+                  <Zap className="w-4.5 h-4.5 text-gray-600" />
                   ACTIONS
                 </h4>
-                <div className={styles.options}>
+                <div className="flex flex-col gap-4">
                   {ACTION_OPTIONS.map((option, index) => (
                     <motion.button
                       key={option.id}
-                      className={`${styles.option} ${option.isDisabled ? styles.disabled : ''}`}
+                      className={cn(
+                        "flex flex-col justify-center gap-1 p-3 rounded-2xl transition-all duration-200 text-left w-full relative overflow-hidden",
+                        PURPLE_THEME.glassBackground,
+                        PURPLE_THEME.border,
+                        !option.isDisabled && "hover:-translate-y-0.5 hover:shadow-lg",
+                        option.isDisabled && "opacity-60 cursor-not-allowed bg-gray-50/80"
+                      )}
                       onClick={() => handleOptionClick(option)}
                       disabled={Boolean(option.isDisabled)}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 + index * 0.1 }}
-                      whileHover={!option.isDisabled ? { y: -2, transition: { duration: 0.2 } } : {}}
-                      whileTap={!option.isDisabled ? { y: -1 } : {}}
+                      {...SIDEBAR_ANIMATIONS.staggeredItem(index)}
+                      {...(!option.isDisabled ? SIDEBAR_ANIMATIONS.buttonHover : {})}
                       role="button"
                       aria-disabled={Boolean(option.isDisabled)}
                     >
-                      <div className={styles.optionContent}>
-                        <div className={styles.optionInfo}>
-                          <option.icon className={styles.optionIcon} />
-                          <div className={styles.optionTextContent}>
-                            <span className={styles.optionName}>{option.name}</span>
-                            <span className={styles.optionDescription}>{option.description}</span>
+                      <div className="flex items-center justify-between w-full min-h-[2.25rem]">
+                        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                          <div className={cn(
+                            "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
+                            option.isDisabled 
+                              ? "bg-gray-100 border border-gray-200" 
+                              : cn(PURPLE_THEME.icon.background, PURPLE_THEME.icon.border)
+                          )}>
+                            <option.icon className={cn(
+                              "w-4.5 h-4.5 transition-all duration-200",
+                              option.isDisabled ? "text-gray-400" : PURPLE_THEME.icon.text
+                            )} />
+                          </div>
+                          <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                            <span className={cn(
+                              "text-sm font-medium transition-colors duration-200",
+                              option.isDisabled ? "text-gray-500" : "text-gray-800"
+                            )}>{option.name}</span>
+                            <span className="text-xs text-gray-500 font-normal truncate">
+                              {option.description}
+                            </span>
                           </div>
                         </div>
                         {option.isDisabled && (
-                          <span className={styles.comingSoon} aria-label="Coming Soon">
+                          <span className={cn(
+                            "text-xs font-medium px-2 py-1 rounded-full transition-all duration-200",
+                            "bg-purple-50 border border-purple-200 text-purple-600",
+                            "ml-2 flex-shrink-0"
+                          )} aria-label="Coming Soon">
                             Coming Soon
                           </span>
                         )}

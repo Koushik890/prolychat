@@ -165,7 +165,6 @@ export function CardConfigModal({
         showToast('loading', 'Saving card', true)
         window.addEventListener('beforeunload', preventReload)
 
-        await new Promise(resolve => setTimeout(resolve, 1500))
         await onSave(cardData)
 
         window.removeEventListener('beforeunload', preventReload)

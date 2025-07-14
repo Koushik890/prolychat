@@ -76,7 +76,7 @@ export function AppSidebar({ onCollapse, defaultExpanded = true }: AppSidebarPro
 
   return (
     <aside 
-      className={`fixed left-0 top-0 z-20 h-full border-r-[2px] border-gray-300/50 bg-[#fafafa] font-['Plus_Jakarta_Sans',-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Oxygen,Ubuntu,Cantarell,'Fira_Sans','Droid_Sans','Helvetica_Neue',sans-serif] text-base font-medium leading-6 shadow-[0_0_15px_rgba(0,0,0,0.03)] transition-all duration-300 ${
+      className={`fixed left-0 top-0 z-20 h-full border-r border-slate-600 bg-slate-700 font-['Plus_Jakarta_Sans',-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Oxygen,Ubuntu,Cantarell,'Fira_Sans','Droid_Sans','Helvetica_Neue',sans-serif] text-base font-medium leading-6 shadow-[0_0_20px_rgba(0,0,0,0.25)] transition-all duration-300 hidden lg:block ${
         isExpanded ? "w-[250px]" : "w-[72px]"
       }`}
     >
@@ -93,7 +93,7 @@ export function AppSidebar({ onCollapse, defaultExpanded = true }: AppSidebarPro
               <div className="flex items-center gap-2">
                 {/* Logomark - always visible */}
                 <Image
-                  src="/Prolychat_lm_black.png"
+                  src="/Prolychat_lm_orange.png"
                   alt="Prolychat Logomark"
                   width={isExpanded ? 38 : 28}
                   height={isExpanded ? 38 : 28}
@@ -103,7 +103,7 @@ export function AppSidebar({ onCollapse, defaultExpanded = true }: AppSidebarPro
                 {/* Wordmark - only visible when expanded */}
                 {isExpanded && (
                   <Image
-                    src="/prolychat_bl.png"
+                    src="/Prolychat_og_sb.png"
                     alt="Prolychat"
                     width={110}
                     height={38}
@@ -130,7 +130,7 @@ export function AppSidebar({ onCollapse, defaultExpanded = true }: AppSidebarPro
             <div className="flex flex-col">
               {/* Divider below Contacts */}
               <div className="relative mt-[44px] px-4">
-                <div className="absolute left-4 right-4 h-[1px] bg-gradient-to-r from-gray-300/35 via-gray-300/55 to-gray-300/35" />
+                <div className="absolute left-4 right-4 h-[1px] bg-gradient-to-r from-gray-600/40 via-gray-500/60 to-gray-600/40" />
               </div>
               {/* Help & Support Section */}
               <div className="mt-6 px-4">
@@ -138,16 +138,16 @@ export function AppSidebar({ onCollapse, defaultExpanded = true }: AppSidebarPro
                   href="/help"
                   className={`group relative flex h-[40px] w-[218px] items-center rounded-2xl transition-all ${
                     pathname === '/help'
-                      ? "bg-[#e9eded] hover:bg-[#e9eded]"
-                      : "hover:bg-[#F2F4F4]"
+                      ? "bg-purple-600/20 hover:bg-purple-600/25"
+                      : "hover:bg-gray-700/60"
                   }`}
                 >
                   <div className="flex w-full items-center pl-[13px]">
                     <div className="flex w-[24px] items-center justify-center">
-                      <HelpCircle className={`h-[20px] w-[20px] ${pathname === '/help' ? 'text-[#282d47]' : 'text-[#8c92a0]'}`} />
+                      <HelpCircle className={`h-[20px] w-[20px] ${pathname === '/help' ? 'text-purple-400' : 'text-gray-400'}`} />
                     </div>
                     {isExpanded && (
-                      <span className={`truncate pl-[18px] text-[17px] font-medium leading-6 ${pathname === '/help' ? 'text-[#282d47]' : 'text-[#8c92a0]'}`}>
+                      <span className={`truncate pl-[18px] text-[17px] font-medium leading-6 ${pathname === '/help' ? 'text-purple-400' : 'text-gray-300'}`}>
                         Help & Support
                       </span>
                     )}
@@ -162,19 +162,19 @@ export function AppSidebar({ onCollapse, defaultExpanded = true }: AppSidebarPro
             {/* Profile Button - Removed as per requirement */}
             
             {/* Settings Button */}
-            <div className="border-t border-gray-200/30 pt-6">
+            <div className="border-t border-gray-600/40 pt-6">
               <div className="px-4">
                 <Link
                   href={userSlug ? `/dashboard/${userSlug}/settings/account` : '/settings/account'}
-                  className={`relative flex h-[40px] ${isExpanded ? 'w-[218px]' : 'w-[44px]'} items-center rounded-2xl bg-gradient-to-br from-[#d8d2e9] via-[#e4dff2] to-[#d5cfe6] shadow-[0_2px_4px_rgba(0,0,0,0.06)] transition-all hover:from-[#e0daf1] hover:via-[#ece7fa] hover:to-[#dfd9eb] hover:shadow-[0_3px_6px_rgba(0,0,0,0.1)]`}
+                  className={`relative flex h-[40px] ${isExpanded ? 'w-[218px]' : 'w-[44px]'} items-center rounded-2xl bg-gradient-to-br from-purple-600/20 via-purple-500/15 to-purple-600/20 shadow-[0_2px_8px_rgba(0,0,0,0.3)] transition-all hover:from-purple-600/30 hover:via-purple-500/25 hover:to-purple-600/30 hover:shadow-[0_3px_12px_rgba(0,0,0,0.4)]`}
                 >
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-white/20 via-white/5 to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-white/10 via-white/5 to-transparent pointer-events-none" />
                   <div className="relative flex w-full items-center pl-[13px]">
                     <div className="flex w-[24px] items-center justify-center">
-                      <Settings className="h-[18px] w-[18px] text-gray-600" />
+                      <Settings className="h-[18px] w-[18px] text-purple-300" />
                     </div>
                     {isExpanded && (
-                      <span className="truncate pl-[18px] text-[17px] font-medium leading-6 text-gray-700">Settings</span>
+                      <span className="truncate pl-[18px] text-[17px] font-medium leading-6 text-purple-300">Settings</span>
                     )}
                   </div>
                 </Link>

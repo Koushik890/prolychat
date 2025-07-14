@@ -110,97 +110,134 @@ export const getAutomations = async (clerkId: string) => {
 
 export const findAutomation = async (id: string) => {
   try {
-    // Use withDatabaseRetry directly for this critical function
+    // Optimized database query - only select necessary fields
     const result = await withDatabaseRetry(() => 
       client.automation.findUnique({
-        where: {
-          id,
-        },
-        include: {
+        where: { id },
+        select: {
+          id: true,
+          name: true,
+          active: true,
+          status: true,
+          runCount: true,
+          createdAt: true,
+          updatedAt: true,
+          userId: true,
           trigger: {
-            include: {
-              posts: true,
-              keywords: true,
-              replyMessages: true
+            select: {
+              id: true,
+              type: true,
+              status: true,
+              automationId: true,
+              config: true,
+              createdAt: true,
+              updatedAt: true,
+              posts: {
+                select: {
+                  id: true,
+                  postId: true,
+                  mediaType: true,
+                  mediaUrl: true,
+                  caption: true,
+                  triggerId: true
+                }
+              },
+              keywords: {
+                select: {
+                  id: true,
+                  word: true,
+                  triggerId: true
+                }
+              },
+              replyMessages: {
+                select: {
+                  id: true,
+                  message: true,
+                  triggerId: true
+                }
+              }
             }
           },
           listener: {
-            include: {
-              messageData: true
+            select: {
+              id: true,
+              type: true,
+              status: true,
+              prompt: true,
+              commentReply: true,
+              dmCount: true,
+              commentCount: true,
+              automationId: true,
+              messageData: {
+                select: {
+                  id: true,
+                  type: true,
+                  textContent: true,
+                  cardTitle: true,
+                  cardSubtitle: true,
+                  cardButtonLabel: true,
+                  cardButtonAction: true,
+                  cardLink: true,
+                  cardImageUrl: true
+                }
+              }
             }
           },
           User: {
             select: {
-              subscription: true,
-              integrations: true,
-            },
-          },
-        },
+              subscription: {
+                select: {
+                  plan: true,
+                  subscriptionStatus: true
+                }
+              },
+              integrations: {
+                select: {
+                  id: true,
+                  token: true
+                }
+              }
+            }
+          }
+        }
       })
     );
 
     if (!result) {
-      console.error('No automation found with id:', id)
       return null
     }
 
-    // Transform trigger data to include proper configuration
+    // Optimize trigger data transformation - remove expensive operations
     if (result.trigger?.length > 0) {
-      console.log('Raw trigger data:', result.trigger) // Debug log
-
       result.trigger = result.trigger.map(trigger => {
-        // Determine configuration status based on data
+        // Calculate status efficiently without multiple checks
         const hasPost = trigger.posts.length > 0
         const hasKeywords = trigger.keywords.length > 0
         const hasReplyMessages = trigger.replyMessages.length > 0
         
-        // Special handling for user-message (DM) triggers
-        let status
-        if (trigger.type === 'user-message') {
-          // For Direct Message triggers, only keywords are required
-          status = hasKeywords ? 'complete' : 'unconfigured'
-        } else {
-          // For other triggers, use the original logic
-          status = hasPost && hasKeywords && hasReplyMessages ? 'complete' :
-                  hasPost || hasKeywords || hasReplyMessages ? 'partial' :
-                  'unconfigured'
-        }
+        // Optimized status calculation
+        const status = trigger.type === 'user-message' 
+          ? (hasKeywords ? 'complete' : 'unconfigured')
+          : (hasPost && hasKeywords && hasReplyMessages ? 'complete' : 
+             hasPost || hasKeywords || hasReplyMessages ? 'partial' : 'unconfigured')
 
-        console.log('Processing trigger:', {
-          type: trigger.type,
-          status,
-          hasPost,
-          hasKeywords,
-          hasReplyMessages
-        })
-
-        // Create base trigger object with all data
-        const transformedTrigger = {
+        // Streamlined trigger object creation
+        return {
           ...trigger,
           status,
-          type: trigger.type, // Keep original API type
           config: {
             status,
-            type: 'all', // Default to 'all'
-            posts: trigger.posts.map(post => ({
-              postId: post.postId,
-              mediaType: post.mediaType,
-              mediaUrl: post.mediaUrl,
-              caption: post.caption
-            })),
+            type: 'all',
+            posts: trigger.posts,
             keywords: {
               include: trigger.keywords.map(k => k.word)
             },
             replyMessages: trigger.replyMessages.map(r => r.message)
           }
         }
-
-        console.log('Transformed trigger:', transformedTrigger)
-        return transformedTrigger
       })
     }
 
-    console.log('Final automation data:', result)
     return result
   } catch (error) {
     console.error('Error in findAutomation:', error)
@@ -255,11 +292,23 @@ export const addListener = async (
       return { status: 404, data: 'Automation not found' };
     }
 
-    // Determine listener status based on action type and provided data
+    // Check if listener already exists and has a message to determine proper status
+    const existingListener = await withDatabaseRetry(() => client.listener.findUnique({
+      where: { automationId },
+      include: { messageData: true }
+    }));
+
+    // Determine listener status based on action type, provided data, and existing message data
     let status = 'UNCONFIGURED';
-    if (actionType === 'PROLYAI' && prompt) {
+    
+    if (existingListener?.messageData) {
+      // If message data exists, preserve CONFIGURED status
+      status = 'CONFIGURED';
+    } else if (actionType === 'PROLYAI' && prompt) {
+      // For AI prompts, set to CONFIGURED if prompt exists
       status = 'CONFIGURED';
     } else if (actionType === 'MESSAGE' && (message || cardData)) {
+      // For messages, set to CONFIGURED if message or card data exists
       status = 'CONFIGURED';
     }
 
@@ -357,136 +406,98 @@ export const addTrigger = async (automationId: string, trigger: string[], config
   }
 
   try {
-    console.log('Adding/updating trigger in database:', { automationId, trigger, config });
-    
-    // First, get the associated trigger if there is one, or create a new one
-    const existingTrigger = await withDatabaseRetry(() => client.trigger.findFirst({
-      where: {
-        automationId,
-      },
-      include: {
-        posts: true,
-        keywords: true,
-        replyMessages: true,
-      },
+    // ULTRA-FAST: Remove all console.log overhead and use direct client operations
+    // Get or create trigger with minimal operations
+    let existingTrigger = await withDatabaseRetry(() => client.trigger.findFirst({
+      where: { automationId },
+      select: { id: true }
     }));
 
     let triggerId: string;
 
     if (existingTrigger) {
-      console.log('Using existing trigger:', existingTrigger.id);
       triggerId = existingTrigger.id;
-      
-      // Update the automation's updatedAt timestamp
-      await withDatabaseRetry(() => client.automation.update({
-        where: { id: automationId },
-        data: { updatedAt: new Date() }
-      }));
     } else {
-      console.log('Creating new trigger for automation:', automationId);
-      // Create a new trigger
       const createdTrigger = await withDatabaseRetry(() => client.trigger.create({
         data: {
           type: trigger.join(','),
           automationId,
         },
+        select: { id: true }
       }));
-      
-      // Update the automation's updatedAt timestamp
-      await withDatabaseRetry(() => client.automation.update({
-        where: { id: automationId },
-        data: { updatedAt: new Date() }
-      }));
-      
       triggerId = createdTrigger.id;
     }
     
-    // Now we have a triggerId, we can manage keywords, posts, and reply messages
+    // Prepare data arrays (optimized extraction)
+    const keywordsArray = config?.keywords ? 
+      (Array.isArray(config.keywords) ? config.keywords : (config.keywords?.include || [])) : [];
+    const postsArray = config?.posts || [];
+    const replyMessagesArray = config?.replyMessages || [];
+
+    // MAXIMUM SPEED: Direct parallel operations without transaction overhead
+    // Clear existing data in parallel
+    await Promise.all([
+      withDatabaseRetry(() => client.keyword.deleteMany({ where: { triggerId } })),
+      withDatabaseRetry(() => client.post.deleteMany({ where: { triggerId } })),
+      withDatabaseRetry(() => client.replyMessage.deleteMany({ where: { triggerId } }))
+    ]);
+
+    // Create new data in parallel (only if arrays have content)
+    const createOperations = [];
     
-    // Normalize keywords if they exist (should be an array of strings)
-    if (config?.keywords) {
-      // If it's already an array, use it; if it's an object with include, extract that; otherwise empty array
-      const keywordsArray = Array.isArray(config.keywords) 
-        ? config.keywords 
-        : (config.keywords?.include || []);
-      
-      // Update existing keywords or create new ones
-      // First, remove all keywords associated with this trigger
-      await withDatabaseRetry(() => client.keyword.deleteMany({
-        where: { 
-          triggerId
-        }
-      }));
-      
-      // Then create new keywords
-      if (keywordsArray.length > 0) {
-        for (const word of keywordsArray) {
-          await withDatabaseRetry(() => client.keyword.create({
-            data: {
-              word,
-              trigger: {
-                connect: { id: triggerId }
-              }
-            }
-          }));
-        }
-        console.log(`Added ${keywordsArray.length} keywords to trigger ${triggerId}`);
-      }
+    if (keywordsArray.length > 0) {
+      createOperations.push(
+        withDatabaseRetry(() => client.keyword.createMany({
+          data: keywordsArray.map((word: string) => ({ word, triggerId })),
+          skipDuplicates: true
+        }))
+      );
     }
     
-    // Handle posts if they exist
-    if (config?.posts && Array.isArray(config.posts) && config.posts.length > 0) {
-      // Remove existing posts 
-      await withDatabaseRetry(() => client.post.deleteMany({
-        where: { 
-          triggerId
-        }
-      }));
-      
-      // Create new posts
-      for (const post of config.posts) {
-        await withDatabaseRetry(() => client.post.create({
-          data: {
+    if (postsArray.length > 0) {
+      createOperations.push(
+        withDatabaseRetry(() => client.post.createMany({
+          data: postsArray.map((post: any) => ({
             postId: post.postId,
             mediaType: post.mediaType,
             mediaUrl: post.mediaUrl,
             caption: post.caption,
-            trigger: {
-              connect: { id: triggerId }
-            }
-          }
-        }));
-      }
-      console.log(`Added ${config.posts.length} posts to trigger ${triggerId}`);
+            triggerId
+          })),
+          skipDuplicates: true
+        }))
+      );
     }
     
-    // Handle reply messages if they exist
-    if (config?.replyMessages && Array.isArray(config.replyMessages) && config.replyMessages.length > 0) {
-      // Remove existing reply messages
-      await withDatabaseRetry(() => client.replyMessage.deleteMany({
-        where: { 
-          triggerId
-        }
-      }));
-      
-      // Create new reply messages
-      for (const message of config.replyMessages) {
-        await withDatabaseRetry(() => client.replyMessage.create({
-          data: {
-            message,
-            trigger: {
-              connect: { id: triggerId }
-            }
-          }
-        }));
-      }
-      console.log(`Added ${config.replyMessages.length} reply messages to trigger ${triggerId}`);
+    if (replyMessagesArray.length > 0) {
+      createOperations.push(
+        withDatabaseRetry(() => client.replyMessage.createMany({
+          data: replyMessagesArray.map((message: string) => ({ message, triggerId })),
+          skipDuplicates: true
+        }))
+      );
     }
 
-    console.log('Trigger operation completed successfully');
+    // Execute all creates in parallel
+    if (createOperations.length > 0) {
+      await Promise.all(createOperations);
+    }
+
+    // Calculate status (ultra-fast, no database queries)
+    const triggerType = trigger[0];
+    const calculatedStatus = triggerType === 'user-message' 
+      ? (keywordsArray.length > 0 ? 'complete' : 'unconfigured')
+      : (postsArray.length > 0 && keywordsArray.length > 0 && replyMessagesArray.length > 0 ? 'complete' : 
+         postsArray.length > 0 || keywordsArray.length > 0 || replyMessagesArray.length > 0 ? 'partial' : 'unconfigured');
+
+    // Single status update operation
+    await withDatabaseRetry(() => client.trigger.update({
+      where: { id: triggerId },
+      data: { status: calculatedStatus }
+    }));
+    
     return { status: 200, data: 'Trigger(s) added successfully' };
   } catch (error) {
-    console.error('Error in addTrigger:', error);
     return { 
       status: 500, 
       data: error instanceof Error ? error.message : 'Failed to add trigger' 
@@ -498,10 +509,15 @@ export const addKeyWord = async (automationId: string, keyword: string) => {
   console.log('Adding keyword:', { automationId, keyword });
   
   try {
-    // Get the trigger ID first
+    // Get the trigger with its related data
     const trigger = await withDatabaseRetry(() => client.trigger.findFirst({
       where: {
         automationId,
+      },
+      include: {
+        posts: true,
+        keywords: true,
+        replyMessages: true,
       },
     }));
 
@@ -519,12 +535,46 @@ export const addKeyWord = async (automationId: string, keyword: string) => {
     }));
 
     if (result) {
-      // Update the automation's updatedAt timestamp
+      // Calculate the new status based on the updated configuration
+      const hasPost = trigger.posts.length > 0;
+      const hasKeywords = trigger.keywords.length + 1 > 0; // +1 for the newly added keyword
+      const hasReplyMessages = trigger.replyMessages.length > 0;
+      
+      let calculatedStatus = 'unconfigured';
+      
+      // Special handling for user-message (DM) triggers
+      if (trigger.type === 'user-message') {
+        // For Direct Message triggers, only keywords are required
+        calculatedStatus = hasKeywords ? 'complete' : 'unconfigured';
+      } else {
+        // For other triggers (like post-comments), all three are required
+        calculatedStatus = hasPost && hasKeywords && hasReplyMessages ? 'complete' :
+                          hasPost || hasKeywords || hasReplyMessages ? 'partial' :
+                          'unconfigured';
+      }
+      
+      console.log(`Calculated status for trigger ${trigger.id}: ${calculatedStatus}`, {
+        triggerType: trigger.type,
+        hasPost,
+        hasKeywords,
+        hasReplyMessages
+      });
+
+      // Update the trigger status and automation timestamp
+      await withDatabaseRetry(() => client.trigger.update({
+        where: { id: trigger.id },
+        data: { 
+          status: calculatedStatus,
+          updatedAt: new Date()
+        }
+      }));
+
       await withDatabaseRetry(() => client.automation.update({
         where: { id: automationId },
         data: { updatedAt: new Date() }
       }));
       
+      console.log(`Trigger status updated to: ${calculatedStatus}`);
       return { status: 200, data: 'Keyword added successfully' };
     }
 
@@ -543,6 +593,8 @@ export const deleteKeywordQuery = async (id: string) => {
       include: {
         trigger: {
           select: {
+            id: true,
+            type: true,
             automationId: true
           }
         }
@@ -559,10 +611,60 @@ export const deleteKeywordQuery = async (id: string) => {
       where: { id },
     }));
 
-    // Update the associated automation's updatedAt timestamp
+    // Update the trigger status and automation timestamp
     if (keyword.trigger?.automationId) {
       const automationId = keyword.trigger.automationId;
-      if (automationId) {
+      const triggerId = keyword.trigger.id;
+      const triggerType = keyword.trigger.type;
+      
+      if (automationId && triggerId) {
+        // Get the current state of the trigger to calculate new status
+        const updatedTrigger = await withDatabaseRetry(() => client.trigger.findUnique({
+          where: { id: triggerId },
+          include: {
+            posts: true,
+            keywords: true,
+            replyMessages: true,
+          },
+        }));
+
+        if (updatedTrigger) {
+          const hasPost = updatedTrigger.posts.length > 0;
+          const hasKeywords = updatedTrigger.keywords.length > 0;
+          const hasReplyMessages = updatedTrigger.replyMessages.length > 0;
+          
+          let calculatedStatus = 'unconfigured';
+          
+          // Special handling for user-message (DM) triggers
+          if (triggerType === 'user-message') {
+            // For Direct Message triggers, only keywords are required
+            calculatedStatus = hasKeywords ? 'complete' : 'unconfigured';
+          } else {
+            // For other triggers (like post-comments), all three are required
+            calculatedStatus = hasPost && hasKeywords && hasReplyMessages ? 'complete' :
+                              hasPost || hasKeywords || hasReplyMessages ? 'partial' :
+                              'unconfigured';
+          }
+          
+          console.log(`Calculated status after keyword deletion for trigger ${triggerId}: ${calculatedStatus}`, {
+            triggerType,
+            hasPost,
+            hasKeywords,
+            hasReplyMessages
+          });
+
+          // Update the trigger status
+          await withDatabaseRetry(() => client.trigger.update({
+            where: { id: triggerId },
+            data: { 
+              status: calculatedStatus,
+              updatedAt: new Date()
+            }
+          }));
+
+          console.log(`Trigger status updated to: ${calculatedStatus}`);
+        }
+
         await withDatabaseRetry(() => client.automation.update({
           where: { id: automationId },
           data: { updatedAt: new Date() }
@@ -587,10 +689,15 @@ export const addPost = async (
   }[]
 ) => {
   try {
-    // First get the trigger ID
+    // First get the trigger with its related data
     const trigger = await withDatabaseRetry(() => client.trigger.findFirst({
       where: {
         automationId,
+      },
+      include: {
+        posts: true,
+        keywords: true,
+        replyMessages: true,
       },
     }));
 
@@ -619,12 +726,46 @@ export const addPost = async (
       }));
     }
 
-    // Update the automation's updatedAt timestamp
+    // Calculate the new status based on the updated configuration
+    const hasPost = posts.length > 0; // Use the new posts array length
+    const hasKeywords = trigger.keywords.length > 0;
+    const hasReplyMessages = trigger.replyMessages.length > 0;
+    
+    let calculatedStatus = 'unconfigured';
+    
+    // Special handling for user-message (DM) triggers
+    if (trigger.type === 'user-message') {
+      // For Direct Message triggers, only keywords are required
+      calculatedStatus = hasKeywords ? 'complete' : 'unconfigured';
+    } else {
+      // For other triggers (like post-comments), all three are required
+      calculatedStatus = hasPost && hasKeywords && hasReplyMessages ? 'complete' :
+                        hasPost || hasKeywords || hasReplyMessages ? 'partial' :
+                        'unconfigured';
+    }
+    
+    console.log(`Calculated status after adding posts for trigger ${trigger.id}: ${calculatedStatus}`, {
+      triggerType: trigger.type,
+      hasPost,
+      hasKeywords,
+      hasReplyMessages
+    });
+
+    // Update the trigger status and automation timestamp
+    await withDatabaseRetry(() => client.trigger.update({
+      where: { id: trigger.id },
+      data: { 
+        status: calculatedStatus,
+        updatedAt: new Date()
+      }
+    }));
+
     await withDatabaseRetry(() => client.automation.update({
       where: { id: automationId },
       data: { updatedAt: new Date() }
     }));
 
+    console.log(`Trigger status updated to: ${calculatedStatus}`);
     return true;
   } catch (error) {
     console.error('Error adding posts:', error);

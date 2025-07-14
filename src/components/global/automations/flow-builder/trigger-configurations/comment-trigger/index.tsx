@@ -5,7 +5,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { X, Instagram, Hash, MessageSquare, ChevronRight, Pencil } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import styles from './comment-trigger.module.css'
+import { SIDEBAR_ANIMATIONS, PURPLE_THEME, CLOSE_BUTTON_STYLES, HEADER_STYLES } from '../../shared/animation-patterns'
+import { cn } from '@/lib/utils'
 import { PostSelectionModal } from '../../post-selection-modal'
 import { KeywordConfigurationModal } from '../../keyword-configuration-modal'
 import { ReplyMessageModal } from '../../reply-message-modal'
@@ -114,7 +115,9 @@ export function CommentTriggerConfig({
         })
         
         onTriggerConfig('post-comments', config)
-        await queryClient.invalidateQueries({ queryKey: ['automation-info', automationId] })
+        
+        // Skip expensive refetch for instant UI response
+        // await queryClient.invalidateQueries({ queryKey: ['automation-info', automationId] })
         
         // Remove reload prevention and show success
         window.removeEventListener('beforeunload', preventReload)
@@ -167,7 +170,7 @@ export function CommentTriggerConfig({
       })
 
       onTriggerConfig('post-comments', config)
-      await queryClient.invalidateQueries({ queryKey: ['automation-info', automationId] })
+      // Removed redundant invalidation - saveChanges already handles this
       
       // Remove reload prevention and show success
       window.removeEventListener('beforeunload', preventReload)
@@ -220,11 +223,10 @@ export function CommentTriggerConfig({
       })
 
       onTriggerConfig('post-comments', config)
-      await queryClient.invalidateQueries({ queryKey: ['automation-info', automationId] })
       
       // Remove reload prevention and show success
       window.removeEventListener('beforeunload', preventReload)
-      showToast('success', 'Reply message saved', true)
+      showToast('success', 'Reply message saved successfully', true)
     } catch (error) {
       // Remove reload prevention on error
       window.removeEventListener('beforeunload', preventReload)
@@ -244,13 +246,12 @@ export function CommentTriggerConfig({
       const config: TriggerConfig = {
         type: 'all',
         keywords,
-        replyMessages: replyMessage ? replyMessage.split(' | ') : [],
+        replyMessages: replyMessage ? [replyMessage] : [],
         status: updateConfigurationStatus({
           type: 'all',
           keywords,
-          replyMessages: replyMessage ? replyMessage.split(' | ') : []
-        }),
-        posts: [] // Explicitly set empty posts array
+          replyMessages: replyMessage ? [replyMessage] : []
+        })
       }
 
       await saveChanges({
@@ -261,7 +262,6 @@ export function CommentTriggerConfig({
       })
 
       onTriggerConfig('post-comments', config)
-      await queryClient.invalidateQueries({ queryKey: ['automation-info', automationId] })
       
       // Remove reload prevention and show success
       window.removeEventListener('beforeunload', preventReload)
@@ -271,208 +271,348 @@ export function CommentTriggerConfig({
       window.removeEventListener('beforeunload', preventReload)
       console.error('Error removing post configuration:', error)
       toast.error('Failed to remove post configuration')
-      const currentPost = automationData?.data?.trigger?.[0]?.posts?.[0]
-      if (currentPost) {
-        setSelectedPost({
-          id: currentPost.postId,
-          media_url: currentPost.mediaUrl,
-          media_type: currentPost.mediaType,
-          caption: currentPost.caption || undefined
-        } as InstagramPostProps)
-      }
     }
   }
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      window.removeEventListener('beforeunload', preventReload)
+  const handleKeywordRemove = (keywordToRemove: string) => {
+    const updatedKeywords = {
+      include: keywords.include.filter(keyword => keyword !== keywordToRemove)
     }
-  }, [])
+    setKeywords(updatedKeywords)
+    
+    // Update configuration
+    const config: TriggerConfig = {
+      type: selectedPost ? 'specific' : 'all',
+      postId: selectedPost?.id,
+      mediaUrl: selectedPost?.media_url,
+      keywords: updatedKeywords,
+      replyMessages: replyMessage ? [replyMessage] : [],
+      status: updateConfigurationStatus({
+        type: selectedPost ? 'specific' : 'all',
+        postId: selectedPost?.id,
+        mediaUrl: selectedPost?.media_url,
+        keywords: updatedKeywords,
+        replyMessages: replyMessage ? [replyMessage] : []
+      }),
+      ...(selectedPost && {
+        posts: [{
+          postId: selectedPost.id,
+          mediaType: selectedPost.media_type,
+          mediaUrl: selectedPost.media_url,
+          caption: selectedPost.caption || null
+        }]
+      })
+    }
+
+    saveChanges({
+      trigger: [{
+        type: 'post-comments',
+        config
+      }]
+    })
+
+    onTriggerConfig('post-comments', config)
+  }
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <MotionSheetContent 
-        side="right" 
-        className={styles.sidebar}
-        initial={{ x: '100%', opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={{ x: '100%', opacity: 0 }}
-        transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-      >
-        <button 
-          type="button"
-          onClick={onClose} 
-          className={styles.closeButton}
-          aria-label="Close sidebar"
+    <>
+      <Sheet open={isOpen} onOpenChange={onClose}>
+        <MotionSheetContent 
+          showCloseButton={false}
+          side="right" 
+          className={cn(
+            "p-6 w-[420px] top-0 h-screen flex flex-col overflow-hidden",
+            PURPLE_THEME.glassBackground,
+            PURPLE_THEME.shadow,
+            PURPLE_THEME.border,
+            "border-l",
+            // Force override shadcn defaults
+            "!bg-white/95 !backdrop-blur-xl"
+          )}
+          {...SIDEBAR_ANIMATIONS.slideIn}
         >
-          <X className={styles.closeIcon} />
-          <span className="sr-only">Close</span>
-        </button>
+          {/* Gradient overlay */}
+          <div className={cn(
+            "absolute inset-0 pointer-events-none rounded-l-2xl",
+            PURPLE_THEME.gradientOverlay
+          )} />
+          
+          <button 
+            type="button"
+            onClick={onClose} 
+            className={cn(CLOSE_BUTTON_STYLES.base, "group")}
+            aria-label="Close sidebar"
+          >
+            <X className={CLOSE_BUTTON_STYLES.icon} />
+            <span className="sr-only">Close</span>
+          </button>
+          
+          <SheetHeader className={HEADER_STYLES.container}>
+            <div className="pr-8">
+              <SheetTitle className={HEADER_STYLES.title}>Configure Post/Reel Comments</SheetTitle>
+              <p className={HEADER_STYLES.subtitle}>Set up your comment trigger settings</p>
+            </div>
+          </SheetHeader>
 
-        <SheetHeader className={styles.header}>
-          <div className="pr-8">
-            <SheetTitle className={styles.title}>Configure Post/Reel Comments</SheetTitle>
-            <p className={styles.subtitle}>Set up your comment trigger settings</p>
-          </div>
-        </SheetHeader>
-
-        <motion.div 
-          className={styles.content}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          {/* Post Selection Section */}
-          <div className={styles.section}>
-            <h4 className={styles.sectionTitle}>
-              <Instagram className={styles.sectionIcon} />
-              WHICH POST OR REEL?
-            </h4>
-            <div className={styles.sectionContent}>
-              {selectedPost ? (
-                <div className={styles.selectedPost}>
-                  <div className={styles.postPreview}>
-                    <BlurImage
-                      src={selectedPost.media_url}
-                      alt="Selected post"
-                      width={80}
-                      height={80}
-                      className={styles.postImage}
-                    />
-                    <div className={styles.postInfo}>
+          <motion.div 
+            className="flex flex-col gap-8 flex-1 overflow-y-auto pr-6 -mr-6 scrollbar-hide relative z-10"
+            {...SIDEBAR_ANIMATIONS.contentFadeIn}
+          >
+            {/* Post/Reel Selection Section */}
+            <motion.div 
+              className="flex flex-col gap-4"
+              {...SIDEBAR_ANIMATIONS.staggeredItem(0)}
+            >
+              <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2">
+                <Instagram className="w-4.5 h-4.5 text-gray-600" />
+                WHICH POST OR REEL?
+              </h4>
+              <div className="flex flex-col gap-3">
+                {selectedPost ? (
+                  <motion.div 
+                    className={cn(
+                      "flex gap-4 p-4 rounded-xl transition-all duration-200",
+                      PURPLE_THEME.glassBackground,
+                      PURPLE_THEME.border,
+                      "hover:shadow-lg hover:-translate-y-0.5"
+                    )}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    {...SIDEBAR_ANIMATIONS.scaleOnHover}
+                  >
+                    <div className="relative flex-shrink-0 w-32 h-32 rounded-xl overflow-hidden">
+                      <BlurImage
+                        src={selectedPost.media_url}
+                        alt={selectedPost.caption || 'Selected Instagram post'}
+                        width={120}
+                        height={120}
+                        className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
+                      />
+                      {selectedPost.media_type === 'VIDEO' && (
+                        <div className="absolute top-2 right-2 bg-black/50 rounded-full p-1.5">
+                          <div className="w-0 h-0 border-l-[6px] border-l-white border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent ml-0.5" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0 flex flex-col gap-3">
+                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        {selectedPost.media_type === 'VIDEO' ? 'Reel' : 'Post'}
+                      </p>
                       {selectedPost.caption && (
-                        <p className={styles.postCaption}>
-                          {selectedPost.caption.length > 50 
-                            ? `${selectedPost.caption.slice(0, 50)}...` 
+                        <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">
+                          {selectedPost.caption.length > 60 
+                            ? `${selectedPost.caption.slice(0, 60)}...` 
                             : selectedPost.caption}
                         </p>
                       )}
-                      <div className={styles.postActions}>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={styles.changeButton}
-                          onClick={() => setIsPostSelectionModalOpen(true)}
+                      <div className="flex gap-2 mt-auto">
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
                         >
-                          <Pencil className="h-3 w-3 mr-1" />
-                          Change
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={styles.removeButton}
-                          onClick={handleRemoveSelectedPost}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={cn(
+                              "text-xs h-8 px-3 transition-all duration-200",
+                              PURPLE_THEME.button.base,
+                              PURPLE_THEME.button.hover,
+                              PURPLE_THEME.button.text
+                            )}
+                            onClick={() => setIsPostSelectionModalOpen(true)}
+                          >
+                            <Pencil className="h-3 w-3 mr-1.5" />
+                            Change
+                          </Button>
+                        </motion.div>
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
                         >
-                          <X className="h-3 w-3 mr-1" />
-                          Remove
-                        </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs h-8 px-3 text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 hover:border-red-300 transition-all duration-200"
+                            onClick={handleRemoveSelectedPost}
+                          >
+                            <X className="h-3 w-3 mr-1.5" />
+                            Remove
+                          </Button>
+                        </motion.div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              ) : (
-                <Button
-                  variant="outline"
-                  className={styles.configButton}
-                  onClick={() => setIsPostSelectionModalOpen(true)}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                    whileTap={{ y: -1 }}
+                  >
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full h-12 justify-between px-4 rounded-xl transition-all duration-200",
+                        "bg-white border border-gray-200 hover:bg-purple-50 hover:border-purple-300",
+                        "text-gray-600 hover:text-purple-700 group"
+                      )}
+                      onClick={() => setIsPostSelectionModalOpen(true)}
+                    >
+                      <span className="text-sm font-medium">Select Post or Reel</span>
+                      <ChevronRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                    </Button>
+                  </motion.div>
+                )}
+                <p className="text-xs text-gray-500 -mt-1 leading-relaxed">
+                  Choose the post or reel you want to monitor
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Keywords Section */}
+            <motion.div 
+              className="flex flex-col gap-4"
+              {...SIDEBAR_ANIMATIONS.staggeredItem(1)}
+            >
+              <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2">
+                <Hash className="w-4.5 h-4.5 text-gray-600" />
+                KEYWORDS
+              </h4>
+              <div className="flex flex-col gap-3">
+                <motion.div
+                  whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                  whileTap={{ y: -1 }}
                 >
-                  <span className={styles.buttonText}>Select Post or Reel</span>
-                  <ChevronRight className={styles.buttonIcon} />
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {/* Keywords Section */}
-          <div className={styles.section}>
-            <h4 className={styles.sectionTitle}>
-              <Hash className={styles.sectionIcon} />
-              KEYWORDS
-            </h4>
-            <div className={styles.sectionContent}>
-              <Button
-                variant="outline"
-                className={styles.configButton}
-                onClick={() => setIsKeywordModalOpen(true)}
-              >
-                <span className={styles.buttonText}>
-                  {keywords.include.length > 0 
-                    ? `${keywords.include.length} Keywords Configured` 
-                    : 'Configure Keywords'}
-                </span>
-                <ChevronRight className={styles.buttonIcon} />
-              </Button>
-              {keywords.include.length > 0 && (
-                <div className={styles.keywordsSummary}>
-                  <div className={styles.keywordGroup}>
-                    <div className={styles.keywordTags}>
-                      {keywords.include.map((keyword) => (
-                        <div key={keyword} className={styles.keywordTag}>
-                          {keyword}
-                        </div>
-                      ))}
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full h-12 justify-between px-4 rounded-xl transition-all duration-200",
+                      "bg-white border border-gray-200 hover:bg-purple-50 hover:border-purple-300",
+                      "text-gray-600 hover:text-purple-700 group"
+                    )}
+                    onClick={() => setIsKeywordModalOpen(true)}
+                  >
+                    <span className="text-sm font-medium">Configure Keywords</span>
+                    <ChevronRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </Button>
+                </motion.div>
+                <p className="text-xs text-gray-500 -mt-1 leading-relaxed">
+                  Set up keywords that will trigger this automation
+                </p>
+                {(keywords.include.length > 0) && (
+                  <motion.div 
+                    className={cn(
+                      "p-4 rounded-xl",
+                      PURPLE_THEME.glassBackground,
+                      PURPLE_THEME.border
+                    )}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, type: 'spring', damping: 20 }}
+                  >
+                    <div className="flex flex-col gap-3">
+                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Keywords:</span>
+                      <div className="flex flex-wrap gap-2">
+                        {keywords.include.map((keyword, index) => (
+                          <motion.div 
+                            key={keyword} 
+                            className="group relative text-xs font-medium text-purple-700 bg-purple-100 hover:bg-purple-200 px-3 py-1.5 rounded-full border border-purple-200 transition-all duration-200 cursor-pointer"
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: index * 0.05, duration: 0.2 }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            {keyword}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleKeywordRemove(keyword)
+                              }}
+                              className="absolute right-0 top-0 bottom-0 px-2 hidden group-hover:flex items-center justify-center hover:bg-red-100 hover:text-red-600 rounded-r-full transition-colors"
+                              aria-label={`Remove keyword ${keyword}`}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </motion.div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
 
-          {/* Reply Message Section */}
-          <div className={styles.section}>
-            <h4 className={styles.sectionTitle}>
-              <MessageSquare className={styles.sectionIcon} />
-              AUTO REPLY
-            </h4>
-            <div className={styles.sectionContent}>
-              <Button
-                variant="outline"
-                className={styles.configButton}
-                onClick={() => setIsReplyMessageModalOpen(true)}
-              >
-                <span className={styles.buttonText}>
-                  {replyMessage ? 'Edit Reply Message' : 'Configure Reply Message'}
-                </span>
-                <ChevronRight className={styles.buttonIcon} />
-              </Button>
-              {replyMessage && (
-                <div className={styles.messageSummary}>
-                  <p className={styles.messagePreview}>
-                    {replyMessage.split(' | ').map((msg, index) => (
-                      <React.Fragment key={index}>
-                        {index > 0 && <br />}
-                        {msg}
-                      </React.Fragment>
-                    ))}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </motion.div>
+            {/* Reply Configuration Section */}
+            <motion.div 
+              className="flex flex-col gap-4"
+              {...SIDEBAR_ANIMATIONS.staggeredItem(2)}
+            >
+              <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2">
+                <MessageSquare className="w-4.5 h-4.5 text-gray-600" />
+                AUTO REPLY
+              </h4>
+              <div className="flex flex-col gap-3">
+                <motion.div
+                  whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                  whileTap={{ y: -1 }}
+                >
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full h-12 justify-between px-4 rounded-xl transition-all duration-200",
+                      "bg-white border border-gray-200 hover:bg-purple-50 hover:border-purple-300",
+                      "text-gray-600 hover:text-purple-700 group"
+                    )}
+                    onClick={() => setIsReplyMessageModalOpen(true)}
+                  >
+                    <span className="text-sm font-medium">Configure Reply Message</span>
+                    <ChevronRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </Button>
+                </motion.div>
+                <p className="text-xs text-gray-500 -mt-1 leading-relaxed">
+                  Set up the message you want to send in response
+                </p>
+                {replyMessage && (
+                  <motion.div 
+                    className={cn(
+                      "p-4 rounded-xl",
+                      PURPLE_THEME.glassBackground,
+                      PURPLE_THEME.border
+                    )}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, type: 'spring', damping: 20 }}
+                  >
+                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap max-h-24 overflow-y-auto scrollbar-hide">{replyMessage}</p>
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        </MotionSheetContent>
+      </Sheet>
 
-        {/* Modals */}
-        <PostSelectionModal
-          isOpen={isPostSelectionModalOpen}
-          onClose={() => setIsPostSelectionModalOpen(false)}
-          onSelect={handlePostSelection}
-        />
+      <PostSelectionModal
+        isOpen={isPostSelectionModalOpen}
+        onClose={() => setIsPostSelectionModalOpen(false)}
+        onSelect={handlePostSelection}
+        selectedPostId={selectedPost?.id}
+      />
 
-        <KeywordConfigurationModal
-          isOpen={isKeywordModalOpen}
-          onClose={() => setIsKeywordModalOpen(false)}
-          onSave={handleKeywordSave}
-          initialKeywords={keywords}
-        />
+      <KeywordConfigurationModal
+        isOpen={isKeywordModalOpen}
+        onClose={() => setIsKeywordModalOpen(false)}
+        onSave={handleKeywordSave}
+        initialKeywords={keywords}
+        key={JSON.stringify(keywords)}
+      />
 
-        <ReplyMessageModal
-          isOpen={isReplyMessageModalOpen}
-          onClose={() => setIsReplyMessageModalOpen(false)}
-          onSave={handleReplyMessageSave}
-          initialMessage={replyMessage}
-        />
-      </MotionSheetContent>
-    </Sheet>
+      <ReplyMessageModal
+        isOpen={isReplyMessageModalOpen}
+        onClose={() => setIsReplyMessageModalOpen(false)}
+        onSave={handleReplyMessageSave}
+        initialMessage={replyMessage}
+      />
+    </>
   )
 } 

@@ -109,24 +109,24 @@ const PaymentSettingsPage = () => {
                 }}
               />
               <div className="relative z-10 mx-auto max-w-4xl text-center">
-                <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
+                <h1 className={`${styles.mobileHeading} text-gray-900`}>
                   Choose a Plan That
                   <br />
                   <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
                     Scales With You.
                   </span>
                 </h1>
-                <p className="mt-6 text-lg leading-8 text-gray-600">
+                <p className={`${styles.mobileSubheading} text-gray-600`}>
                   Find the perfect plan to streamline your marketing, automate campaigns, and drive smarter collaboration. No
                   hidden fees, cancel anytime.
                 </p>
 
-                <div className="mt-10 flex justify-center">
-                  <div className="inline-flex rounded-full bg-gray-100 p-1">
+                <div className="mt-6 sm:mt-8 lg:mt-10 flex justify-center">
+                  <div className={styles.mobileBillingToggle}>
                     <Button
                       onClick={() => setBillingCycle("annual")}
                       className={cn(
-                        "rounded-full px-6 py-2 text-sm font-semibold",
+                        styles.mobileBillingButton,
                         billingCycle === "annual"
                           ? "bg-white text-gray-900 shadow-sm"
                           : "bg-transparent text-gray-600 hover:bg-white/50",
@@ -140,7 +140,7 @@ const PaymentSettingsPage = () => {
                     <Button
                       onClick={() => setBillingCycle("monthly")}
                       className={cn(
-                        "rounded-full px-6 py-2 text-sm font-semibold",
+                        styles.mobileBillingButton,
                         billingCycle === "monthly"
                           ? "bg-white text-gray-900 shadow-sm"
                           : "bg-transparent text-gray-600 hover:bg-white/50",
@@ -152,24 +152,21 @@ const PaymentSettingsPage = () => {
                 </div>
                 </div>
                 
-              <div className="relative z-10 mt-16 grid w-full max-w-4xl gap-8 md:grid-cols-2">
+              <div className={`relative z-10 ${styles.pricingCards}`}>
                 {/* Starter Plan */}
-                <div className="flex flex-col rounded-2xl bg-white relative" style={{ 
-                  border: '1px solid #e5e7eb',
-                  boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
-                }}>
-                  <div className="p-6">
+                <div className={styles.pricingCard}>
+                  <div className={styles.pricingCardHeader}>
                     <p className="text-sm font-semibold text-gray-500">{plans.starter.description}</p>
-                    <h3 className="mt-2 text-3xl font-bold text-gray-900">{plans.starter.name}</h3>
+                    <h3 className="mt-2 text-2xl sm:text-3xl font-bold text-gray-900">{plans.starter.name}</h3>
                       </div>
-                  <div className="flex flex-1 flex-col justify-between p-6 pt-0">
+                  <div className={styles.pricingCardContent}>
                       <div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-5xl font-bold tracking-tight text-gray-900">
+                      <div className={styles.pricingDisplay}>
+                        <span className={`${styles.pricingAmount} text-gray-900`}>
                           ${billingCycle === "annual" ? plans.starter.annualPrice : plans.starter.monthlyPrice}
                         </span>
                         {billingCycle === "annual" && (
-                          <span className="text-xl font-medium text-gray-500 line-through">
+                          <span className="text-lg sm:text-xl font-medium text-gray-500 line-through">
                             ${plans.starter.monthlyPrice}
                           </span>
                         )}
@@ -179,18 +176,18 @@ const PaymentSettingsPage = () => {
                         variant={currentPlan === SUBSCRIPTION_PLAN.FREE ? "default" : "outline"} 
                         disabled={currentPlan === SUBSCRIPTION_PLAN.FREE}
                         className={cn(
-                          "mt-8 w-full py-6 px-8 text-base font-semibold",
+                          styles.pricingButton,
                           currentPlan === SUBSCRIPTION_PLAN.FREE 
                             ? "bg-purple-600 text-white cursor-not-allowed opacity-75" 
-                            : "bg-transparent hover:bg-gray-50"
+                            : "bg-transparent hover:bg-gray-50 text-gray-900 border-gray-300"
                         )}
                       >
                         {currentPlan === SUBSCRIPTION_PLAN.FREE ? 'Current Plan' : 'Get Started'}
                       </Button>
-                      <ul className="mt-8 space-y-4 text-sm text-gray-600">
+                      <ul className={styles.featureList}>
                         {plans.starter.features.map((feature) => (
-                          <li key={feature} className="flex items-center gap-3">
-                            <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: '#f3e8ff' }}>
+                          <li key={feature} className={styles.featureItem}>
+                            <div className={styles.featureIcon}>
                               <Check className="h-3 w-3" style={{ color: '#8b5cf6' }} />
                             </div>
                             <span>{feature}</span>
@@ -202,20 +199,20 @@ const PaymentSettingsPage = () => {
               </div>
               
                 {/* Growth Plan - Highlighted */}
-                <div className="relative flex flex-col rounded-2xl border-2 border-purple-500 shadow-2xl bg-white">
-                  <div className="absolute inset-x-0 top-0 h-48 rounded-t-2xl bg-gradient-to-b from-purple-100/80 to-transparent" />
-                  <div className="relative p-6">
+                <div className={`${styles.pricingCard} ${styles.pricingCardHighlighted}`}>
+                  <div className="absolute inset-x-0 top-0 h-32 sm:h-48 rounded-t-2xl bg-gradient-to-b from-purple-100/80 to-transparent" />
+                  <div className={`${styles.pricingCardHeader} relative`}>
                     <p className="text-sm font-semibold text-gray-500">{plans.growth.description}</p>
-                    <h3 className="mt-2 text-3xl font-bold text-gray-900">{plans.growth.name}</h3>
+                    <h3 className="mt-2 text-2xl sm:text-3xl font-bold text-gray-900">{plans.growth.name}</h3>
                   </div>
-                  <div className="relative flex flex-1 flex-col justify-between p-6 pt-0">
+                  <div className={`${styles.pricingCardContent} relative`}>
                     <div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-5xl font-bold tracking-tight text-gray-900">
+                      <div className={styles.pricingDisplay}>
+                        <span className={`${styles.pricingAmount} text-gray-900`}>
                           ${billingCycle === "annual" ? plans.growth.annualPrice : plans.growth.monthlyPrice}
                         </span>
                         {billingCycle === "annual" && (
-                          <span className="text-xl font-medium text-gray-500 line-through">${plans.growth.monthlyPrice}</span>
+                          <span className="text-lg sm:text-xl font-medium text-gray-500 line-through">${plans.growth.monthlyPrice}</span>
                         )}
                         <span className="text-sm text-gray-500">/month</span>
                         </div>
@@ -223,10 +220,10 @@ const PaymentSettingsPage = () => {
                         disabled={currentPlan === SUBSCRIPTION_PLAN.PRO || isLoading}
                         onClick={currentPlan !== SUBSCRIPTION_PLAN.PRO ? handleGrowthPlanCheckout : undefined}
                         className={cn(
-                          "mt-8 w-full py-6 px-8 text-base font-semibold text-white",
+                          styles.pricingButton,
                           currentPlan === SUBSCRIPTION_PLAN.PRO 
-                            ? "bg-purple-600 cursor-not-allowed opacity-75" 
-                            : "bg-gray-900 hover:bg-gray-800"
+                            ? "bg-purple-600 cursor-not-allowed opacity-75 text-white" 
+                            : "bg-gray-900 hover:bg-gray-800 text-white"
                         )}
                       >
                         {isLoading 
@@ -236,11 +233,11 @@ const PaymentSettingsPage = () => {
                             : 'Get Started'
                         }
                       </Button>
-                      <p className="mt-8 text-sm font-semibold text-gray-700">Everything in {plans.growth.basePlan}, PLUS:</p>
-                      <ul className="mt-4 space-y-4 text-sm text-gray-600">
+                      <p className="mt-6 sm:mt-8 text-sm font-semibold text-gray-700">Everything in {plans.growth.basePlan}, PLUS:</p>
+                      <ul className={`${styles.featureList} mt-3 sm:mt-4`}>
                         {plans.growth.features.map((feature) => (
-                          <li key={feature} className="flex items-center gap-3">
-                            <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: '#f3e8ff' }}>
+                          <li key={feature} className={styles.featureItem}>
+                            <div className={styles.featureIcon}>
                               <Check className="h-3 w-3" style={{ color: '#8b5cf6' }} />
                             </div>
                             <span>{feature}</span>

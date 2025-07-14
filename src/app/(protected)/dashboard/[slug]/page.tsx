@@ -420,19 +420,22 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-      <div className="flex flex-col items-center">
-        <h2 className="block w-[1200px] h-[20px] mb-1 text-center text-[16px] font-medium leading-[20px] font-['Plus_Jakarta_Sans',-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,'Helvetica_Neue',Helvetica,Arial,sans-serif] text-[#282d47]">
+      
+      {/* Header Section - Now responsive */}
+      <div className="flex flex-col items-center px-4 sm:px-6 lg:px-8">
+        <h2 className="w-full max-w-7xl text-center text-sm sm:text-base font-medium leading-5 sm:leading-6 font-['Plus_Jakarta_Sans',-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,'Helvetica_Neue',Helvetica,Arial,sans-serif] text-[#282d47] mb-1">
           {dayAndDate}
         </h2>
-        <h1 className="block w-[1200px] h-[40px] m-0 p-0 text-center text-[32px] font-medium leading-[40px] font-['Plus_Jakarta_Sans',-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,'Helvetica_Neue',Helvetica,Arial,sans-serif] text-[#282d47]">
+        <h1 className="w-full max-w-7xl text-center text-xl sm:text-2xl lg:text-3xl font-medium leading-6 sm:leading-8 lg:leading-10 font-['Plus_Jakarta_Sans',-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,'Helvetica_Neue',Helvetica,Arial,sans-serif] text-[#282d47]">
           {getGreeting()}, {firstName}
         </h1>
       </div>
       
-      <div className="mt-8 flex justify-center">
-        <div className="w-[1200px] flex flex-col">
-          {/* Feature Cards Grid - Positioned right after greeting */}
-          <div className="grid grid-cols-3 gap-6 pl-[8px] mb-8">
+      {/* Main Content Section - Now responsive */}
+      <div className="mt-6 sm:mt-8 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-7xl mx-auto flex flex-col">
+          {/* Feature Cards Grid - Now responsive */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
             <SetupAutoRepliesFeatureCard
               onMouseMove={(e) => handleMouseMove(e, 'card1')}
               onMouseEnter={() => handleMouseEnter('card1')}
@@ -461,13 +464,13 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* Automated Activity Chart - Positioned below the feature cards */}
-          <div className="w-full pl-[8px]">
-            <div className="grid grid-cols-[minmax(0,1fr)_450px] gap-0">
-              <div className="pr-6 w-full">
+          {/* Stats Section - Now responsive */}
+          <div className="w-full">
+            <div className="flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_450px] gap-4 sm:gap-6">
+              <div className="w-full order-2 lg:order-1">
                 <AutomatedActivityCard className="h-full w-full" />
               </div>
-              <div>
+              <div className="w-full order-1 lg:order-2">
                 <PerformanceMetricsCard 
                   className="h-full" 
                   commentsReplied={performanceMetrics.commentsReplied}

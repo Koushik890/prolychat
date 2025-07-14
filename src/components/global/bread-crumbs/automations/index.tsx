@@ -14,17 +14,17 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { Separator } from '@/components/ui/separator'
-import ClerkAuthState from '@/components/global/clerk-auth-state'
-import { HelpDuoToneWhite } from '@/icons'
-import { SubscriptionPlan } from '@/components/global/subscription-plan'
-import UpgradeCard from '@/components/global/sidebar/upgrade'
-import Items from '@/components/global/sidebar/items'
+import { Settings, Users, HelpCircle, Home, Zap } from 'lucide-react'
+import { NavMain } from '@/components/global/app-sidebar'
+import { SidebarToggle } from '@/components/global/app-sidebar/sidebar-toggle'
 import Image from 'next/image'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { usePaths } from '@/hooks/user-nav'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import ActivateAutomationButton from '@/components/global/activate-automation-button'
+import { SidebarProvider } from '@/components/ui/sidebar'
+import { UserButton } from "@clerk/nextjs"
 
 type Props = {
   id: string
@@ -37,8 +37,11 @@ const AutomationsBreadCrumb = ({ id }: Props) => {
   const { page } = usePaths()
   const params = useParams()
   const slug = params?.slug as string
+  const pathname = usePathname()
   const [sidebarWidth, setSidebarWidth] = React.useState<number>(250)
   const { isSaving, lastSaved } = useAutomationSync(id)
+  const [mobileSidebarExpanded, setMobileSidebarExpanded] = React.useState(true)
+  const [mobileSheetOpen, setMobileSheetOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (edit && inputRef.current) {
@@ -66,6 +69,25 @@ const AutomationsBreadCrumb = ({ id }: Props) => {
     }
   }, [])
 
+  // Mobile-specific toggle function - closes Sheet when collapsed
+  const handleMobileToggle = () => {
+    if (mobileSidebarExpanded) {
+      // If currently expanded, collapse by closing the sheet
+      setMobileSheetOpen(false)
+    } else {
+      // If currently collapsed, expand 
+      setMobileSidebarExpanded(true)
+    }
+  }
+
+  // Handle sheet state changes
+  React.useEffect(() => {
+    // When sheet opens, always start expanded
+    if (mobileSheetOpen) {
+      setMobileSidebarExpanded(true)
+    }
+  }, [mobileSheetOpen])
+
   // Function to format the last saved time
   const getLastSavedText = () => {
     if (isSaving) return 'Saving...'
@@ -87,9 +109,34 @@ const AutomationsBreadCrumb = ({ id }: Props) => {
     return `Saved ${Math.floor(hours / 24)} days ago`
   }
 
+  // Navigation data matching AppSidebar structure
+  const navigationData = {
+    navMain: [
+      {
+        title: "Home",
+        url: `/dashboard/${params.slug}`,
+        icon: Home,
+      },
+      {
+        title: "Automations",
+        url: `/dashboard/${params.slug}/automations`,
+        icon: Zap,
+      },
+      {
+        title: "Contacts",
+        url: `/dashboard/${params.slug}/contacts`,
+        icon: Users,
+      },
+    ],
+  }
+
+  // Extract the slug from the path for settings link
+  const slugMatch = pathname.match(/\/dashboard\/([^/]+)/);
+  const userSlug = slugMatch ? slugMatch[1] : '';
+
   return (
     <div 
-      className="fixed top-0 h-[70px] bg-gradient-to-br from-[#f5f5f5] to-[#ffffff] backdrop-blur-md border-b border-gray-200/20 z-50 transition-all duration-300 flex items-center px-6"
+      className="fixed top-0 h-[60px] sm:h-[70px] bg-gradient-to-br from-[#f5f5f5] to-[#ffffff] backdrop-blur-md border-b border-gray-200/20 z-50 transition-all duration-300 flex items-center px-4 sm:px-6"
       style={{ 
         left: `${sidebarWidth}px`,
         right: '0'
@@ -97,91 +144,145 @@ const AutomationsBreadCrumb = ({ id }: Props) => {
     >
       <div className="flex items-center justify-between w-full">
         {/* Left: Menu & Breadcrumb */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
           <span className="lg:hidden">
-            <Sheet>
+            <Sheet open={mobileSheetOpen} onOpenChange={setMobileSheetOpen}>
               <SheetTrigger asChild>
                 <button className="p-1 hover:bg-gray-50/80 rounded-md transition-colors">
-                  <Menu className="h-6 w-6 text-gray-900" />
+                  <Menu className="h-5 w-5 sm:h-6 sm:w-6 text-gray-900" />
                 </button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] p-0">
-                <div className="flex flex-col gap-y-5 w-full h-full bg-gradient-to-b from-[#A288F7] via-[#A288F7]/95 to-[#F7C1E4] backdrop-filter backdrop-blur-xl">
-                  <div className="flex items-center justify-center transition-all duration-300 mt-4 h-[40px] px-3">
-                    <div className="flex items-center justify-center gap-2">
-                      {/* Logomark */}
-                      <Image 
-                        src="/Prolychat_lm_black.png"
-                        alt="Prolychat Logomark"
-                        width={32}
-                        height={32}
-                        className="object-contain transition-all duration-300"
-                      />
-                      {/* Wordmark */}
-                      <Image 
-                        src="/prolychat_bl.png"
-                        alt="Prolychat"
-                        width={115}
-                        height={32}
-                        className="object-contain transition-all duration-300"
-                      />
+              <SheetContent side="left" className={`p-0 transition-all duration-300 ${mobileSidebarExpanded ? 'w-[250px]' : 'w-[72px]'}`}>
+                <div className={`flex h-full flex-col bg-[#fafafa] border-r-[2px] border-gray-300/50 font-['Plus_Jakarta_Sans',-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Oxygen,Ubuntu,Cantarell,'Fira_Sans','Droid_Sans','Helvetica_Neue',sans-serif] text-base font-medium leading-6 transition-all duration-300 ${mobileSidebarExpanded ? 'w-[250px]' : 'w-[72px]'}`}>
+                  {/* Logo Section with Toggle */}
+                  <div className="relative h-[70px] overflow-visible">
+                    <div className={`flex h-full items-center transition-all duration-300 ${
+                      mobileSidebarExpanded ? "pr-2 pl-4" : "pr-1 pl-3"
+                    }`}>
+                      {/* Logo Container - Centered */}
+                      <div className={`flex-1 flex items-center justify-center transition-all duration-300 ${
+                        mobileSidebarExpanded ? "h-[40px]" : "h-[28px]"
+                      }`}>
+                        <div className="flex items-center gap-2">
+                          {/* Logomark - always visible */}
+                          <Image
+                            src="/Prolychat_lm_black.png"
+                            alt="Prolychat Logomark"
+                            width={mobileSidebarExpanded ? 38 : 28}
+                            height={mobileSidebarExpanded ? 38 : 28}
+                            className="object-contain transition-all duration-300"
+                            priority
+                          />
+                          {/* Wordmark - only visible when expanded */}
+                          {mobileSidebarExpanded && (
+                            <Image
+                              src="/prolychat_bl.png"
+                              alt="Prolychat"
+                              width={110}
+                              height={38}
+                              className="object-contain transition-all duration-300"
+                              priority
+                            />
+                          )}
+                        </div>
+                      </div>
+                      {/* Toggle Button - Always on the right */}
+                      <div className="flex-shrink-0">
+                        <SidebarToggle isExpanded={mobileSidebarExpanded} onToggle={handleMobileToggle} />
+                      </div>
                     </div>
                   </div>
-                  <div className="flex flex-col py-3">
-                    <Items />
-                  </div>
-                  <div className="px-16">
-                    <Separator
-                      orientation="horizontal"
-                      className="bg-white/20"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-y-2 px-3">
-                    <ClerkAuthState />
-                    <Link
-                      href={`/dashboard/${slug}/help`}
-                      className={cn(
-                        "flex items-center gap-x-3 rounded-full p-2.5 transition-all duration-200 hover:bg-white/10",
-                        page === 'help' ? "bg-[#8D4AF3] text-white shadow-md" : "text-white/80"
-                      )}
-                    >
-                      <div className="flex items-center justify-center h-9 w-9 ring-2 ring-white/30 rounded-full">
-                        <HelpDuoToneWhite />
+
+                  {/* Navigation Sections */}
+                  <div className="flex flex-1 flex-col justify-between overflow-hidden pt-[17px]">
+                    {/* Main Navigation */}
+                    <div>
+                      <div className="space-y-2.5">
+                        <SidebarProvider>
+                          <NavMain items={navigationData.navMain} isExpanded={mobileSidebarExpanded} />
+                        </SidebarProvider>
                       </div>
-                      <span className="font-medium">Help</span>
-                    </Link>
+                      <div className="flex flex-col">
+                        {/* Divider below Contacts */}
+                        <div className="relative mt-[44px] px-4">
+                          <div className="absolute left-4 right-4 h-[1px] bg-gradient-to-r from-gray-300/35 via-gray-300/55 to-gray-300/35" />
+                        </div>
+                        {/* Help & Support Section */}
+                        <div className="mt-6 px-4">
+                          <Link
+                            href="/help"
+                            className={`group relative flex h-[40px] ${mobileSidebarExpanded ? 'w-[218px]' : 'w-[44px]'} items-center rounded-2xl transition-all ${
+                              pathname === '/help'
+                                ? "bg-[#e9eded] hover:bg-[#e9eded]"
+                                : "hover:bg-[#F2F4F4]"
+                            }`}
+                          >
+                            <div className="flex w-full items-center pl-[13px]">
+                              <div className="flex w-[24px] items-center justify-center">
+                                <HelpCircle className={`h-[20px] w-[20px] ${pathname === '/help' ? 'text-[#282d47]' : 'text-[#8c92a0]'}`} />
+                              </div>
+                              {mobileSidebarExpanded && (
+                                <span className={`truncate pl-[18px] text-[17px] font-medium leading-6 ${pathname === '/help' ? 'text-[#282d47]' : 'text-[#8c92a0]'}`}>
+                                  Help & Support
+                                </span>
+                              )}
+                            </div>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Settings Section */}
+                    <div className="pb-[17px]">
+                      <div className="border-t border-gray-200/30 pt-6">
+                        <div className="px-4">
+                          <Link
+                            href={userSlug ? `/dashboard/${userSlug}/settings/account` : '/settings/account'}
+                            className={`relative flex h-[40px] ${mobileSidebarExpanded ? 'w-[218px]' : 'w-[44px]'} items-center rounded-2xl bg-gradient-to-br from-[#d8d2e9] via-[#e4dff2] to-[#d5cfe6] shadow-[0_2px_4px_rgba(0,0,0,0.06)] transition-all hover:from-[#e0daf1] hover:via-[#ece7fa] hover:to-[#dfd9eb] hover:shadow-[0_3px_6px_rgba(0,0,0,0.1)]`}
+                          >
+                            <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-white/20 via-white/5 to-transparent pointer-events-none" />
+                            <div className="relative flex w-full items-center pl-[13px]">
+                              <div className="flex w-[24px] items-center justify-center">
+                                <Settings className="h-[18px] w-[18px] text-gray-600" />
+                              </div>
+                              {mobileSidebarExpanded && (
+                                <span className="truncate pl-[18px] text-[17px] font-medium leading-6 text-gray-700">Settings</span>
+                              )}
+                            </div>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1" />
-                  <SubscriptionPlan type="FREE">
-                    <UpgradeCard />
-                  </SubscriptionPlan>
                 </div>
               </SheetContent>
             </Sheet>
           </span>
-          <div className="flex items-center gap-2">
-            <span className="text-[24px] font-[600] leading-[24px] font-raleway text-gray-900">
+          <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
+            <span className="text-xs sm:text-sm lg:text-lg font-[600] leading-tight font-heading text-gray-900 flex-shrink-0">
               Automations
             </span>
-            <ChevronRight className="h-6 w-6 text-gray-900" />
-            <div className="text-[24px] font-[600] leading-[24px] font-raleway text-gray-900">
+            <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 lg:h-6 lg:w-6 text-gray-900 flex-shrink-0" />
+            <div className="text-sm sm:text-lg lg:text-xl font-[600] leading-tight font-heading text-gray-900 min-w-0 flex-1">
               {edit ? (
                 <Input
                   ref={inputRef}
                   autoFocus
                   defaultValue={latestVariable?.variables?.name || data?.data?.name || 'Untitled'}
                   placeholder={isPending ? latestVariable.variables : 'Add a new name'}
-                  className="bg-transparent h-auto outline-none text-[24px] leading-[24px] border-none p-0 font-raleway font-[600] text-center placeholder:text-center text-gray-900"
+                  className="bg-transparent h-auto outline-none text-sm sm:text-lg lg:text-xl leading-tight border-none p-0 font-heading font-[600] text-center placeholder:text-center text-gray-900"
                 />
               ) : (
-                <div className="flex items-center gap-2">
-                  <span>{latestVariable?.variables?.name || data?.data?.name || 'Untitled'}</span>
+                <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+                  <span className="truncate max-w-[120px] sm:max-w-none" title={latestVariable?.variables?.name || data?.data?.name || 'Untitled'}>
+                    {latestVariable?.variables?.name || data?.data?.name || 'Untitled'}
+                  </span>
                   {!edit && (
                     <button
                       onClick={enableEdit}
-                      className="p-1 hover:bg-gray-50/80 rounded-md transition-colors"
+                      className="p-1 hover:bg-gray-50/80 rounded-md transition-colors flex-shrink-0"
                     >
-                      <PencilIcon className="h-5 w-5 text-gray-900" />
+                      <PencilIcon className="h-2 w-2 sm:h-3 sm:w-3 lg:h-5 lg:w-5 text-gray-900" />
                     </button>
                   )}
                 </div>
@@ -191,9 +292,9 @@ const AutomationsBreadCrumb = ({ id }: Props) => {
         </div>
 
         {/* Right: Status & Actions */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 flex-shrink-0">
           <p className={cn(
-            "text-[14px] font-medium leading-[20px] font-['Plus_Jakarta_Sans'] transition-opacity duration-200",
+            "text-xs sm:text-sm font-medium leading-tight font-['Plus_Jakarta_Sans'] transition-opacity duration-200 hidden lg:block",
             isSaving ? "text-gray-500" : "text-gray-900",
             !lastSaved && "opacity-0"
           )}>

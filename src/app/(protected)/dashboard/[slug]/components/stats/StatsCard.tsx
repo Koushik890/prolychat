@@ -45,7 +45,7 @@ function StatItem({ icon, value, label, bgColor = "bg-gradient-to-br from-blue-5
   return (
     <div className="flex items-center gap-6 group">
       {icon && (
-        <div className={`${bgColor} p-2.5 rounded-xl shadow-sm flex items-center justify-center transition-all duration-300 group-hover:shadow-md`}>
+        <div className={`${bgColor} p-2.5 rounded-2xl shadow-sm flex items-center justify-center transition-all duration-300 group-hover:shadow-md`}>
           <div className={`w-5 h-5 ${iconColor}`}>
             {icon}
           </div>
@@ -65,7 +65,7 @@ function StatItem({ icon, value, label, bgColor = "bg-gradient-to-br from-blue-5
 
 export function StatsCard(props: SingleStatCardProps | MultiStatCardProps) {
   const baseClasses = cn(
-    "bg-white rounded-2xl border border-[#E5E5E5] shadow-[0_2px_8px_rgba(162,136,247,0.05)] p-6 hover:shadow-[0_4px_12px_rgba(162,136,247,0.1)] transition-all duration-200",
+    "bg-white rounded-3xl border border-[#E5E5E5] shadow-[0_2px_8px_rgba(162,136,247,0.05)] p-6 hover:shadow-[0_4px_12px_rgba(162,136,247,0.1)] transition-all duration-200",
     props.className
   );
 
@@ -73,7 +73,7 @@ export function StatsCard(props: SingleStatCardProps | MultiStatCardProps) {
     const { currentValue, previousValue, change, period } = props;
     return (
       <div className={cn(
-        "h-[156px] bg-white rounded-2xl border border-[#E5E5E5] shadow-[0_2px_8px_rgba(162,136,247,0.05)] p-6 hover:shadow-[0_4px_12px_rgba(162,136,247,0.1)] transition-all duration-200",
+        "h-[156px] bg-white rounded-3xl border border-[#E5E5E5] shadow-[0_2px_8px_rgba(162,136,247,0.05)] p-6 hover:shadow-[0_4px_12px_rgba(162,136,247,0.1)] transition-all duration-200",
         props.className
       )}>
         <div className="flex flex-col h-full">
@@ -104,7 +104,7 @@ export function StatsCard(props: SingleStatCardProps | MultiStatCardProps) {
 
   return (
     <div className={cn(
-      "h-[156px] bg-white rounded-2xl border border-[#E5E5E5] shadow-[0_2px_8px_rgba(162,136,247,0.05)] p-6 hover:shadow-[0_4px_12px_rgba(162,136,247,0.1)] transition-all duration-200",
+      "h-[156px] bg-white rounded-3xl border border-[#E5E5E5] shadow-[0_2px_8px_rgba(162,136,247,0.05)] p-6 hover:shadow-[0_4px_12px_rgba(162,136,247,0.1)] transition-all duration-200",
       props.className
     )}>
       <div className="border-b pb-2 mb-3">

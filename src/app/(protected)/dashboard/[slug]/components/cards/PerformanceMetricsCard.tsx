@@ -39,7 +39,7 @@ export function PerformanceMetricsCard({
   };
 
   return (
-    <div className={cn("h-full grid grid-cols-2 gap-6", className)}>
+    <div className={cn("h-full grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6", className)}>
       {/* Comments Metric Card */}
       <div className="relative h-full p-1 rounded-3xl bg-gradient-to-r from-[#00ccb1] via-[#7b61ff] to-[#ffc414] shadow-xl">
         <div className="relative h-full w-full bg-white rounded-[20px] overflow-hidden">
@@ -69,10 +69,10 @@ export function PerformanceMetricsCard({
             }}
           />
 
-          <div className="relative z-10 p-6 flex flex-col items-center h-full w-full">
+          <div className="relative z-10 p-4 sm:p-6 flex flex-col items-center h-full w-full">
             {/* Header - Fixed height */}
-            <div className="text-center mb-4 h-14 flex flex-col justify-center">
-              <h3 className="text-slate-800 text-xl font-semibold leading-tight whitespace-nowrap font-sans" style={{ fontFamily: 'inherit !important' }}>
+            <div className="text-center mb-3 sm:mb-4 h-12 sm:h-14 flex flex-col justify-center">
+              <h3 className="text-slate-800 text-lg sm:text-xl font-semibold leading-tight whitespace-nowrap font-sans" style={{ fontFamily: 'inherit !important' }}>
                 Comments
               </h3>
               <p className="text-slate-600 text-xs mt-1">
@@ -83,19 +83,19 @@ export function PerformanceMetricsCard({
             {/* Content */}
             <div className="flex-1 flex flex-col justify-center">
               {isLoading ? (
-                <div className="h-20 flex items-center justify-center">
+                <div className="h-16 sm:h-20 flex items-center justify-center">
                   <Spinner />
                 </div>
               ) : (
                 <>
                   {/* Number container with fixed height */}
-                  <div className="flex flex-col items-center h-20 justify-center">
-                    <div className="text-slate-800 text-6xl font-bold leading-none">
+                  <div className="flex flex-col items-center h-16 sm:h-20 justify-center">
+                    <div className="text-slate-800 text-4xl sm:text-6xl font-bold leading-none">
                       {commentsReplied}
                     </div>
                   </div>
                   {/* Info container with fixed height */}
-                  <div className="h-14 flex items-start justify-center">
+                  <div className="h-12 sm:h-14 flex items-start justify-center">
                     <div className="text-slate-500 text-sm font-medium flex gap-2 items-center">
                       out of <span className="text-slate-700">{totalComments}</span> total
                     </div>
@@ -143,10 +143,10 @@ export function PerformanceMetricsCard({
             }}
           />
 
-          <div className="relative z-10 p-6 flex flex-col items-center h-full w-full">
+          <div className="relative z-10 p-4 sm:p-6 flex flex-col items-center h-full w-full">
             {/* Header - Fixed height */}
-            <div className="text-center mb-4 h-14 flex flex-col justify-center">
-              <h3 className="text-slate-800 text-xl font-semibold leading-tight whitespace-nowrap font-sans" style={{ fontFamily: 'inherit !important' }}>
+            <div className="text-center mb-3 sm:mb-4 h-12 sm:h-14 flex flex-col justify-center">
+              <h3 className="text-slate-800 text-lg sm:text-xl font-semibold leading-tight whitespace-nowrap font-sans" style={{ fontFamily: 'inherit !important' }}>
                 Direct Messages
               </h3>
               <p className="text-slate-600 text-xs mt-1">
@@ -157,30 +157,30 @@ export function PerformanceMetricsCard({
             {/* Content */}
             <div className="flex-1 flex flex-col justify-center">
               {isLoading ? (
-                <div className="h-20 flex items-center justify-center">
+                <div className="h-16 sm:h-20 flex items-center justify-center">
                   <Spinner />
                 </div>
               ) : (
                 <>
                   {/* Number container with fixed height */}
-                  <div className="flex flex-col items-center h-20 justify-center">
-                    <div className="text-slate-800 text-6xl font-bold leading-none">
+                  <div className="flex flex-col items-center h-16 sm:h-20 justify-center">
+                    <div className="text-slate-800 text-4xl sm:text-6xl font-bold leading-none">
                       {totalDmResponses}
                     </div>
                   </div>
                   {/* Info container with fixed height */}
-                  <div className="h-14 flex items-start justify-center">
+                  <div className="h-12 sm:h-14 flex items-start justify-center">
                     <div className="w-full">
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-1.5">
-                          <MessageSquare size={14} className="text-slate-500" />
+                          <MessageSquare size={12} className="text-slate-500" />
                           <span className="text-slate-500 text-xs">From comments:</span>
                         </div>
                         <span className="text-slate-800 text-xs font-medium">{commentTriggeredDms}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
-                          <Send size={14} className="text-slate-500" />
+                          <Send size={12} className="text-slate-500" />
                           <span className="text-slate-500 text-xs">Direct responses:</span>
                         </div>
                         <span className="text-slate-800 text-xs font-medium">{userMessageDms}</span>

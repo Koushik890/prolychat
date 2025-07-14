@@ -15,6 +15,19 @@ const AutomationClient = ({ id }: AutomationClientProps) => {
   useAutomationSync(id)
 
   const [sidebarWidth, setSidebarWidth] = React.useState<number>(250)
+  const [isMobile, setIsMobile] = React.useState<boolean>(false)
+
+  React.useEffect(() => {
+    // Check if we're on mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   React.useEffect(() => {
     // Check initial sidebar state
@@ -36,6 +49,8 @@ const AutomationClient = ({ id }: AutomationClientProps) => {
     }
   }, [])
 
+  const headerHeight = isMobile ? 60 : 70
+
   return (
     <div className="fixed inset-0 flex flex-col">
       {/* Header */}
@@ -43,8 +58,11 @@ const AutomationClient = ({ id }: AutomationClientProps) => {
 
       {/* Main Content */}
       <div 
-        className="absolute inset-0 mt-[70px] transition-[margin-left] duration-300"
-        style={{ marginLeft: `${sidebarWidth}px` }}
+        className="absolute inset-0 transition-[margin-left] duration-300"
+        style={{ 
+          marginLeft: isMobile ? '0px' : `${sidebarWidth}px`,
+          marginTop: `${headerHeight}px`
+        }}
       >
         <FlowBuilder id={id} />
       </div>

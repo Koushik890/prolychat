@@ -249,11 +249,12 @@ const options: ChartOptions<'line'> = {
   },
   elements: {
     line: {
-      tension: 0.4,
-      borderWidth: 2.5,
+      tension: 0.4, // Reverted from 0.8 back to original 0.4
+      borderWidth: 2.5, // Reverted from 3 back to original 2.5
       borderColor: '#4A90E2',
       fill: true,
-      capBezierPoints: true
+      capBezierPoints: true,
+      // Removed borderCapStyle and borderJoinStyle enhancements
     },
     point: {
       radius: 0,
@@ -359,18 +360,21 @@ export function AutomatedActivityChart({ className }: AutomatedActivityChartProp
     };
   }, [automationsData]);
 
-  // Check if there's any data for the selected range
+  // Use the original processed data directly (no flowing wave transformation)
+
+  // Check if there's any data for the selected range (check original data for accuracy)
   const hasData = useMemo(() => {
     if (!processedData[selectedRange]) return false;
     return processedData[selectedRange].some(value => value > 0);
   }, [processedData, selectedRange]);
 
-  // Get maximum value for current range
+  // Get maximum value for current range (using original processed data)
   const maxValue = useMemo(() => {
-    return Math.max(...(processedData[selectedRange] || [0]));
+    const currentData = processedData[selectedRange] || [0];
+    return Math.max(...currentData);
   }, [processedData, selectedRange]);
 
-  // Get total for current range
+  // Get total for current range (use original data for accurate totals)
   const totalForRange = useMemo(() => {
     return (processedData[selectedRange] || []).reduce((sum, val) => sum + val, 0);
   }, [processedData, selectedRange]);
@@ -414,14 +418,13 @@ export function AutomatedActivityChart({ className }: AutomatedActivityChartProp
         return `${hour}${ampm}`;
       }),
       datasets: [{
-        borderWidth: 2.5,
+        borderWidth: 3,
         pointRadius: 0,
         pointHoverRadius: 3,
         pointHitRadius: 5,
-        tension: 0.4,
+        tension: 0.4, // Standard tension for clean line appearance
         borderColor: '#4A90E2',
         fill: true,
-        borderCapStyle: 'round' as const,
         clip: {
           left: -0.5,
           right: -0.5,
@@ -694,48 +697,48 @@ export function AutomatedActivityChart({ className }: AutomatedActivityChartProp
       animate={true}
     >
       <div className={cn("relative w-full h-full rounded-[16px] overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-shadow duration-200")}>
-        {/* Enhanced glass card background effect */}
+        {/* Dotted grid background pattern */}
         <div className="absolute inset-0 w-full h-full">
-          {/* Primary gradient background */}
+          {/* Base background with subtle gradient */}
           <div 
             className="absolute inset-0 rounded-[16px]"
             style={{
-              background: 'linear-gradient(145deg, rgba(236, 236, 255, 0.9), rgba(224, 224, 248, 0.85), rgba(218, 218, 245, 0.8))',
+              background: 'linear-gradient(145deg, rgba(250, 250, 255, 0.95), rgba(248, 248, 252, 0.9))',
             }}
           />
           
-          {/* Subtle inner highlight */}
+          {/* Dotted grid pattern overlay */}
+          <div 
+            className="absolute inset-0 rounded-[16px] opacity-60"
+            style={{
+              backgroundImage: 'radial-gradient(rgba(148, 163, 184, 0.3) 0.8px, transparent 0.8px)',
+              backgroundSize: '16px 16px',
+              backgroundPosition: '0 0',
+              backgroundRepeat: 'repeat'
+            }}
+          />
+          
+          {/* Subtle border */}
           <div 
             className="absolute inset-0 rounded-[16px]"
             style={{ 
-              boxShadow: 'inset 0 1px 1px rgba(255, 255, 255, 0.4), inset 0 -1px 1px rgba(255, 255, 255, 0.05)'
+              boxShadow: 'inset 0 0 0 1px rgba(226, 232, 240, 0.8)'
             }}
           />
-          
-          {/* Backdrop blur for glass effect */}
-          <div className="absolute inset-0 backdrop-blur-[6px] rounded-[16px]" />
-          
-          {/* Edge glow effect */}
-          <div className="absolute inset-0 opacity-60" style={{ boxShadow: 'inset 0 0 25px rgba(255, 255, 255, 0.5)' }} />
-          
-          {/* Top highlight */}
-          <div className="absolute top-0 left-4 right-4 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-          
-          {/* Left edge highlight */}
-          <div className="absolute top-4 left-0 bottom-4 w-[1px] bg-gradient-to-b from-white/40 via-white/20 to-transparent" />
         </div>
 
         {/* Content with padding */}
-        <div className="relative z-10 p-4 h-full">
-          <div className='flex justify-between items-start mb-4'>
-            <div className='space-y-2.5'>
-              <div className='flex items-center gap-1.5 group cursor-pointer'>
-                <h2 className='text-[15px] font-semibold leading-[22px] text-slate-800 tracking-[-0.2px] transition-colors group-hover:text-slate-900 font-sans' style={{ fontFamily: 'inherit !important' }}>
+        <div className="relative z-10 px-2 py-2 sm:p-4 h-full">
+          {/* Header with title and tabs */}
+          <div className='flex flex-col items-center gap-4 mb-4 sm:flex-row sm:justify-between sm:items-start'>
+            {/* Title and Count Section - centered on mobile, left-aligned on desktop */}
+            <div className='space-y-2.5 text-center sm:text-left'>
+              <div className='flex items-center gap-1.5 justify-center sm:justify-start'>
+                <h2 className='text-[13px] font-semibold leading-[18px] text-slate-800 tracking-[-0.2px] font-sans whitespace-nowrap' style={{ fontFamily: 'inherit !important' }}>
                   Automated Activity
                 </h2>
-                <ChevronRight className='w-[14px] h-[14px] text-slate-400 transition-all duration-200 group-hover:text-slate-500 group-hover:translate-x-0.5' />
               </div>
-              <div className='flex items-baseline gap-2.5'>
+              <div className='flex items-baseline gap-2.5 justify-center sm:justify-start'>
                 <span className='text-[40px] font-bold leading-[44px] tracking-[-0.8px] text-slate-800 font-sans'>
                   {totalForRange}
                 </span>
@@ -744,10 +747,12 @@ export function AutomatedActivityChart({ className }: AutomatedActivityChartProp
                 </span>
               </div>
             </div>
+            
+            {/* Tab section - centered on mobile, right-aligned on desktop */}
             <div className='inline-flex items-center border border-slate-200 rounded-[20px] p-1 shadow-sm bg-white/50 backdrop-blur-sm'>
               <button 
                 onClick={() => setSelectedRange('today')}
-                className={`px-3 py-1.5 text-sm font-medium transition-all duration-200 rounded-[16px] ${
+                className={`flex-shrink-0 px-3 py-1.5 text-sm font-medium transition-all duration-200 rounded-[16px] whitespace-nowrap ${
                   selectedRange === 'today'
                     ? 'bg-[#FFE600] text-slate-800 shadow-sm'
                     : 'text-slate-500 hover:text-slate-600 hover:bg-white/80'
@@ -757,7 +762,7 @@ export function AutomatedActivityChart({ className }: AutomatedActivityChartProp
               </button>
               <button 
                 onClick={() => setSelectedRange('week')}
-                className={`px-3 py-1.5 text-sm font-medium transition-all duration-200 rounded-[16px] ${
+                className={`flex-shrink-0 px-3 py-1.5 text-sm font-medium transition-all duration-200 rounded-[16px] whitespace-nowrap ${
                   selectedRange === 'week'
                     ? 'bg-[#FFE600] text-slate-800 shadow-sm'
                     : 'text-slate-500 hover:text-slate-600 hover:bg-white/80'
@@ -767,7 +772,7 @@ export function AutomatedActivityChart({ className }: AutomatedActivityChartProp
               </button>
               <button 
                 onClick={() => setSelectedRange('month')}
-                className={`px-3 py-1.5 text-sm font-medium transition-all duration-200 rounded-[16px] ${
+                className={`hidden sm:flex flex-shrink-0 px-3 py-1.5 text-sm font-medium transition-all duration-200 rounded-[16px] whitespace-nowrap ${
                   selectedRange === 'month'
                     ? 'bg-[#FFE600] text-slate-800 shadow-sm'
                     : 'text-slate-500 hover:text-slate-600 hover:bg-white/80'

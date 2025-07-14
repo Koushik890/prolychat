@@ -21,9 +21,9 @@ export function AnswerQuestionsFeatureCard({
 }: AnswerQuestionsFeatureCardProps) {
   return (
     <div 
-      className="rounded-[24px] overflow-hidden backdrop-blur-[14px] border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] transition-all duration-500 cursor-pointer group min-h-[180px] relative" 
+      className="rounded-[20px] overflow-hidden border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.15)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.25)] transition-all duration-500 cursor-pointer group min-h-[160px] sm:min-h-[180px] relative" 
       style={{ 
-        background: 'linear-gradient(to right, rgba(45, 85, 168, 0.85), rgba(77, 124, 255, 0.8))',
+        background: 'linear-gradient(135deg, #e8f8ff 0%, #a8e6ff 30%, #7ee8e1 60%, #a8d4ff 100%)',
         transform: isHovered ? `perspective(1000px) rotateX(${(mousePosition.y - 50) / 30}deg) rotateY(${-(mousePosition.x - 50) / 30}deg)` : 'perspective(1000px) rotateX(0) rotateY(0)',
         transition: isHovered ? 'transform 0.2s ease, box-shadow 0.5s ease' : 'transform 0.5s ease, box-shadow 0.5s ease'
       }}
@@ -32,12 +32,12 @@ export function AnswerQuestionsFeatureCard({
       onMouseLeave={onMouseLeave}
       onClick={onClick}
     >
-      {/* Glass reflection overlay */}
+      {/* Subtle glass reflection overlay */}
       <div className="absolute inset-0 overflow-hidden">
         <div 
-          className="absolute -inset-[100%] opacity-20 bg-gradient-to-r from-white via-transparent to-white rotate-15 transition-opacity duration-300 group-hover:opacity-30"
+          className="absolute -inset-[100%] opacity-10 bg-gradient-to-r from-white via-transparent to-white rotate-12 transition-opacity duration-300 group-hover:opacity-20"
           style={{
-            transform: isHovered ? `translateX(${(mousePosition.x - 50) / 5}px) translateY(${(mousePosition.y - 50) / 5}px)` : '',
+            transform: isHovered ? `translateX(${(mousePosition.x - 50) / 8}px) translateY(${(mousePosition.y - 50) / 8}px)` : '',
             transition: 'transform 0.2s ease, opacity 0.3s ease'
           }}
         ></div>
@@ -45,42 +45,26 @@ export function AnswerQuestionsFeatureCard({
       
       {/* Dynamic reflection/glare based on mouse position */}
       <div 
-        className="absolute inset-0 opacity-0 group-hover:opacity-40 transition-opacity duration-300 pointer-events-none mix-blend-overlay"
+        className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-300 pointer-events-none mix-blend-overlay"
         style={{
-          background: `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 60%)`,
+          background: `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 50%)`,
         }}
       ></div>
-      
-      {/* Light refraction effect */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMTAiIGhlaWdodD0iMjEwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii4wNSIgbnVtT2N0YXZlcz0iMyIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlRGlzcGxhY2VtZW50TWFwIGluPSJTb3VyY2VHcmFwaGljIiBzY2FsZT0iMjAiLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWx0ZXI9InVybCgjYSkiLz48L3N2Zz4=')]"></div>
-      </div>
       
       {/* Subtle edge highlight */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent rounded-[24px]"></div>
-      
-      {/* Enhanced edge lighting */}
-      <div 
-        className="absolute inset-0 rounded-[24px] pointer-events-none opacity-30 group-hover:opacity-70 transition-opacity duration-300"
-        style={{
-          boxShadow: 'inset 0 0 20px rgba(255, 255, 255, 0.5)'
-        }}
-      ></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-white/15 via-transparent to-transparent rounded-[20px]"></div>
       
       {/* Top highlight */}
-      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/25 to-transparent"></div>
       
-      {/* Left highlight */}
-      <div className="absolute top-0 left-0 bottom-0 w-[1px] bg-gradient-to-b from-white/30 via-white/20 to-transparent"></div>
-      
-      <div className="p-8 h-full flex flex-col relative">
+      <div className="p-6 sm:p-8 h-full flex flex-col relative">
         <div className="relative z-10 flex flex-col h-full">
-          <h3 className="text-[16px] font-semibold text-white mb-3 group-hover:translate-x-1 transition-transform duration-300">Answer Questions with AI</h3>
-          <p className="text-sm text-white/80 mb-auto group-hover:text-white transition-colors duration-300">
+          <h3 className="text-base sm:text-lg font-bold text-gray-800 mb-2 sm:mb-3 group-hover:translate-x-1 transition-transform duration-300 leading-tight">Answer Questions with AI</h3>
+          <p className="text-sm sm:text-base text-gray-600 mb-auto group-hover:text-gray-700 transition-colors duration-300 leading-relaxed">
             Respond to any question using AI
           </p>
-          <div className="flex items-center mt-4 text-[11px] text-white/70 group-hover:text-white/90 transition-colors duration-300">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+          <div className="flex items-center mt-4 sm:mt-5 text-xs sm:text-sm text-gray-500 group-hover:text-gray-600 transition-colors duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
             </svg>
             AI Powered

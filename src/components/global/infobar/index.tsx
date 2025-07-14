@@ -4,22 +4,16 @@ import React, { useEffect, useState } from 'react'
 import { PAGE_BREAD_CRUMBS } from '@/constants/pages'
 import { usePaths } from '@/hooks/user-nav'
 import { Sheet, SheetTrigger, SheetContent } from '@/components/global/sheet'
-import { Menu } from 'lucide-react'
-import { Separator } from '@/components/ui/separator'
-import ClerkAuthState from '@/components/global/clerk-auth-state'
-import { HelpDuoToneWhite } from '@/icons'
-import { SubscriptionPlan } from '@/components/global/subscription-plan'
-import UpgradeCard from '@/components/global/upgrade-card'
+import { Menu, Settings, Users, HelpCircle, Home, Zap } from 'lucide-react'
 import { NavMain } from '@/components/global/app-sidebar'
-import CreateAutomation from '@/components/global/create-automation'
-import { Notifications } from './notifications'
-import MainBreadCrumb from '@/components/global/bread-crumbs/main-bread-crumb'
+import { SidebarToggle } from '@/components/global/app-sidebar/sidebar-toggle'
 import Image from 'next/image'
 import Link from 'next/link'
-import { cn } from '@/lib/utils'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { EnhancedText } from '@/components/ui/enhanced-typography'
 import { UserButton } from "@clerk/nextjs"
+import { useParams, usePathname } from 'next/navigation'
+import { cn } from '@/lib/utils'
 
 type Props = {
   slug: string
@@ -28,16 +22,11 @@ type Props = {
 const InfoBar = ({ slug }: Props) => {
   const { page } = usePaths()
   const currentPage = PAGE_BREAD_CRUMBS.includes(page) || page === slug
-  const [width, setWidth] = useState(0)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-
-  useEffect(() => {
-    setWidth(window.innerWidth)
-    
-    const handleResize = () => setWidth(window.innerWidth)
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  const [mobileSidebarExpanded, setMobileSidebarExpanded] = useState(true)
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(false)
+  const params = useParams<{ slug: string }>()
+  const pathname = usePathname()
 
   useEffect(() => {
     const handleSidebarChange = (e: CustomEvent) => {
@@ -47,107 +36,190 @@ const InfoBar = ({ slug }: Props) => {
     return () => window.removeEventListener('sidebarStateChange', handleSidebarChange as EventListener)
   }, [])
 
+  // Mobile-specific toggle function - closes Sheet when collapsed
+  const handleMobileToggle = () => {
+    if (mobileSidebarExpanded) {
+      // If currently expanded, collapse by closing the sheet
+      setMobileSheetOpen(false)
+    } else {
+      // If currently collapsed, expand 
+      setMobileSidebarExpanded(true)
+    }
+  }
+
+  // Handle sheet state changes
+  useEffect(() => {
+    // When sheet opens, always start expanded
+    if (mobileSheetOpen) {
+      setMobileSidebarExpanded(true)
+    }
+  }, [mobileSheetOpen])
+
   const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
 
+  // Navigation data matching AppSidebar structure
+  const navigationData = {
+    navMain: [
+      {
+        title: "Home",
+        url: `/dashboard/${params.slug}`,
+        icon: Home,
+      },
+      {
+        title: "Automations",
+        url: `/dashboard/${params.slug}/automations`,
+        icon: Zap,
+      },
+      {
+        title: "Contacts",
+        url: `/dashboard/${params.slug}/contacts`,
+        icon: Users,
+      },
+    ],
+  }
+
+  // Extract the slug from the path for settings link
+  const slugMatch = pathname.match(/\/dashboard\/([^/]+)/);
+  const userSlug = slugMatch ? slugMatch[1] : '';
+
   return currentPage ? (
-    <div className="fixed top-0 h-[70px] bg-white/75 backdrop-blur-md border-b border-gray-200/20 z-50 transition-all duration-300" style={{ 
-      left: currentPage ? (width <= 1024 ? '0' : sidebarCollapsed ? '72px' : '250px') : '0',
-      right: '0',
-      paddingLeft: '1rem',
-      paddingRight: '1rem'
-    }}>
+    <div 
+      className={cn(
+        "fixed top-0 h-[70px] bg-white/75 backdrop-blur-md border-b border-gray-200/20 z-50 transition-all duration-300",
+        "left-0 right-0 px-4",
+        "lg:left-[250px]",
+        sidebarCollapsed && "lg:left-[72px]"
+      )}
+    >
       <div className="h-full flex items-center justify-between">
         {/* Left: Menu & Breadcrumb */}
         <div className="flex items-center gap-4">
-          <span className="lg:hidden">
-            <Sheet>
+          {/* Mobile Menu - Single implementation with AppSidebar design */}
+          <div className="lg:hidden">
+            <Sheet open={mobileSheetOpen} onOpenChange={setMobileSheetOpen}>
               <SheetTrigger asChild>
                 <button className="p-1 hover:bg-gray-100 rounded-md transition-colors">
                   <Menu className="h-6 w-6 text-gray-600" />
                 </button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[250px] sm:w-[300px] p-0">
-                <SidebarProvider>
-                  <div className="flex flex-col gap-y-5 w-full h-full bg-gradient-to-b from-[#A288F7] via-[#A288F7]/95 to-[#F7C1E4] backdrop-filter backdrop-blur-xl">
-                    <div className="flex items-center justify-center transition-all duration-300 mt-4 h-[40px] px-3">
-                      <div className="flex items-center justify-center gap-2">
-                        {/* Logomark */}
-                        <Image 
-                          src="/Prolychat_lm_black.png"
-                          alt="Prolychat Logomark"
-                          width={32}
-                          height={32}
-                          className="object-contain transition-all duration-300"
-                        />
-                        {/* Wordmark */}
-                        <Image 
-                          src="/prolychat_bl.png"
-                          alt="Prolychat"
-                          width={115}
-                          height={32}
-                          className="object-contain transition-all duration-300"
-                        />
+              <SheetContent side="left" className={`p-0 transition-all duration-300 ${mobileSidebarExpanded ? 'w-[250px]' : 'w-[72px]'} [&>button]:hidden`}>
+                <div className={`flex h-full flex-col bg-gray-800 border-r border-gray-700 font-['Plus_Jakarta_Sans',-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Oxygen,Ubuntu,Cantarell,'Fira_Sans','Droid_Sans','Helvetica_Neue',sans-serif] text-base font-medium leading-6 transition-all duration-300 ${mobileSidebarExpanded ? 'w-[250px]' : 'w-[72px]'}`}>
+                  {/* Logo Section with Toggle */}
+                  <div className="relative h-[70px] overflow-visible">
+                    <div className={`flex h-full items-center transition-all duration-300 ${
+                      mobileSidebarExpanded ? "pr-2 pl-4" : "pr-1 pl-3"
+                    }`}>
+                      {/* Logo Container - Centered */}
+                      <div className={`flex-1 flex items-center justify-center transition-all duration-300 ${
+                        mobileSidebarExpanded ? "h-[40px]" : "h-[28px]"
+                      }`}>
+                        <div className="flex items-center gap-2">
+                          {/* Logomark - always visible */}
+                          <Image
+                            src="/Prolychat_lm_orange.png"
+                            alt="Prolychat Logomark"
+                            width={mobileSidebarExpanded ? 38 : 28}
+                            height={mobileSidebarExpanded ? 38 : 28}
+                            className="object-contain transition-all duration-300"
+                            priority
+                          />
+                          {/* Wordmark - only visible when expanded */}
+                          {mobileSidebarExpanded && (
+                            <Image
+                              src="/Prolychat_og_sb.png"
+                              alt="Prolychat"
+                              width={110}
+                              height={38}
+                              className="object-contain transition-all duration-300"
+                              priority
+                            />
+                          )}
+                        </div>
+                      </div>
+                      {/* Toggle Button - Always on the right */}
+                      <div className="flex-shrink-0">
+                        <SidebarToggle isExpanded={mobileSidebarExpanded} onToggle={handleMobileToggle} />
                       </div>
                     </div>
-                    <div className="flex flex-col py-3">
-                      <NavMain items={[]} isExpanded={true} />
-                    </div>
-                    <div className="px-16">
-                      <Separator
-                        orientation="horizontal"
-                        className="bg-white/20"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-y-2 px-3">
-                      <ClerkAuthState />
-                      <Link
-                        href={`/dashboard/${slug}/help`}
-                        className={cn(
-                          "flex items-center gap-x-3 rounded-full p-2.5 transition-all duration-200 hover:bg-white/10",
-                          page === 'help' ? "bg-[#8D4AF3] text-white shadow-md" : "text-white/80"
-                        )}
-                      >
-                        <div className="flex items-center justify-center h-9 w-9 ring-2 ring-white/30 rounded-full">
-                          <HelpDuoToneWhite />
-                        </div>
-                        <span className="font-medium">Help</span>
-                      </Link>
-                    </div>
-                    <div className="flex-1" />
-                    <SubscriptionPlan type="FREE">
-                      <UpgradeCard />
-                    </SubscriptionPlan>
                   </div>
-                </SidebarProvider>
+
+                  {/* Navigation Sections */}
+                  <div className="flex flex-1 flex-col justify-between overflow-hidden pt-[17px]">
+                    {/* Main Navigation */}
+                    <div>
+                      <div className="space-y-2.5">
+                        <SidebarProvider>
+                          <NavMain items={navigationData.navMain} isExpanded={mobileSidebarExpanded} />
+                        </SidebarProvider>
+                      </div>
+                      <div className="flex flex-col">
+                        {/* Divider below Contacts */}
+                        <div className="relative mt-[44px] px-4">
+                          <div className="absolute left-4 right-4 h-[1px] bg-gradient-to-r from-gray-600/40 via-gray-500/60 to-gray-600/40" />
+                        </div>
+                        {/* Help & Support Section */}
+                        <div className="mt-6 px-4">
+                          <Link
+                            href="/help"
+                            className={`group relative flex h-[40px] ${mobileSidebarExpanded ? 'w-[218px]' : 'w-[44px]'} items-center rounded-2xl transition-all ${
+                              pathname === '/help'
+                                ? "bg-purple-600/20 hover:bg-purple-600/25"
+                                : "hover:bg-gray-700/60"
+                            }`}
+                          >
+                            <div className="flex w-full items-center pl-[13px]">
+                              <div className="flex w-[24px] items-center justify-center">
+                                <HelpCircle className={`h-[20px] w-[20px] ${pathname === '/help' ? 'text-purple-400' : 'text-gray-400'}`} />
+                              </div>
+                              {mobileSidebarExpanded && (
+                                <span className={`truncate pl-[18px] text-[17px] font-medium leading-6 ${pathname === '/help' ? 'text-purple-400' : 'text-gray-300'}`}>
+                                  Help & Support
+                                </span>
+                              )}
+                            </div>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Settings Section */}
+                    <div className="pb-[17px]">
+                      <div className="border-t border-gray-600/40 pt-6">
+                        <div className="px-4">
+                          <Link
+                            href={userSlug ? `/dashboard/${userSlug}/settings/account` : '/settings/account'}
+                            className={`relative flex h-[40px] ${mobileSidebarExpanded ? 'w-[218px]' : 'w-[44px]'} items-center rounded-2xl bg-gradient-to-br from-purple-600/20 via-purple-500/15 to-purple-600/20 shadow-[0_2px_8px_rgba(0,0,0,0.3)] transition-all hover:from-purple-600/30 hover:via-purple-500/25 hover:to-purple-600/30 hover:shadow-[0_3px_12px_rgba(0,0,0,0.4)]`}
+                          >
+                            <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-white/10 via-white/5 to-transparent pointer-events-none" />
+                            <div className="relative flex w-full items-center pl-[13px]">
+                              <div className="flex w-[24px] items-center justify-center">
+                                <Settings className="h-[18px] w-[18px] text-purple-300" />
+                              </div>
+                              {mobileSidebarExpanded && (
+                                <span className="truncate pl-[18px] text-[17px] font-medium leading-6 text-purple-300">Settings</span>
+                              )}
+                            </div>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </SheetContent>
             </Sheet>
-          </span>
-          <div className="flex items-center gap-4">
-            {width <= 1024 && (
-              <Sheet>
-                <SheetTrigger asChild>
-                  <button className="p-1 hover:bg-gray-100 rounded-md transition-colors">
-                    <Menu className="w-5 h-5" />
-                  </button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-[250px] sm:w-[300px] p-0">
-                  <SidebarProvider>
-                    <NavMain items={[]} isExpanded={true} />
-                  </SidebarProvider>
-                </SheetContent>
-              </Sheet>
-            )}
-            <EnhancedText
-              variant="h2"
-              gradient
-              className="text-2xl font-semibold tracking-tight leading-none py-1.5"
-            >
-              {page === slug ? 'Dashboard' : capitalizeFirstLetter(page)}
-            </EnhancedText>
           </div>
+          
+          {/* Page Title */}
+          <EnhancedText
+            variant="h2"
+            gradient
+            className="text-2xl font-semibold tracking-tight leading-none py-1.5"
+          >
+            {page === slug ? 'Dashboard' : capitalizeFirstLetter(page)}
+          </EnhancedText>
         </div>
 
-        {/* Right: Stats & Actions */}
+        {/* Right: User Actions */}
         <div className="flex items-center gap-4">
           <UserButton
             afterSignOutUrl="/"

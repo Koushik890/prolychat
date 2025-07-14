@@ -37,7 +37,12 @@ export const useQueryAutomationPosts = () => {
     return useQuery({
       queryKey: ['instagram-media'],
       queryFn: fetchPosts,
-      staleTime: 5 * 60 * 1000,
-      gcTime: 30 * 60 * 1000,
+      staleTime: 15 * 60 * 1000, // 15 minutes (was 5 minutes)
+      gcTime: 60 * 60 * 1000, // 1 hour (was 30 minutes)
+      refetchOnWindowFocus: false, // Don't refetch when window regains focus
+      refetchOnMount: false, // Don't refetch on component mount if data exists
+      refetchOnReconnect: false, // Don't refetch on network reconnect
+      // Use cached data while fetching fresh data in background
+      refetchInterval: 20 * 60 * 1000, // Automatically refresh every 20 minutes in background
     })
   }

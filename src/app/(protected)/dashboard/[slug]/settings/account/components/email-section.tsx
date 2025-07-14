@@ -585,7 +585,7 @@ const EmailSection: React.FC<EmailSectionProps> = ({ email: initialEmail }) => {
               Manage your email addresses for login and notifications
             </p>
           </div>
-          <Mail className="text-gray-400 h-5 w-5" />
+          <Mail className="text-gray-400 h-5 w-5 hidden sm:block" />
         </div>
         
         <div className="form-content">
@@ -604,24 +604,26 @@ const EmailSection: React.FC<EmailSectionProps> = ({ email: initialEmail }) => {
                       {providerIcon || <Mail className="h-5 w-5 text-gray-500" />}
                     </div>
                     <div className="provider-info">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <p className="provider-name">{emailObj.emailAddress}</p>
-                        {isPrimary && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                            Primary
-                          </span>
-                        )}
-                        {isVerified && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                            Verified
-                          </span>
-                        )}
-                        {!isVerified && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                            Unverified
-                          </span>
-                        )}
+                        <div className="flex flex-wrap gap-2">
+                          {isPrimary && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                              Primary
+                            </span>
+                          )}
+                          {isVerified && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              Verified
+                            </span>
+                          )}
+                          {!isVerified && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                              Unverified
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <p className="provider-status">
                         {providerIcon && (
@@ -635,11 +637,11 @@ const EmailSection: React.FC<EmailSectionProps> = ({ email: initialEmail }) => {
                         )}
                       </p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       {!isPrimary && isVerified && (
                         <button
                           onClick={() => makeEmailPrimary(emailObj.id)}
-                          className="provider-action"
+                          className="provider-action w-full sm:w-auto"
                           type="button"
                           disabled={isLoading}
                         >
@@ -649,15 +651,15 @@ const EmailSection: React.FC<EmailSectionProps> = ({ email: initialEmail }) => {
                       {!isPrimary && (
                         <button
                           onClick={() => removeEmail(emailObj.id)}
-                          className="provider-action disconnect"
+                          className="provider-action disconnect w-full sm:w-auto"
                           type="button"
                           disabled={isLoading}
                         >
                           <Trash className="h-4 w-4" />
                         </button>
-                  )}
-                </div>
-            </div>
+                      )}
+                    </div>
+                  </div>
                 );
               })}
               
@@ -669,7 +671,7 @@ const EmailSection: React.FC<EmailSectionProps> = ({ email: initialEmail }) => {
                     setNewEmail('');
                     setShowVerification(false);
                   }}
-                  className="form-submit"
+                  className="form-submit w-full sm:w-auto"
                   type="button"
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -684,24 +686,24 @@ const EmailSection: React.FC<EmailSectionProps> = ({ email: initialEmail }) => {
                   <label htmlFor="newEmail" className="form-label">
                     New Email Address
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <Input
                       id="newEmail"
                       type="email"
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
-                      className="form-input"
+                      className="form-input flex-1"
                       placeholder="Enter your new email address"
-                  disabled={isLoading}
+                      disabled={isLoading}
                     />
-                <Button
-                  onClick={handleChangeEmail}
-                      className="form-submit"
+                    <Button
+                      onClick={handleChangeEmail}
+                      className="form-submit w-full sm:w-auto sm:min-w-[120px]"
                       type="button"
                       disabled={isLoading || !newEmail}
-                >
+                    >
                       {isLoading ? 'Sending...' : 'Send Code'}
-                </Button>
+                    </Button>
                   </div>
                 </div>
               ) : (
@@ -709,41 +711,41 @@ const EmailSection: React.FC<EmailSectionProps> = ({ email: initialEmail }) => {
                   <label htmlFor="verificationCode" className="form-label">
                     Verification Code
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <Input
                       id="verificationCode"
                       value={verificationCode}
                       onChange={(e) => setVerificationCode(e.target.value)}
-                      className="form-input"
+                      className="form-input flex-1"
                       placeholder="Enter the 6-digit code from your email"
                       disabled={isLoading}
                     />
                     <Button 
                       onClick={handleVerifyEmail}
-                      className="form-submit"
+                      className="form-submit w-full sm:w-auto sm:min-w-[120px]"
                       type="button"
                       disabled={isLoading || verificationCode.length < 6}
                     >
                       {isLoading ? 'Verifying...' : 'Verify'}
                     </Button>
                   </div>
-                  <div className="mt-2 flex gap-3">
+                  <div className="mt-2 flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <button 
                       onClick={handleChangeEmail}
-                      className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                      className="text-xs text-indigo-600 hover:text-indigo-800 font-medium py-2 sm:py-0"
                       type="button"
                       disabled={isLoading}
                     >
                       Resend Code
                     </button>
-                    <span className="text-gray-400">·</span>
+                    <span className="text-gray-400 hidden sm:inline">·</span>
                     <button 
                       onClick={() => {
                         setNewEmail('');
                         setVerificationCode('');
                         setShowVerification(false);
                       }}
-                      className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                      className="text-xs text-indigo-600 hover:text-indigo-800 font-medium py-2 sm:py-0"
                       type="button"
                       disabled={isLoading}
                     >
@@ -756,7 +758,7 @@ const EmailSection: React.FC<EmailSectionProps> = ({ email: initialEmail }) => {
               <div className="flex justify-end mt-4">
                 <Button
                   onClick={handleCancelEdit}
-                  className="provider-action disconnect"
+                  className="provider-action disconnect w-full sm:w-auto"
                   type="button"
                   disabled={isLoading}
                 >
