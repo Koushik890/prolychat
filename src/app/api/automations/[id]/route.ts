@@ -156,11 +156,28 @@ export async function PATCH(request: Request, { params }: Context) {
 
     // Handle listener updates (create/update)
     if (body.listener) {
+      // Check if listener already exists and has a message to determine proper status
+      const existingListener = await client.listener.findUnique({
+        where: { automationId: id },
+        include: { messageData: true }
+      });
+
+      // Determine the appropriate status based on existing message data
+      let listenerStatus = 'UNCONFIGURED';
+      
+      if (existingListener?.messageData) {
+        // If message data exists, preserve CONFIGURED status
+        listenerStatus = 'CONFIGURED';
+      } else if (body.listener.type === 'PROLYAI' && body.listener.prompt) {
+        // For AI prompts, set to CONFIGURED if prompt exists
+        listenerStatus = 'CONFIGURED';
+      }
+
       updateData.listener = {
         upsert: {
           create: {
             type: body.listener.type,
-            status: 'UNCONFIGURED', // Will be updated by message API
+            status: listenerStatus,
             prompt: body.listener.prompt || null,
             commentReply: body.listener.commentReply || null,
             dmCount: body.listener.dmCount || 0,
@@ -168,7 +185,7 @@ export async function PATCH(request: Request, { params }: Context) {
           },
           update: {
             type: body.listener.type,
-            status: 'UNCONFIGURED', // Will be updated by message API
+            status: listenerStatus,
             prompt: body.listener.prompt || null,
             commentReply: body.listener.commentReply || null,
             dmCount: body.listener.dmCount || 0,

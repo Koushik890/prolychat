@@ -20,23 +20,11 @@ export async function withDatabaseRetry<T>(
   maxRetries = 5,
   initialDelay = 300
 ): Promise<T> {
-  let lastError: Error | null = null
-  let delay = initialDelay
-
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      // If not the first attempt, log retry information
-      if (attempt > 0) {
-        console.log(`Database retry attempt ${attempt}/${maxRetries} after ${delay}ms delay`)
-      }
-      
-      // Execute the database operation
       return await operation()
     } catch (error: any) {
-      lastError = error
-      
-      // Check if error is a connection error (P1001) or a timeout error
-      // Also check for E57P01 error (terminating connection due to administrator command)
+      // Check if error is a connection error
       const isConnectionError = 
         error.code === 'P1001' || 
         error.message?.includes("Can't reach database server") ||
@@ -44,32 +32,18 @@ export async function withDatabaseRetry<T>(
         error.message?.includes("terminating connection due to administrator command") ||
         error.message?.includes("E57P01")
       
-      // If it's not a connection-related error or we've exhausted retries, rethrow
+      // If it's not a connection-related error or we've exhausted retries, rethrow immediately
       if (!isConnectionError || attempt >= maxRetries) {
         throw error
       }
       
-      // Special handling for E57P01 errors (admin termination)
-      if (error.message?.includes("terminating connection due to administrator command") || 
-          error.message?.includes("E57P01")) {
-        console.warn(`Database connection terminated by administrator (attempt ${attempt+1}/${maxRetries+1}). This is common with serverless databases that scale down.`)
-        
-        // For admin termination, use a longer delay before retrying
-        delay = Math.max(delay * 2, 1000)
-      } else {
-        // Log the connection error
-        console.warn(`Database connection error (attempt ${attempt+1}/${maxRetries+1}): ${error.message}`)
-        
-        // Wait before retrying with exponential backoff
-        delay *= 1.5 // Exponential backoff
-      }
-      
-      await new Promise(resolve => setTimeout(resolve, delay))
+      // Minimal delay for connection errors only
+      await new Promise(resolve => setTimeout(resolve, initialDelay))
     }
   }
 
-  // This should never be reached due to the throw in the loop, but TypeScript needs it
-  throw lastError
+  // This should never be reached
+  throw new Error('Retry logic error')
 }
 
 /**
@@ -139,21 +113,14 @@ export const db = {
   /**
    * Execute a raw query with retry logic
    */
-  $queryRaw: async <T>(
+  $queryRaw: async (
     query: Prisma.Sql | TemplateStringsArray,
     ...values: any[]
-  ): Promise<T> => {
-    return executeWithRetry(() => client.$queryRaw<T>(query, ...values))
+  ): Promise<any> => {
+    return executeWithRetry(() => client.$queryRaw(query, ...values))
   },
   
-  /**
-   * Run a transaction with retry logic for connection issues
-   */
-  $transaction: async <T>(
-    fn: (prisma: typeof client) => Promise<T>
-  ): Promise<T> => {
-    return executeWithRetry(() => client.$transaction(fn as any))
-  }
+
 }
 
 // Example usage:

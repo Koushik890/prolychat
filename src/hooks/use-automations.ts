@@ -207,22 +207,22 @@ export const useAutomationSync = (id: string) => {
   const queryClient = useQueryClient()
   const { data: automationData } = useQueryAutomation(id)
 
-  // Helper function to update lastSaved and invalidate queries
+  // Helper function to update lastSaved without expensive refetch
   const updateSaveStateAndInvalidate = useCallback(async () => {
     // Update last saved timestamp
     setLastSaved(new Date())
     
-    // Invalidate queries to refresh data
-    await queryClient.invalidateQueries({ 
-      queryKey: ['automation-info', id],
-      exact: true,
-      refetchType: 'all'
-    })
-    await queryClient.invalidateQueries({ 
-      queryKey: ['user-automations'],
-      exact: true,
-      refetchType: 'all'
-    })
+    // PERFORMANCE OPTIMIZATION: Skip expensive invalidations for save operations
+    // The 2-7 second delay was caused by the findAutomation query refetch
+    // Data will be refreshed on next page load or manual refresh
+    console.log('Save completed - skipping expensive data refetch for performance')
+    
+    // Optional: Only invalidate on major state changes (like automation deletion)
+    // queryClient.invalidateQueries({ 
+    //   queryKey: ['automation-info', id],
+    //   exact: true,
+    //   refetchType: 'active'
+    // })
   }, [id, queryClient])
 
   const saveChanges = useCallback(async (changes: AutomationChanges) => {
@@ -666,7 +666,8 @@ export const useAutomationPosts = (id: string) => {
     () => savePosts(id, posts),
     'automation-info',
     () => {
-      queryClient.invalidateQueries({ queryKey: ['automation-info', id] })
+      // Skip expensive refetch for instant UI response
+      // queryClient.invalidateQueries({ queryKey: ['automation-info', id] })
       setPosts([])
     }
   )

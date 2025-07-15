@@ -7,9 +7,10 @@ import { motion, AnimatePresence, HTMLMotionProps } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 interface ToastNotificationProps extends Omit<HTMLMotionProps<"div">, "children"> {
-  state: 'loading' | 'success'
+  state: 'loading' | 'success' | 'error'
   loadingText?: string
   successText?: string
+  errorText?: string
   show: boolean
   onHide?: () => void
   showOverlay?: boolean
@@ -26,6 +27,7 @@ export function ToastNotification({
   state = 'loading',
   loadingText = 'Saving changes',
   successText = 'Changes saved',
+  errorText = 'Something went wrong',
   show,
   onHide,
   className,
@@ -33,10 +35,10 @@ export function ToastNotification({
   ...props
 }: ToastNotificationProps) {
   React.useEffect(() => {
-    if (state === 'success' && show) {
+    if ((state === 'success' || state === 'error') && show) {
       const timer = setTimeout(() => {
         onHide?.()
-      }, 2000) // Hide after 2 seconds of showing success
+      }, state === 'error' ? 3000 : 2000) // Hide errors after 3 seconds, success after 2 seconds
       return () => clearTimeout(timer)
     }
   }, [state, show, onHide])
@@ -121,6 +123,16 @@ export function ToastNotification({
                       </div>
                       <div className="text-[13px] font-normal leading-tight whitespace-nowrap">
                         {successText}
+                      </div>
+                    </>
+                  )}
+                  {state === 'error' && (
+                    <>
+                      <div className="p-0.5 bg-red-500/10 dark:bg-red-500/25 rounded-[99px] shadow-sm border border-red-500/20 dark:border-red-500/25 justify-center items-center gap-1.5 flex overflow-hidden">
+                        <div className="w-3.5 h-3.5 text-red-600 dark:text-red-500 font-bold text-center">×</div>
+                      </div>
+                      <div className="text-[13px] font-normal leading-tight whitespace-nowrap">
+                        {errorText}
                       </div>
                     </>
                   )}

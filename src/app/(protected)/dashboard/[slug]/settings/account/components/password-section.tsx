@@ -216,10 +216,10 @@ const PasswordSection: React.FC = () => {
                 </div>
               )}
               
-              <div className="flex justify-end gap-3 mt-6">
+              <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
                 <Button
                   onClick={handleCancelEdit}
-                  className="provider-action disconnect"
+                  className="provider-action disconnect w-full sm:w-auto"
                   type="button"
                   disabled={isLoading}
                 >
@@ -227,7 +227,7 @@ const PasswordSection: React.FC = () => {
                 </Button>
                 <Button
                   onClick={handleChangePassword}
-                  className="form-submit"
+                  className="form-submit w-full sm:w-auto sm:min-w-[140px]"
                   type="button"
                   disabled={isLoading}
                 >
@@ -236,8 +236,8 @@ const PasswordSection: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="flex justify-between items-center">
-              <div>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex-1">
                 <p className="text-gray-500">
                   Change your password or enable additional authentication methods.
                 </p>
@@ -247,7 +247,7 @@ const PasswordSection: React.FC = () => {
               </div>
               <Button
                 onClick={handleChangePassword}
-                className="form-submit"
+                className="form-submit w-full sm:w-auto sm:min-w-[140px]"
                 type="button"
               >
                 Change Password

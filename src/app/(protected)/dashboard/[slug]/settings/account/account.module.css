@@ -199,183 +199,168 @@ body[data-sidebar-collapsed="true"] .stickyHeaderContainer {
 }
 
 .accountSettings :global(.form-title) {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 600;
-  color: rgb(17, 24, 39);
-  margin: 0;
-  background: linear-gradient(135deg, #9333ea, #c084fc);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: rgb(31 41 55);
+  margin-bottom: 0.25rem;
 }
 
 .accountSettings :global(.form-description) {
-  color: rgb(107, 114, 128);
+  color: rgb(107 114 128);
   font-size: 0.875rem;
-  margin-top: 0.5rem;
-  line-height: 1.5;
+  line-height: 1.25rem;
 }
 
 .accountSettings :global(.form-content) {
-  display: grid;
-  gap: 1.5rem;
+  flex: 1;
 }
 
 .accountSettings :global(.form-input) {
   width: 100%;
   padding: 0.75rem 1rem;
+  border: 1px solid rgb(209 213 219);
   border-radius: 0.5rem;
-  border: 1px solid rgb(209, 213, 219);
-  box-shadow: var(--input-shadow);
   font-size: 0.875rem;
   transition: var(--transition-standard);
-  background-color: white !important;
-  color: rgb(17, 24, 39) !important;
+  background-color: white;
+  box-shadow: var(--input-shadow);
 }
 
-/* Override for dark mode inputs */
 .accountSettings :global(.dark .form-input),
-.accountSettings.dark :global(.form-input) {
-  background-color: white !important;
-  color: rgb(17, 24, 39) !important;
-  border-color: rgb(209, 213, 219) !important;
+.accountSettings :global(.form-input:focus) {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+  outline: none;
 }
 
-/* Additional Input styles */
 .accountSettings :global(input),
-.accountSettings :global(.input),
-.accountSettings :global(.form-input),
-html[class~="dark"] .accountSettings :global(input),
-html[class~="dark"] .accountSettings :global(.input),
-html[class~="dark"] .accountSettings :global(.form-input) {
-  background-color: white !important;
-  color: rgb(17, 24, 39) !important;
+.accountSettings :global(select),
+.accountSettings :global(textarea) {
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Apple Color Emoji", Inter, Roboto, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif !important;
 }
 
 .accountSettings :global(.form-input:focus) {
-  outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.15);
-  ring: 3px;
-  ring-color: rgba(147, 51, 234, 0.15);
+  box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+  outline: none;
 }
 
 .accountSettings :global(.form-input:disabled) {
-  background-color: rgb(249, 250, 251);
+  background-color: rgb(249 250 251);
+  color: rgb(156 163 175);
   cursor: not-allowed;
-  opacity: 0.7;
 }
 
 .accountSettings :global(.form-label) {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: rgb(55, 65, 81);
   display: block;
   margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: rgb(31 41 55);
+  font-size: 0.875rem;
 }
 
 .accountSettings :global(.form-submit) {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-standard);
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  font-weight: 600;
+  gap: 0.5rem;
   font-size: 0.875rem;
-  border: none;
-  cursor: pointer;
-  transition: var(--transition-standard);
-  background-color: var(--primary-color);
-  color: white;
-  position: relative;
-  overflow: hidden;
 }
 
 .accountSettings :global(.form-submit::before) {
   content: '';
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
+  inset: 0;
+  background: linear-gradient(135deg, var(--primary-hover), #6b21a8);
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
 .accountSettings :global(.form-submit:hover::before) {
-  left: 100%;
+  opacity: 1;
 }
 
 .accountSettings :global(.form-submit:hover) {
-  background-color: var(--primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 10px 15px -3px rgba(147, 51, 234, 0.3);
+  box-shadow: 0 10px 20px -5px rgba(147, 51, 234, 0.3);
 }
 
 .accountSettings :global(.form-submit:disabled) {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
 .accountSettings :global(.form-submit svg) {
-  margin-right: 0.5rem;
+  z-index: 1;
 }
 
 .accountSettings :global(.provider-card) {
+  background-color: white;
+  border: 1px solid rgb(229 231 235);
+  border-radius: 0.75rem;
+  padding: 1rem;
   display: flex;
   align-items: center;
-  padding: 1.25rem;
-  border-radius: 0.75rem;
-  border: 1px solid rgba(244, 235, 255, 0.8);
-  margin-bottom: 1rem;
+  gap: 1rem;
   transition: var(--transition-standard);
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(5px);
+  margin-bottom: 0.75rem;
 }
 
 .accountSettings :global(.provider-card:hover) {
-  background-color: rgba(249, 250, 251, 0.9);
   border-color: var(--primary-color);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(147, 51, 234, 0.1);
 }
 
 .accountSettings :global(.provider-icon) {
   width: 2.5rem;
   height: 2.5rem;
-  margin-right: 1rem;
+  border-radius: 0.5rem;
+  background-color: rgb(243 244 246);
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--primary-light);
-  border-radius: 0.5rem;
+  flex-shrink: 0;
 }
 
 .accountSettings :global(.provider-info) {
   flex: 1;
+  min-width: 0;
 }
 
 .accountSettings :global(.provider-name) {
-  font-weight: 600;
-  color: rgb(17, 24, 39);
-  margin-bottom: 0.25rem;
+  font-weight: 500;
+  color: rgb(31 41 55);
+  font-size: 0.875rem;
 }
 
 .accountSettings :global(.provider-status) {
-  font-size: 0.875rem;
-  color: rgb(107, 114, 128);
+  color: rgb(107 114 128);
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
 }
 
 .accountSettings :global(.provider-action) {
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  font-size: 0.875rem;
-  border: none;
   cursor: pointer;
   transition: var(--transition-standard);
+  border: 1px solid transparent;
+  white-space: nowrap;
 }
 
 .accountSettings :global(.provider-action.connect) {
@@ -390,79 +375,83 @@ html[class~="dark"] .accountSettings :global(.form-input) {
 
 .accountSettings :global(.provider-action.disconnect) {
   background-color: white;
-  color: var(--error-color);
-  border: 1px solid var(--error-color);
+  color: rgb(239 68 68);
+  border-color: rgb(239 68 68);
 }
 
 .accountSettings :global(.provider-action.disconnect:hover) {
-  background-color: var(--error-color);
+  background-color: rgb(239 68 68);
   color: white;
   transform: translateY(-1px);
 }
 
-/* Special styling for "Manage All Connections" button to improve visibility */
 .accountSettings :global(.manage-all-connections-btn) {
-  background-color: var(--primary-color) !important;
-  color: white !important;
-  border: 1px solid var(--primary-color) !important;
-  font-weight: 500;
-  padding: 0.625rem 1.25rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
   transition: var(--transition-standard);
+  width: 100%;
+  margin-top: 1rem;
 }
 
 .accountSettings :global(.manage-all-connections-btn:hover) {
-  background-color: var(--primary-hover) !important;
-  color: white !important;
-  border: 1px solid var(--primary-hover) !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(147, 51, 234, 0.2);
+  box-shadow: 0 10px 20px -5px rgba(147, 51, 234, 0.3);
 }
 
 .accountSettings :global(.toast) {
   position: fixed;
   top: 1rem;
   right: 1rem;
-  padding: 1rem 1.5rem;
+  background-color: white;
+  border: 1px solid rgb(229 231 235);
   border-radius: 0.5rem;
+  padding: 1rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   z-index: 1000;
   animation: slideIn 0.3s ease-out;
-  max-width: 20rem;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 24rem;
 }
 
 .accountSettings :global(.toast.success) {
-  background-color: rgba(16, 185, 129, 0.95);
-  color: white;
+  border-color: var(--success-color);
+  background-color: rgb(240 253 244);
 }
 
 .accountSettings :global(.toast.error) {
-  background-color: rgba(239, 68, 68, 0.95);
-  color: white;
+  border-color: var(--error-color);
+  background-color: rgb(254 242 242);
 }
 
 .accountSettings :global(.toast-message) {
+  flex: 1;
   font-size: 0.875rem;
-  line-height: 1.5;
-  margin-right: 2rem;
+  color: rgb(31 41 55);
 }
 
 .accountSettings :global(.toast-close) {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
   background: none;
   border: none;
-  color: inherit;
+  color: rgb(107 114 128);
   cursor: pointer;
-  opacity: 0.7;
-  transition: opacity 0.2s;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: var(--transition-standard);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .accountSettings :global(.toast-close:hover) {
-  opacity: 1;
+  color: rgb(75 85 99);
+  background-color: rgb(243 244 246);
 }
 
 @keyframes slideIn {
@@ -476,41 +465,288 @@ html[class~="dark"] .accountSettings :global(.form-input) {
   }
 }
 
-/* Enhanced purple-themed buttons and accents */
 .accountSettings :global(button[class*="bg-"]) {
-  background-color: var(--primary-color) !important;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Apple Color Emoji", Inter, Roboto, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif !important;
 }
 
 .accountSettings :global(button[class*="bg-"]:hover) {
-  background-color: var(--primary-hover) !important;
+  transform: translateY(-1px);
 }
 
-/* Purple check marks and icons */
 .accountSettings :global(.text-green-500),
 .accountSettings :global(.text-green-600) {
-  color: #8b5cf6 !important; /* Purple-500 */
+  color: var(--success-color) !important;
 }
 
 .accountSettings :global(.bg-green-50),
 .accountSettings :global(.bg-green-100) {
-  background-color: #f3e8ff !important; /* Purple-50 */
+  background-color: rgb(240 253 244) !important;
+  border-color: var(--success-color) !important;
 }
 
-/* Responsive design */
+/* Mobile Responsive Styles - Following W3C Mobile Web Best Practices */
+/* Mobile-first approach with progressive enhancement */
+
+/* Mobile Base Styles (320px and up) */
 @media (max-width: 640px) {
   .accountSettings :global(.form-card) {
-    padding: 1.5rem;
+    padding: 1rem;
+    margin: 0.5rem;
   }
 
   .accountSettings :global(.form-header) {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    text-align: left;
   }
 
+  .accountSettings :global(.form-title) {
+    font-size: 1rem;
+  }
+
+  .accountSettings :global(.form-description) {
+    font-size: 0.8rem;
+  }
+
+  /* Mobile toast positioning */
   .accountSettings :global(.toast) {
+    top: 0.5rem;
     right: 0.5rem;
     left: 0.5rem;
     max-width: none;
+  }
+
+  /* Mobile-optimized provider cards */
+  .accountSettings :global(.provider-card) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .accountSettings :global(.provider-info) {
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .accountSettings :global(.provider-name) {
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .accountSettings :global(.provider-status) {
+    font-size: 0.75rem;
+  }
+
+  /* Mobile button layouts */
+  .accountSettings :global(.provider-card .flex) {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .accountSettings :global(.provider-action) {
+    width: 100%;
+    min-height: 44px; /* W3C mobile touch target minimum */
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* Mobile form input and button layouts */
+  .accountSettings :global(.form-content .flex) {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+
+  .accountSettings :global(.form-input) {
+    min-height: 44px; /* W3C mobile touch target minimum */
+    padding: 0.75rem 1rem;
+    font-size: 1rem; /* Prevent zoom on iOS */
+  }
+
+  .accountSettings :global(.form-submit) {
+    width: 100%;
+    min-height: 44px; /* W3C mobile touch target minimum */
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+    justify-content: center;
+  }
+
+  /* Mobile-specific button group layouts */
+  .accountSettings :global(.form-content .flex.justify-end) {
+    justify-content: stretch !important;
+  }
+
+  .accountSettings :global(.form-content .flex.gap-3) {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Mobile email verification layout */
+  .accountSettings :global(.form-content .flex.gap-2) {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+
+  .accountSettings :global(.form-content .mt-2.flex.gap-3) {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+    margin-top: 0.75rem !important;
+  }
+
+  /* Mobile badge layouts */
+  .accountSettings :global(.provider-info .flex) {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+  }
+
+  .accountSettings :global(.provider-info .flex .inline-flex) {
+    margin-bottom: 0.25rem;
+  }
+
+  /* Mobile password form layout */
+  .accountSettings :global(.space-y-4) {
+    gap: 1rem;
+  }
+
+  .accountSettings :global(.space-y-4 > *) {
+    margin-bottom: 1rem;
+  }
+
+  /* Mobile relative positioning for password toggles */
+  .accountSettings :global(.relative button) {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Small Mobile Devices (up to 480px) */
+@media (max-width: 480px) {
+  .accountSettings :global(.form-card) {
+    padding: 0.75rem;
+    margin: 0.25rem;
+  }
+
+  .accountSettings :global(.form-title) {
+    font-size: 0.95rem;
+  }
+
+  .accountSettings :global(.form-description) {
+    font-size: 0.75rem;
+    line-height: 1.2;
+  }
+
+  .accountSettings :global(.provider-card) {
+    padding: 0.75rem;
+  }
+
+  .accountSettings :global(.provider-action) {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .accountSettings :global(.form-input) {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .accountSettings :global(.form-submit) {
+    padding: 0.625rem 1rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Tablet and larger mobile devices (641px - 768px) */
+@media (min-width: 641px) and (max-width: 768px) {
+  .accountSettings :global(.form-card) {
+    padding: 1.5rem;
+  }
+
+  .accountSettings :global(.provider-card) {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .accountSettings :global(.provider-info) {
+    text-align: left;
+  }
+
+  .accountSettings :global(.provider-card .flex) {
+    flex-direction: row;
+    width: auto;
+  }
+
+  .accountSettings :global(.provider-action) {
+    width: auto;
+    min-width: 120px;
+  }
+
+  /* Tablet form layouts - hybrid approach */
+  .accountSettings :global(.form-content .flex.gap-2) {
+    flex-direction: row !important;
+    gap: 0.75rem !important;
+  }
+
+  .accountSettings :global(.form-content .flex.gap-3) {
+    flex-direction: row !important;
+    gap: 1rem !important;
+  }
+
+  .accountSettings :global(.form-submit) {
+    width: auto;
+    min-width: 120px;
+  }
+}
+
+/* Hover states for non-touch devices */
+@media (hover: hover) and (pointer: fine) {
+  .accountSettings :global(.provider-card:hover) {
+    transform: translateY(-2px);
+  }
+
+  .accountSettings :global(.provider-action:hover) {
+    transform: translateY(-1px);
+  }
+
+  .accountSettings :global(.form-submit:hover) {
+    transform: translateY(-2px);
+  }
+}
+
+/* Reduce animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .accountSettings :global(.form-card),
+  .accountSettings :global(.provider-card),
+  .accountSettings :global(.provider-action),
+  .accountSettings :global(.form-submit) {
+    transition: none;
+  }
+
+  .accountSettings :global(.form-card:hover),
+  .accountSettings :global(.provider-card:hover),
+  .accountSettings :global(.provider-action:hover),
+  .accountSettings :global(.form-submit:hover) {
+    transform: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .accountSettings :global(.form-card) {
+    border-width: 2px;
+    border-color: #000;
+  }
+
+  .accountSettings :global(.provider-card) {
+    border-width: 2px;
+    border-color: #000;
+  }
+
+  .accountSettings :global(.form-input) {
+    border-width: 2px;
+    border-color: #000;
   }
 }

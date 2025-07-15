@@ -6,7 +6,8 @@ import { InstagramIcon, X, Reply } from 'lucide-react'
 import { CommentIcon } from '@/icons/comment-icon'
 import { MessageIcon } from '@/icons/message-icon'
 import { motion } from 'framer-motion'
-import styles from './trigger-sidebar.module.css'
+import { SIDEBAR_ANIMATIONS, PURPLE_THEME, CLOSE_BUTTON_STYLES, HEADER_STYLES } from '../shared/animation-patterns'
+import { cn } from '@/lib/utils'
 import { LucideIcon } from 'lucide-react'
 import { useTriggerSelection } from '@/hooks/use-trigger-selection'
 
@@ -69,76 +70,114 @@ export const TriggerSidebar: React.FC<TriggerSidebarProps> = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <MotionSheetContent 
-        side="right" 
-        className={styles.sidebar}
-        initial={{ x: '100%', opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={{ x: '100%', opacity: 0 }}
-        transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+      <MotionSheetContent
+        showCloseButton={false}
+        side="right"
+        className={cn(
+          "p-6 w-[400px] top-0 h-screen",
+          PURPLE_THEME.glassBackground,
+          PURPLE_THEME.shadow,
+          PURPLE_THEME.border,
+          "border-l"
+        )}
+        {...SIDEBAR_ANIMATIONS.slideIn}
       >
+        {/* Gradient overlay */}
+        <div className={cn(
+          "absolute inset-0 pointer-events-none rounded-l-2xl",
+          PURPLE_THEME.gradientOverlay
+        )} />
+        
         <button 
           onClick={onClose} 
-          className={styles.closeButton}
+          className={cn(CLOSE_BUTTON_STYLES.base, "group")}
           aria-label="Close sidebar"
         >
-          <X className={styles.closeIcon} />
+          <X className={CLOSE_BUTTON_STYLES.icon} />
           <span className="sr-only">Close</span>
         </button>
-        <SheetHeader className={styles.header}>
-          <SheetTitle className={styles.title}>Select a trigger</SheetTitle>
-          <p className={styles.subtitle}>Pick one or more events to start this automation</p>
+        
+        <SheetHeader className={HEADER_STYLES.container}>
+          <SheetTitle className={HEADER_STYLES.title}>Select a trigger</SheetTitle>
+          <p className={HEADER_STYLES.subtitle}>Pick one or more events to start this automation</p>
         </SheetHeader>
 
         <motion.div 
-          className={styles.content}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          className="flex flex-col gap-8 relative z-10"
+          {...SIDEBAR_ANIMATIONS.contentFadeIn}
         >
-          <div className={styles.section}>
-            <h4 className={styles.sectionTitle}>
-              <InstagramIcon className={styles.sectionIcon} />
+          <div className="flex flex-col gap-4">
+            <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2">
+              <InstagramIcon className="w-4.5 h-4.5 text-gray-600" />
               INSTAGRAM
             </h4>
-            <div className={styles.options}>
+            <div className="flex flex-col gap-4">
               {dynamicTriggerOptions.map((option, index) => {
                 const isSelected = selectedTriggers.some(trigger => trigger.id === option.id)
                 return (
                   <MotionButton
                     key={option.id}
-                    className={`${styles.option} ${option.isDisabled ? styles.disabled : ''} ${isSelected ? styles.selected : ''}`}
+                    className={cn(
+                      "flex flex-col justify-center gap-1 p-3 rounded-2xl transition-all duration-200 text-left w-full relative overflow-hidden",
+                      PURPLE_THEME.glassBackground,
+                      PURPLE_THEME.border,
+                      !option.isDisabled && "hover:-translate-y-0.5 hover:shadow-lg",
+                      option.isDisabled && "opacity-60 cursor-not-allowed bg-gray-50/80",
+                      isSelected && "bg-purple-50/80 border-purple-300/60"
+                    )}
                     onClick={() => !option.isDisabled && handleTriggerSelect(option.id, option.name, option.icon)}
                     disabled={option.isDisabled}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 + index * 0.1 }}
-                    whileHover={!option.isDisabled ? { y: -2, transition: { duration: 0.2 } } : {}}
-                    whileTap={!option.isDisabled ? { y: -1 } : {}}
+                    {...SIDEBAR_ANIMATIONS.staggeredItem(index)}
+                    {...(!option.isDisabled ? SIDEBAR_ANIMATIONS.buttonHover : {})}
                     role="button"
                     aria-disabled={option.isDisabled}
                     aria-pressed={isSelected}
                   >
-                    <div className={styles.optionContent}>
-                      <div className={styles.optionInfo}>
-                        <option.icon className={styles.optionIcon} />
-                        <div className={styles.optionTextContent}>
-                          <span className={styles.optionName}>{option.name}</span>
-                          <span className={styles.optionDescription}>{option.description}</span>
+                    <div className="flex items-center justify-between w-full min-h-[2.25rem]">
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        <div className={cn(
+                          "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
+                          option.isDisabled 
+                            ? "bg-gray-100 border border-gray-200" 
+                            : isSelected 
+                              ? "bg-purple-100 border border-purple-300 text-purple-700"
+                              : cn(PURPLE_THEME.icon.background, PURPLE_THEME.icon.border)
+                        )}>
+                          <option.icon className={cn(
+                            "w-4.5 h-4.5 transition-all duration-200",
+                            option.isDisabled 
+                              ? "text-gray-400" 
+                              : isSelected 
+                                ? "text-purple-700" 
+                                : PURPLE_THEME.icon.text
+                          )} />
+                        </div>
+                        <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                          <span className={cn(
+                            "text-sm font-medium transition-colors duration-200",
+                            option.isDisabled 
+                              ? "text-gray-500" 
+                              : isSelected 
+                                ? "text-purple-800" 
+                                : "text-gray-800"
+                          )}>{option.name}</span>
+                          <span className="text-xs text-gray-500 font-normal truncate">
+                            {option.description}
+                          </span>
                         </div>
                       </div>
                       {option.isDisabled ? (
                         isSelected ? (
-                          <span className={styles.selectedBadge} aria-label="Selected">
+                          <span className="text-xs font-medium px-2 py-1 rounded-full bg-purple-100 border border-purple-300 text-purple-700 ml-2 flex-shrink-0" aria-label="Selected">
                             Selected
                           </span>
                         ) : (
-                          <span className={styles.comingSoon} aria-label="Coming Soon">
+                          <span className="text-xs font-medium px-2 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-600 ml-2 flex-shrink-0" aria-label="Coming Soon">
                             Coming Soon
                           </span>
                         )
                       ) : isSelected && (
-                        <span className={styles.selectedBadge} aria-label="Selected">
+                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-purple-100 border border-purple-300 text-purple-700 ml-2 flex-shrink-0" aria-label="Selected">
                           Selected
                         </span>
                       )}

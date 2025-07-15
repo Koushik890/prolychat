@@ -27,7 +27,7 @@ import { PlaceholderNode } from './nodes/placeholder-node'
 import { CustomEdge, customEdgeTypes } from './custom-edge'
 import { AutomationData, TriggerConfig, TriggerConfigurationStatus } from '@/types/automation'
 import { Button } from '@/components/ui/button'
-import { MessageSquare, Bot, Instagram } from 'lucide-react'
+import { MessageSquare, Bot, Instagram, MousePointer, Zap, Settings, Play, Monitor } from 'lucide-react'
 import { toast } from 'sonner'
 import { FlowConfigSidebar } from './flow-config-sidebar/index'
 import { ActionModal } from './action-modal'
@@ -36,6 +36,10 @@ import { getTriggerConfigComponent } from './trigger-configurations'
 import { useAutomationWorkflow, useAutomationSync } from '@/hooks/use-automations'
 import { useToast } from '@/contexts/toast-context'
 import { useQueryClient } from '@tanstack/react-query'
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
+import { motion } from "motion/react"
+import { cn } from "@/lib/utils"
 
 interface FlowBuilderProps {
   id: string
@@ -93,6 +97,105 @@ const getConfigurationStatus = (config?: TriggerConfig, triggerType?: string): T
   return 'unconfigured'
 }
 
+// Gradient Button Component
+const gradientButtonVariants = cva(
+  [
+    "gradient-button",
+    "inline-flex items-center justify-center",
+    "rounded-[11px] min-w-[132px] px-9 py-4",
+    "text-base leading-[19px] font-[500] text-white",
+    "font-sans font-bold",
+    "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+    "disabled:pointer-events-none disabled:opacity-50",
+  ],
+  {
+    variants: {
+      variant: {
+        default: "",
+        variant: "gradient-button-variant",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
+interface GradientButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof gradientButtonVariants> {
+  asChild?: boolean
+}
+
+const GradientButton = React.forwardRef<HTMLButtonElement, GradientButtonProps>(
+  ({ className, variant, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button"
+    return (
+      <Comp
+        className={cn(gradientButtonVariants({ variant, className }))}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+GradientButton.displayName = "GradientButton"
+
+// Animated Checkbox Component
+interface CheckBoxProps {
+  checked: boolean
+  onClick: () => void
+  size?: number
+  color?: string
+  duration?: number
+}
+
+const CheckBox = ({
+  checked,
+  onClick,
+  size = 16,
+  color = "#8b5cf6",
+  duration = 0.3,
+}: CheckBoxProps) => {
+  return (
+    <div className="select-none cursor-pointer" onClick={onClick}>
+      <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+        <motion.path
+          d="M 2.45 24.95 V 33.95 C 2.45 35.9382 4.0618 37.55 6.05 37.55 H 33.95 C 35.9382 37.55 37.55 35.9382 37.55 33.95 V 6.05 C 37.55 4.0618 35.9382 2.45 33.95 2.45 H 6.05 C 4.0618 2.45 2.45 4.0618 2.45 6.05 V 22.0617 C 2.45 23.0443 2.8516 23.9841 3.5616 24.6633 L 10.0451 30.8649 C 11.5404 32.2952 13.9308 32.1735 15.2731 30.5988 L 36.2 6.05"
+          stroke={color}
+          strokeLinecap="round"
+          strokeWidth={3}
+          animate={{
+            strokeDasharray: checked ? 150 : 132,
+            strokeDashoffset: checked ? -134 : 0,
+          }}
+          transition={{
+            duration,
+            ease: "easeInOut",
+          }}
+        />
+      </svg>
+    </div>
+  )
+}
+
+// Feature Item Component
+interface FeatureItemProps {
+  icon: React.ReactNode
+  text: string
+}
+
+const FeatureItem = ({ icon, text }: FeatureItemProps) => {
+  return (
+    <motion.div 
+      className="flex items-center gap-3 py-1"
+    >
+      <span className="text-gray-500">{icon}</span>
+      <span className="text-sm font-medium text-gray-700">{text}</span>
+    </motion.div>
+  )
+}
+
 const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
   const { data } = useQueryAutomation(id)
   const { showToast, hideToast } = useToast()
@@ -115,6 +218,38 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
   const { saveChanges } = useAutomationSync(id)
   const [triggerConfig, setTriggerConfig] = React.useState<Record<string, TriggerConfig>>({})
   const queryClient = useQueryClient()
+  
+  // Mobile detection and desktop mode toggle
+  const [isMobile, setIsMobile] = React.useState<boolean>(false)
+  const [forceDesktopMode, setForceDesktopMode] = React.useState<boolean>(false)
+
+  React.useEffect(() => {
+    // Check if we're on mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    // Check for stored desktop mode preference
+    const storedDesktopMode = localStorage.getItem(`flow-builder-desktop-mode-${id}`)
+    if (storedDesktopMode === 'true') {
+      setForceDesktopMode(true)
+    }
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [id])
+
+  // Save desktop mode preference
+  const toggleDesktopMode = React.useCallback(() => {
+    const newMode = !forceDesktopMode
+    setForceDesktopMode(newMode)
+    localStorage.setItem(`flow-builder-desktop-mode-${id}`, newMode.toString())
+  }, [forceDesktopMode, id])
+
+  // Determine if we should show mobile view
+  const showMobileView = isMobile && !forceDesktopMode
 
   // Add this near the top of the FlowBuilder component
   const memoizedNodes = React.useMemo(() => nodes, [nodes])
@@ -269,12 +404,12 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
       // Remove event listener
       window.removeEventListener('beforeunload', preventReload)
       
-      // Refetch data after a slight delay to ensure UI updates first
-      setTimeout(() => {
-        queryClient.invalidateQueries({ 
-          queryKey: ['automation-info', id]
-        })
-      }, 300)
+      // Skip expensive refetch for instant UI response
+      // setTimeout(() => {
+      //   queryClient.invalidateQueries({ 
+      //     queryKey: ['automation-info', id]
+      //   })
+      // }, 300)
     } catch (error) {
       console.error('Error removing trigger:', error)
       
@@ -301,10 +436,10 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
       hideToast()
       toast.error('Failed to remove trigger')
       
-      // Refetch to sync with database
-      queryClient.invalidateQueries({ 
-        queryKey: ['automation-info', id] 
-      })
+      // Skip expensive refetch for instant UI response
+      // queryClient.invalidateQueries({ 
+      //   queryKey: ['automation-info', id] 
+      // })
       
       // Remove event listener
       window.removeEventListener('beforeunload', preventReload)
@@ -365,12 +500,12 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
       setSelectedActions([])
       actionNodeStateRef.current = null
 
-      // Force immediate refetch to ensure UI and database are in sync
-      await queryClient.invalidateQueries({ 
-        queryKey: ['automation-info', id],
-        exact: true,
-        refetchType: 'all'
-      })
+      // Skip expensive refetch for instant UI response
+      // await queryClient.invalidateQueries({ 
+      //   queryKey: ['automation-info', id],
+      //   exact: true,
+      //   refetchType: 'all'
+      // })
 
       showToast('success', 'Action removed successfully', true)
     } catch (error) {
@@ -382,8 +517,8 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
       // Show error toast
       toast.error('Failed to remove action')
       
-      // Revert UI changes on error
-      queryClient.invalidateQueries({ queryKey: ['automation-info', id] })
+      // Skip expensive refetch for instant UI response
+      // queryClient.invalidateQueries({ queryKey: ['automation-info', id] })
     }
   }, [setNodes, setEdges, saveChanges, queryClient, id, showToast])
 
@@ -462,12 +597,12 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
       // Close the action modal
       setIsActionModalOpen(false)
 
-      // Force immediate refetch to ensure UI and database are in sync
-      await queryClient.invalidateQueries({ 
-        queryKey: ['automation-info', id],
-        exact: true,
-        refetchType: 'all'
-      })
+      // Skip expensive refetch for instant UI response
+      // await queryClient.invalidateQueries({ 
+      //   queryKey: ['automation-info', id],
+      //   exact: true,
+      //   refetchType: 'all'
+      // })
     } catch (error) {
       console.error('Error adding action:', error)
       
@@ -1171,8 +1306,119 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
     }
   }, [data, id, selectedTriggers.length]);
 
+  // Mobile view component - AutomationFlowBuilderCard
+  const MobileFlowBuilderView = React.useMemo(() => {
+    const features = [
+      {
+        key: 'dragDrop',
+        icon: <MousePointer size={12} />,
+        text: 'Drag & drop interface'
+      },
+      {
+        key: 'visualFlow',
+        icon: <Zap size={12} />,
+        text: 'Visual flow connections'
+      },
+      {
+        key: 'triggerConfig',
+        icon: <Settings size={12} />,
+        text: 'Advanced trigger configuration'
+      },
+      {
+        key: 'realTimeTesting',
+        icon: <Play size={12} />,
+        text: 'Real-time testing'
+      }
+    ]
+
+    return (
+      <div className="w-full h-full flex items-center justify-center p-4 bg-gray-50">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="relative max-w-sm mx-auto bg-white border border-gray-200 rounded-3xl p-8 shadow-xl"
+        >
+          {/* Content */}
+          <div className="relative z-10 space-y-8">
+            {/* Header */}
+            <div className="space-y-4 text-center">
+              <motion.h2 
+                className="text-lg font-semibold text-gray-900 tracking-tight"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+              >
+                Automation Flow Builder
+              </motion.h2>
+              <motion.p 
+                className="text-sm text-gray-600 leading-relaxed max-w-xs mx-auto"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+              >
+                Create powerful automation workflows with our intuitive visual builder. 
+                Design complex processes with simple drag-and-drop actions.
+              </motion.p>
+            </div>
+
+            {/* Feature Checklist */}
+            <motion.div 
+              className="space-y-3"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+            >
+              {features.map((feature, index) => (
+                <motion.div
+                  key={feature.key}
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ 
+                    delay: 0.5 + index * 0.08, 
+                    duration: 0.4,
+                    ease: [0.16, 1, 0.3, 1]
+                  }}
+                >
+                  <FeatureItem
+                    icon={feature.icon}
+                    text={feature.text}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* Action Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="pt-2"
+            >
+              <GradientButton onClick={toggleDesktopMode} className="w-full text-sm py-3 flex items-center justify-center gap-2">
+                <Monitor size={14} />
+                Enable Desktop Mode
+              </GradientButton>
+            </motion.div>
+
+            {/* Info Text */}
+            <motion.p 
+              className="text-xs text-gray-500 text-center leading-relaxed"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.0, duration: 0.5 }}
+            >
+              Desktop mode provides enhanced features and better performance for complex workflows.
+            </motion.p>
+          </div>
+        </motion.div>
+      </div>
+    )
+  }, [toggleDesktopMode])
+
   return (
     <div className="absolute inset-0">
+      {showMobileView ? MobileFlowBuilderView : (
       <ReactFlow
         nodes={memoizedNodes}
         edges={memoizedEdges}
@@ -1183,10 +1429,10 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView
-        fitViewOptions={{ padding: 0.2 }}
+          fitViewOptions={{ padding: 0.1, minZoom: 0.3, maxZoom: 1.5 }}
         className="w-full h-full bg-gray-50"
-        minZoom={0.5}
-        maxZoom={2}
+          minZoom={0.3}
+          maxZoom={1.5}
         defaultEdgeOptions={{
           type: 'custom',
           animated: true,
@@ -1198,8 +1444,20 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
             height: 20
           }
         }}
-        defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+          defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
         proOptions={proOptions}
+          nodesDraggable={true}
+          nodesConnectable={true}
+          elementsSelectable={true}
+          panOnDrag={true}
+          panOnScroll={true}
+          panOnScrollSpeed={0.5}
+          zoomOnScroll={true}
+          zoomOnPinch={true}
+          zoomOnDoubleClick={false}
+          selectNodesOnDrag={false}
+          deleteKeyCode={null}
+          multiSelectionKeyCode={null}
       >
         <Background 
           color="#64748b"
@@ -1209,7 +1467,7 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
           className="opacity-50"
         />
         <Controls 
-          className="!left-4 flex flex-col gap-0.5"
+            className="!left-2 !bottom-2 sm:!left-4 sm:!bottom-4 flex flex-col gap-0.5"
           showInteractive={false}
           style={{
             backgroundColor: 'white',
@@ -1220,14 +1478,29 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
           }}
         />
         <MiniMap 
-          className="bg-white border shadow-sm !bottom-4 !right-4"
+            className="bg-white border shadow-sm !bottom-2 !right-2 sm:!bottom-4 sm:!right-4 hidden sm:block"
           nodeColor="#94a3b8"
           nodeStrokeColor="#64748b"
           nodeStrokeWidth={2}
           maskColor="rgba(240, 240, 240, 0.6)"
-          style={{ width: 120, height: 80 }}
-        />
+            style={{ width: 100, height: 70 }}
+          />
+          
+          {/* Mobile View Toggle - Show when in desktop mode on mobile */}
+          {isMobile && forceDesktopMode && (
+            <Panel position="top-right" className="m-2">
+              <Button
+                onClick={toggleDesktopMode}
+                variant="outline"
+                size="sm"
+                className="bg-white border border-gray-300 shadow-sm text-xs px-3 py-2"
+              >
+                📱 Mobile View
+              </Button>
+            </Panel>
+          )}
       </ReactFlow>
+      )}
 
       {/* Flow Config Sidebar */}
       <FlowConfigSidebar
@@ -1271,4 +1544,194 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
   )
 }
 
-export default FlowBuilder
+export default function FlowBuilderWithStyles(props: FlowBuilderProps) {
+  return (
+    <>
+      <FlowBuilder {...props} />
+      <style jsx global>{`
+        @property --pos-x {
+          syntax: '<percentage>';
+          initial-value: 11.14%;
+          inherits: false;
+        }
+
+        @property --pos-y {
+          syntax: '<percentage>';
+          initial-value: 140%;
+          inherits: false;
+        }
+
+        @property --spread-x {
+          syntax: '<percentage>';
+          initial-value: 150%;
+          inherits: false;
+        }
+
+        @property --spread-y {
+          syntax: '<percentage>';
+          initial-value: 180.06%;
+          inherits: false;
+        }
+
+        @property --color-1 {
+          syntax: '<color>';
+          initial-value: #000;
+          inherits: false;
+        }
+
+        @property --color-2 {
+          syntax: '<color>';
+          initial-value: #08012c;
+          inherits: false;
+        }
+
+        @property --color-3 {
+          syntax: '<color>';
+          initial-value: #4e1e40;
+          inherits: false;
+        }
+
+        @property --color-4 {
+          syntax: '<color>';
+          initial-value: #70464e;
+          inherits: false;
+        }
+
+        @property --color-5 {
+          syntax: '<color>';
+          initial-value: #88394c;
+          inherits: false;
+        }
+
+        @property --border-angle {
+          syntax: '<angle>';
+          initial-value: 20deg;
+          inherits: true;
+        }
+
+        @property --border-color-1 {
+          syntax: '<color>';
+          initial-value: hsla(340, 75%, 60%, 0.2);
+          inherits: true;
+        }
+
+        @property --border-color-2 {
+          syntax: '<color>';
+          initial-value: hsla(340, 75%, 40%, 0.75);
+          inherits: true;
+        }
+
+        @property --stop-1 {
+          syntax: '<percentage>';
+          initial-value: 37.35%;
+          inherits: false;
+        }
+
+        @property --stop-2 {
+          syntax: '<percentage>';
+          initial-value: 61.36%;
+          inherits: false;
+        }
+
+        @property --stop-3 {
+          syntax: '<percentage>';
+          initial-value: 78.42%;
+          inherits: false;
+        }
+
+        @property --stop-4 {
+          syntax: '<percentage>';
+          initial-value: 89.52%;
+          inherits: false;
+        }
+
+        @property --stop-5 {
+          syntax: '<percentage>';
+          initial-value: 100%;
+          inherits: false;
+        }
+
+        .gradient-button {
+          position: relative;
+          appearance: none;
+          cursor: pointer;
+          background: radial-gradient(
+            var(--spread-x) var(--spread-y) at var(--pos-x) var(--pos-y),
+            var(--color-1) var(--stop-1),
+            var(--color-2) var(--stop-2),
+            var(--color-3) var(--stop-3),
+            var(--color-4) var(--stop-4),
+            var(--color-5) var(--stop-5)
+          );
+          transition:
+            --pos-x 0.5s,
+            --pos-y 0.5s,
+            --spread-x 0.5s,
+            --spread-y 0.5s,
+            --color-1 0.5s,
+            --color-2 0.5s,
+            --color-3 0.5s,
+            --color-4 0.5s,
+            --color-5 0.5s,
+            --border-angle 0.5s,
+            --border-color-1 0.5s,
+            --border-color-2 0.5s,
+            --stop-1 0.5s,
+            --stop-2 0.5s,
+            --stop-3 0.5s,
+            --stop-4 0.5s,
+            --stop-5 0.5s;
+        }
+
+        .gradient-button::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          padding: 1px;
+          background: linear-gradient(
+            var(--border-angle),
+            var(--border-color-1),
+            var(--border-color-2)
+          );
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask-composite: exclude;
+          pointer-events: none;
+        }
+
+        .gradient-button:hover {
+          --pos-x: 0%;
+          --pos-y: 91.51%;
+          --spread-x: 120.24%;
+          --spread-y: 103.18%;
+          --color-1: #c96287;
+          --color-2: #c66c64;
+          --color-3: #cc7d23;
+          --color-4: #37140a;
+          --color-5: #000;
+          --border-angle: 190deg;
+          --border-color-1: hsla(340, 78%, 90%, 0.1);
+          --border-color-2: hsla(340, 75%, 90%, 0.6);
+          --stop-1: 0%;
+          --stop-2: 8.8%;
+          --stop-3: 21.44%;
+          --stop-4: 71.34%;
+          --stop-5: 85.76%;
+        }
+
+        .glass-effect {
+          background: rgba(0, 0, 0, 0.1);
+          background: repeating-radial-gradient(
+            circle at 50% 50%,
+            rgb(255 255 255 / 0),
+            rgba(255, 255, 255, 0.1) 10px,
+            rgb(255 255 255 / 0.05) 31px
+          );
+          filter: url(#fractal-noise-glass);
+          background-size: 6px 6px;
+          backdrop-filter: blur(0px);
+        }
+      `}</style>
+    </>
+  )
+}

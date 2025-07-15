@@ -83,7 +83,8 @@ export const DashboardLayoutContent = ({ children, slug }: ContentProps) => {
             <main 
               className={cn(
                 "flex-1 min-h-screen w-full transition-all duration-300 no-scrollbar",
-                isCollapsed ? "pl-[72px]" : "pl-[250px]",
+                "pl-0 lg:pl-[250px]",
+                isCollapsed && "lg:pl-[72px]",
                 isContactsPage && "overflow-hidden"
               )}
               style={isContactsPage ? { height: '100vh', overflow: 'hidden' } : {}}

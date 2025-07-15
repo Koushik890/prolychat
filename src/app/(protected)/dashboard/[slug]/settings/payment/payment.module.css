@@ -3,24 +3,45 @@
   position: relative;
   height: 100vh;
   overflow: hidden;
-  margin: -2rem;
-  margin-top: -2rem;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+}
+
+/* Desktop approach with sidebar considerations - ensure full width coverage */
+@media (min-width: 1024px) {
+  .paymentPageContainer {
+    margin: -2rem;
+    margin-top: -2rem;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    position: relative;
+    left: 0;
+    right: 0;
+  }
 }
 
 /* Sticky header container */
 .stickyHeaderContainer {
   position: fixed;
   top: 0;
-  left: 250px; /* Account for expanded sidebar width */
+  left: 0;
   right: 0;
   z-index: 50;
-  /* Remove background here - let the header component handle it */
   transition: all 0.2s ease-in-out;
 }
 
-/* When sidebar is collapsed - adjust sticky header position */
-body[data-sidebar-collapsed="true"] .stickyHeaderContainer {
-  left: 72px; /* Account for collapsed sidebar width */
+/* Desktop sidebar positioning */
+@media (min-width: 1024px) {
+  .stickyHeaderContainer {
+    left: 250px; /* Account for expanded sidebar width */
+  }
+  
+  /* When sidebar is collapsed - adjust sticky header position */
+  body[data-sidebar-collapsed="true"] .stickyHeaderContainer {
+    left: 72px; /* Account for collapsed sidebar width */
+  }
 }
 
 /* Scrollable content container */
@@ -28,41 +49,104 @@ body[data-sidebar-collapsed="true"] .stickyHeaderContainer {
   height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-top: var(--header-height, 120px);
   scroll-behavior: smooth;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  background-color: white;
 }
 
-/* Auto-adjust padding based on actual header height */
-.scrollableContent::before {
-  content: '';
-  display: block;
-  height: 0;
+/* Desktop scrollable content full coverage */
+@media (min-width: 1024px) {
+  .scrollableContent {
+    width: 100vw;
+    background-color: white;
+    position: relative;
+    margin: 0;
+    padding: 0;
+  }
 }
 
+/* Pricing section - mobile-first approach with full background coverage */
 .pricingSection {
   width: 100vw;
   position: relative;
+  margin: 0;
   margin-left: calc(-50vw + 50%);
-  margin-top: 0;
+  background-color: white;
+  left: 0;
+  right: 0;
 }
 
-/* When sidebar is expanded (default state) */
+/* Desktop full coverage fix */
+@media (min-width: 1024px) {
+  .pricingSection {
+    width: 100vw;
+    position: relative;
+    margin: 0;
+    margin-left: calc(-50vw + 50%);
+    background-color: white;
+    left: 0;
+    right: 0;
+    min-height: 100vh;
+  }
+}
+
+/* Mobile-first padding for pricing content */
 .pricingSection .pricingContent {
-  padding-left: 125px; /* Half of 250px sidebar width for centering */
-  padding-right: 125px;
+  padding: 0 1rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* When sidebar is collapsed - target body with data-sidebar-collapsed attribute */
-body[data-sidebar-collapsed="true"] .pricingSection .pricingContent {
-  padding-left: 36px; /* Half of 72px collapsed sidebar width for centering */
-  padding-right: 36px;
+@media (min-width: 640px) {
+  .pricingSection .pricingContent {
+    padding: 0 2rem;
+  }
+}
+
+/* Desktop sidebar adjustments */
+@media (min-width: 1024px) {
+  /* When sidebar is expanded (default state) */
+  .pricingSection .pricingContent {
+    padding-left: 125px; /* Half of 250px sidebar width for centering */
+    padding-right: 125px;
+  }
+
+  /* When sidebar is collapsed */
+  body[data-sidebar-collapsed="true"] .pricingSection .pricingContent {
+    padding-left: 36px; /* Half of 72px collapsed sidebar width for centering */
+    padding-right: 36px;
+  }
 }
 
 .pricingContainer {
-  min-height: calc(100vh - 120px);
+  min-height: 100vh;
   width: 100%;
   background-color: white;
   color: rgb(31 41 55);
+  position: relative;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Ensure consistent full height coverage across all breakpoints */
+@media (min-width: 640px) {
+  .pricingContainer {
+    min-height: 100vh;
+  }
+}
+
+@media (min-width: 1024px) {
+  .pricingContainer {
+    min-height: 100vh;
+    width: 100vw;
+    background-color: white;
+    position: relative;
+    margin: 0;
+    padding: 0;
+  }
 }
 
 .pricingInner {
@@ -71,19 +155,272 @@ body[data-sidebar-collapsed="true"] .pricingSection .pricingContent {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1rem;
+  padding: calc(var(--header-height, 80px) + 1.5rem) 0.5rem 1.5rem;
   min-height: 100%;
-  padding-bottom: 2rem;
   transition: padding-left 300ms ease, padding-right 300ms ease;
+}
+
+/* Responsive padding for pricing inner */
+@media (min-width: 480px) {
+  .pricingInner {
+    padding: calc(var(--header-height, 80px) + 1.5rem) 1rem 1.5rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .pricingInner {
+    padding: calc(var(--header-height, 100px) + 2rem) 1rem 2rem;
+  }
 }
 
 @media (min-width: 768px) {
   .pricingInner {
-    padding: 3rem 1rem 2rem;
+    padding: calc(var(--header-height, 100px) + 3rem) 1rem 2rem;
   }
 }
 
-/* Ensure smooth scrolling on all browsers */
+@media (min-width: 1024px) {
+  .pricingInner {
+    padding: calc(var(--header-height, 120px) + 3rem) 1rem 2rem;
+  }
+}
+
+/* Mobile-specific typography utilities */
+.mobileHeading {
+  font-size: 1.875rem; /* 30px */
+  line-height: 2.25rem; /* 36px */
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 480px) {
+  .mobileHeading {
+    font-size: 2.25rem; /* 36px */
+    line-height: 2.5rem; /* 40px */
+  }
+}
+
+@media (min-width: 640px) {
+  .mobileHeading {
+    font-size: 2.5rem; /* 40px */
+    line-height: 1;
+  }
+}
+
+@media (min-width: 768px) {
+  .mobileHeading {
+    font-size: 3rem; /* 48px */
+    line-height: 1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mobileHeading {
+    font-size: 3.75rem; /* 60px */
+    line-height: 1;
+  }
+}
+
+.mobileSubheading {
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.5rem; /* 24px */
+  color: rgb(107 114 128);
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding: 0 1rem;
+}
+
+@media (min-width: 480px) {
+  .mobileSubheading {
+    font-size: 1rem; /* 16px */
+    line-height: 1.625rem; /* 26px */
+  }
+}
+
+@media (min-width: 640px) {
+  .mobileSubheading {
+    font-size: 1.125rem; /* 18px */
+    line-height: 2rem; /* 32px */
+    margin-bottom: 2rem;
+  }
+}
+
+/* Mobile-optimized button styling */
+.mobileBillingToggle {
+  display: inline-flex;
+  background-color: rgb(243 244 246);
+  padding: 0.25rem;
+  border-radius: 9999px;
+  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 20rem;
+}
+
+@media (min-width: 480px) {
+  .mobileBillingToggle {
+    width: auto;
+  }
+}
+
+.mobileBillingButton {
+  border-radius: 9999px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  flex: 1;
+  min-height: 44px; /* Touch target requirement */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease-in-out;
+}
+
+@media (min-width: 480px) {
+  .mobileBillingButton {
+    flex: none;
+    padding: 0.5rem 1.5rem;
+  }
+}
+
+/* Mobile-responsive pricing cards */
+.pricingCards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 2rem;
+}
+
+@media (min-width: 640px) {
+  .pricingCards {
+    gap: 2rem;
+    max-width: 32rem; /* 512px */
+  }
+}
+
+@media (min-width: 1024px) {
+  .pricingCards {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 64rem; /* 1024px */
+  }
+}
+
+/* Mobile-optimized pricing card */
+.pricingCard {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border-radius: 1rem;
+  border: 1px solid rgb(229 231 235);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  min-height: 400px;
+}
+
+.pricingCardHighlighted {
+  border: 2px solid rgb(147 51 234);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.pricingCardHeader {
+  padding: 1.5rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .pricingCardHeader {
+    padding: 1.5rem;
+  }
+}
+
+.pricingCardContent {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0 1rem 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .pricingCardContent {
+    padding: 0 1.5rem 1.5rem;
+  }
+}
+
+/* Mobile-optimized pricing display */
+.pricingDisplay {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.pricingAmount {
+  font-size: 2.5rem; /* 40px */
+  font-weight: 700;
+  color: rgb(17 24 39);
+  line-height: 1;
+}
+
+@media (min-width: 640px) {
+  .pricingAmount {
+    font-size: 3rem; /* 48px */
+  }
+}
+
+/* Mobile-optimized action buttons */
+.pricingButton {
+  width: 100%;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  min-height: 44px; /* Touch target requirement */
+  border-radius: 0.5rem;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Mobile-optimized feature list */
+.featureList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.featureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  color: rgb(107 114 128);
+}
+
+@media (min-width: 640px) {
+  .featureItem {
+    font-size: 1rem;
+    line-height: 1.625rem;
+  }
+}
+
+.featureIcon {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background-color: rgb(243 232 255);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.125rem;
+}
+
+/* Smooth scrolling and touch optimization */
 .scrollableContent {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
@@ -107,10 +444,106 @@ body[data-sidebar-collapsed="true"] .pricingSection .pricingContent {
   background-color: rgba(156, 163, 175, 0.8);
 }
 
-/* Handle mobile view where sidebar becomes an overlay */
-@media (max-width: 768px) {
-  .stickyHeaderContainer {
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .pricingButton:hover {
+    transform: none;
+  }
+  
+  .mobileBillingButton:hover {
+    background-color: inherit;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .pricingInner,
+  .pricingButton,
+  .mobileBillingButton {
+    transition: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .pricingCard {
+    border: 2px solid rgb(0 0 0);
+  }
+  
+  .pricingCardHighlighted {
+    border: 3px solid rgb(147 51 234);
+  }
+}
+
+/* Mobile-specific full viewport coverage */
+@media (max-width: 767px) {
+  .paymentPageContainer {
+    position: fixed;
+    top: 0;
     left: 0;
     right: 0;
+    bottom: 0;
+    width: 100vw;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .pricingSection {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    margin: 0;
+    padding: 0;
+    background-color: white;
+  }
+  
+  .scrollableContent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* Large screen background coverage fix - aggressive approach to prevent gaps */
+@media (min-width: 1024px) {
+  .paymentPageContainer::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: white;
+    z-index: -1;
+  }
+  
+  .pricingSection::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: white;
+    z-index: -1;
+  }
+  
+  /* Ensure full viewport coverage for all elements */
+  .paymentPageContainer,
+  .scrollableContent,
+  .pricingSection,
+  .pricingContainer {
+    background-color: white !important;
   }
 } 

@@ -165,7 +165,6 @@ export function CardConfigModal({
         showToast('loading', 'Saving card', true)
         window.addEventListener('beforeunload', preventReload)
 
-        await new Promise(resolve => setTimeout(resolve, 1500))
         await onSave(cardData)
 
         window.removeEventListener('beforeunload', preventReload)
@@ -173,7 +172,7 @@ export function CardConfigModal({
       } catch (error) {
         window.removeEventListener('beforeunload', preventReload)
         console.error('Error saving card:', error)
-        showToast('loading', 'Failed to save card', true)
+        showToast('error', 'Failed to save card', true)
       }
     }
   }

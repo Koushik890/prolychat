@@ -5,7 +5,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { X, Zap, LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
-import styles from './flow-config-sidebar.module.css'
+import { SIDEBAR_ANIMATIONS, PURPLE_THEME, CLOSE_BUTTON_STYLES, HEADER_STYLES } from '../shared/animation-patterns'
+import { cn } from '@/lib/utils'
 
 interface FlowConfigSidebarProps {
   isOpen: boolean
@@ -47,67 +48,78 @@ export const FlowConfigSidebar: React.FC<FlowConfigSidebarProps> = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={handleClose}>
-      <MotionSheetContent 
-        side="right" 
-        className={styles.sidebar}
-        initial={{ x: '100%', opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={{ x: '100%', opacity: 0 }}
-        transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+      <MotionSheetContent
+        showCloseButton={false}
+        side="right"
+        className={cn(
+          'p-6 w-[420px] top-0 h-screen flex flex-col overflow-hidden',
+          PURPLE_THEME.glassBackground,
+          PURPLE_THEME.shadow,
+          PURPLE_THEME.border,
+          "border-l"
+        )}
+        {...SIDEBAR_ANIMATIONS.slideIn}
       >
+        {/* Gradient overlay */}
+        <div className={cn(
+          "absolute inset-0 pointer-events-none rounded-l-2xl",
+          PURPLE_THEME.gradientOverlay
+        )} />
+        
         <button 
           type="button"
           onClick={handleClose} 
-          className={styles.closeButton}
+          className={cn(CLOSE_BUTTON_STYLES.base, "group")}
           aria-label="Close sidebar"
         >
-          <X className={styles.closeIcon} />
+          <X className={CLOSE_BUTTON_STYLES.icon} />
           <span className="sr-only">Close</span>
         </button>
-        <SheetHeader className={styles.header}>
-          <SheetTitle className={styles.title}>Configure Triggers</SheetTitle>
-          <p className={styles.subtitle}>Set up your automation triggers and next steps</p>
+        
+        <SheetHeader className={HEADER_STYLES.container}>
+          <SheetTitle className={HEADER_STYLES.title}>Configure Triggers</SheetTitle>
+          <p className={HEADER_STYLES.subtitle}>Set up your automation triggers and next steps</p>
         </SheetHeader>
 
         <motion.div 
-          className={styles.content}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          className="flex flex-col gap-8 relative z-10"
+          {...SIDEBAR_ANIMATIONS.contentFadeIn}
         >
           {/* When Section */}
-          <div className={styles.section}>
-            <h4 className={styles.sectionTitle}>
-              <Zap className={styles.sectionIcon} />
+          <div className="flex flex-col gap-4">
+            <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2">
+              <Zap className="w-4.5 h-4.5 text-gray-600" />
               WHEN
             </h4>
-            <div className={styles.selectedTriggers}>
+            <div className="flex flex-col gap-3">
               {selectedTriggers.map((trigger, index) => (
                 <motion.div
                   key={trigger.id}
-                  className={styles.selectedTriggerContainer}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 + index * 0.05 }}
+                  className={cn(
+                    "flex items-center justify-between p-3 rounded-xl transition-all duration-200 cursor-pointer",
+                    "bg-purple-50/80 hover:bg-purple-100/80 border border-purple-200/40 hover:border-purple-300/60"
+                  )}
+                  {...SIDEBAR_ANIMATIONS.staggeredItem(index)}
                   onClick={() => handleTriggerClick(trigger)}
+                  {...SIDEBAR_ANIMATIONS.scaleOnHover}
                 >
-                  <div className={styles.selectedTriggerContent}>
-                    <div className={styles.triggerIconWrapper}>
-                      <trigger.icon className={styles.triggerIcon} />
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="w-8 h-8 rounded-lg bg-purple-100 border border-purple-300 flex items-center justify-center">
+                      <trigger.icon className="w-4.5 h-4.5 text-purple-700" />
                     </div>
-                    <div className={styles.triggerTextContent}>
-                      <span className={styles.triggerTitle}>{trigger.name}</span>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-sm font-medium text-purple-800">{trigger.name}</span>
                     </div>
                   </div>
                   <button 
-                    className={styles.removeTriggerButton}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 bg-white/80 border border-gray-200 hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all duration-200"
                     onClick={(e) => {
                       e.stopPropagation()
                       onTriggerRemove(trigger.id)
                     }}
                     aria-label={`Remove ${trigger.name} trigger`}
                   >
-                    <X className={styles.removeTriggerIcon} />
+                    <X className="w-4 h-4 transition-transform duration-200 hover:rotate-90" />
                   </button>
                 </motion.div>
               ))}
@@ -115,44 +127,45 @@ export const FlowConfigSidebar: React.FC<FlowConfigSidebarProps> = ({
             {selectedTriggers.length === 0 && (
               <Button
                 variant="ghost"
-                className={styles.triggerButton}
+                className={cn(
+                  "w-full h-11 border-2 border-dashed border-purple-300/50 bg-purple-50/30 hover:bg-purple-100/50 hover:border-purple-400/70 rounded-xl transition-all duration-300 text-purple-700 hover:text-purple-800 font-semibold relative overflow-hidden"
+                )}
                 onClick={onNewTrigger}
               >
-                <div className={styles.triggerButtonContent}>
-                  + New Trigger
-                </div>
+                <span className="relative z-10">+ New Trigger</span>
               </Button>
             )}
           </div>
 
           {/* Then Section */}
-          <div className={styles.section}>
-            <h4 className={styles.sectionTitle}>
+          <div className="flex flex-col gap-4">
+            <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2">
               THEN
             </h4>
-            <div className={styles.selectedTriggers}>
+            <div className="flex flex-col gap-3">
               {selectedActions.map((action, index) => (
                 <motion.div
                   key={action.id}
-                  className={styles.selectedTriggerContainer}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 + index * 0.05 }}
+                  className={cn(
+                    "flex items-center justify-between p-3 rounded-xl transition-all duration-200",
+                    "bg-purple-50/80 hover:bg-purple-100/80 border border-purple-200/40 hover:border-purple-300/60"
+                  )}
+                  {...SIDEBAR_ANIMATIONS.staggeredItem(index)}
                 >
-                  <div className={styles.selectedTriggerContent}>
-                    <div className={styles.triggerIconWrapper}>
-                      <action.icon className={styles.triggerIcon} />
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="w-8 h-8 rounded-lg bg-purple-100 border border-purple-300 flex items-center justify-center">
+                      <action.icon className="w-4.5 h-4.5 text-purple-700" />
                     </div>
-                    <div className={styles.triggerTextContent}>
-                      <span className={styles.triggerTitle}>{action.name}</span>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-sm font-medium text-purple-800">{action.name}</span>
                     </div>
                   </div>
                   <button 
-                    className={styles.removeTriggerButton}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 bg-white/80 border border-gray-200 hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all duration-200"
                     onClick={() => onActionRemove(action.id)}
                     aria-label={`Remove ${action.name} action`}
                   >
-                    <X className={styles.removeTriggerIcon} />
+                    <X className="w-4 h-4 transition-transform duration-200 hover:rotate-90" />
                   </button>
                 </motion.div>
               ))}
@@ -160,12 +173,12 @@ export const FlowConfigSidebar: React.FC<FlowConfigSidebarProps> = ({
             {showChooseNextStep && (
               <Button
                 variant="ghost"
-                className={styles.nextStepButton}
+                className={cn(
+                  "w-full h-11 border-2 border-dashed border-purple-300/50 bg-purple-50/30 hover:bg-purple-100/50 hover:border-purple-400/70 rounded-xl transition-all duration-300 text-purple-700 hover:text-purple-800 font-semibold"
+                )}
                 onClick={onChooseNextStep}
               >
-                <span className={styles.nextStepButtonContent}>
-                  Choose Next Step
-                </span>
+                <span>Choose Next Step</span>
               </Button>
             )}
           </div>
