@@ -57,7 +57,7 @@ const ActivateAutomationButton = ({ id }: Props) => {
         queryClient.setQueryData(['automation-info', id], context.previousAutomationData)
       }
       hideToast()
-      showToast('loading', err.message || 'Failed to update automation status') // 'loading' type to show error style
+      showToast('error', err.message || 'Failed to update automation status')
     },
     onSettled: () => {
       // Invalidate again to be sure we have the latest data

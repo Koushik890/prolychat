@@ -283,7 +283,7 @@ export function KeywordConfigurationModal({
         // Remove reload prevention on error
         window.removeEventListener('beforeunload', preventReload)
         console.error('Error saving keywords:', error)
-        showToast('loading', 'Failed to save keywords', true)
+        showToast('error', 'Failed to save keywords', true)
       } finally {
         setIsLoading(false)
       }

@@ -17,8 +17,8 @@ import { Prisma } from '@prisma/client'
  */
 export async function withDatabaseRetry<T>(
   operation: () => Promise<T>,
-  maxRetries = 0,
-  initialDelay = 10
+  maxRetries = 5,
+  initialDelay = 300
 ): Promise<T> {
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {

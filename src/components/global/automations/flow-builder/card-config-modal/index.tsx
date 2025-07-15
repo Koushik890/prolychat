@@ -172,7 +172,7 @@ export function CardConfigModal({
       } catch (error) {
         window.removeEventListener('beforeunload', preventReload)
         console.error('Error saving card:', error)
-        showToast('loading', 'Failed to save card', true)
+        showToast('error', 'Failed to save card', true)
       }
     }
   }

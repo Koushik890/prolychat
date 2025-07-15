@@ -285,7 +285,7 @@ export function TextConfigModal({
         // Remove reload prevention on error
         window.removeEventListener('beforeunload', preventReload)
         console.error('Error saving message:', error)
-        showToast('loading', 'Failed to save message', true)
+        showToast('error', 'Failed to save message', true)
       } finally {
         setIsLoading(false)
       }
