@@ -241,7 +241,7 @@ export function ReplyMessageModal({
           >
             <div className="flex justify-between items-start w-full">
               <div className="flex-1 min-w-0">
-                <DialogTitle className="text-2xl font-bold text-purple-900 mb-2 tracking-tight bg-gradient-to-br from-purple-900 to-purple-600 bg-clip-text text-transparent pr-2">
+                <DialogTitle className="text-2xl font-bold text-purple-900 mb-2 tracking-tight bg-gradient-to-br from-purple-900 to-purple-600 bg-clip-text text-transparent pr-2 font-hubot">
                   Would you like to set up Public Reply in the feed?
                 </DialogTitle>
               </div>
@@ -341,7 +341,7 @@ export function ReplyMessageModal({
                         </div>
                       ) : (
                         <div className="flex justify-between items-center gap-3">
-                          <p className="flex-1 text-purple-800 font-medium">
+                          <p className="flex-1 text-purple-800 font-medium font-mona">
                             {reply.message}
                           </p>
                           <div className="flex gap-1 opacity-0 group-hover/reply:opacity-100 transition-opacity duration-200">
@@ -453,7 +453,7 @@ export function ReplyMessageModal({
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <p className="text-purple-600 font-medium text-center">+ New Reply</p>
+                      <p className="text-purple-600 font-medium text-center font-mona">+ New Reply</p>
                     </motion.div>
                   )}
                 </div>

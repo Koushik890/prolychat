@@ -290,10 +290,10 @@ export function CardConfigModal({
           )}>
             <div className="flex justify-between items-start">
               <div className="flex-1 pr-4">
-                <DialogTitle className="text-xl font-semibold tracking-tight bg-gradient-to-br from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                <DialogTitle className="text-xl font-semibold tracking-tight bg-gradient-to-br from-gray-900 to-gray-600 bg-clip-text text-transparent font-hubot">
                   Configure Card
                 </DialogTitle>
-                <DialogDescription className="text-[14px] text-gray-600 mt-1.5 leading-relaxed">
+                <DialogDescription className="text-[14px] text-gray-600 mt-1.5 leading-relaxed font-mona">
                   Create an interactive card with image, title, subtitle, and optional button
                 </DialogDescription>
               </div>

@@ -11,11 +11,19 @@ import { manuallyConnectInstagram } from './manual-connect'
 export { manuallyConnectInstagram }
 
 export const onOauthInstagram = async (strategy: 'INSTAGRAM' | 'CRM') => {
+    console.log('🔗 onOauthInstagram called with strategy:', strategy);
+    
     if (strategy === 'INSTAGRAM') {
         const oauthUrl = process.env.INSTAGRAM_EMBEDDED_OAUTH_URL;
+        console.log('🔑 Instagram OAuth URL configured:', !!oauthUrl);
+        console.log('🌐 OAuth URL:', oauthUrl);
+        
         if (!oauthUrl) {
+            console.error('❌ Instagram OAuth URL is not configured');
             throw new Error('Instagram OAuth URL is not configured');
         }
+        
+        console.log('📍 Redirecting to Instagram OAuth...');
         return redirect(oauthUrl);
     }
 }

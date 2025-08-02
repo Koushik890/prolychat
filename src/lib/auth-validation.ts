@@ -1,150 +1,92 @@
-import axios from 'axios'
-import { updateIntegration } from '@/actions/integrations/queries'
+import prisma from '@/lib/prisma'
 
 /**
- * Validates an Instagram access token by making a test API call
+ * Token health status types
  */
-export async function validateInstagramToken(token: string): Promise<{
+export type TokenHealthStatus = 'healthy' | 'warning' | 'expired' | 'invalid'
+
+export interface TokenHealth {
+  status: TokenHealthStatus
+  message: string
+  needsRefresh: boolean
+  daysUntilExpiration: number | null
+}
+
+export interface InstagramConfig {
   isValid: boolean
-  userId?: string
-  error?: string
-}> {
-  try {
-    if (!token || token.trim() === '') {
-      return { isValid: false, error: 'Token is empty' }
-    }
-
-    // Test the token by fetching user info
-    const response = await axios.get(
-      `${process.env.INSTAGRAM_BASE_URL}/me?fields=user_id&access_token=${token}`,
-      { timeout: 10000 }
-    )
-
-    if (response.data?.user_id) {
-      return { 
-        isValid: true, 
-        userId: response.data.user_id 
-      }
-    }
-
-    return { isValid: false, error: 'Invalid token response' }
-  } catch (error) {
-    console.error('Token validation failed:', error)
-    
-    if (axios.isAxiosError(error)) {
-      const status = error.response?.status
-      const message = error.response?.data?.error?.message || error.message
-      
-      if (status === 401) {
-        return { isValid: false, error: 'Token expired or invalid' }
-      } else if (status === 400) {
-        return { isValid: false, error: 'Invalid token format' }
-      } else if (status === 429) {
-        return { isValid: false, error: 'Rate limit exceeded' }
-      }
-      
-      return { isValid: false, error: `API error: ${message}` }
-    }
-    
-    return { 
-      isValid: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    }
-  }
+  missing: string[]
 }
 
-/**
- * Checks if a token is close to expiration (within 7 days)
- */
-export function isTokenNearExpiration(expiresAt: Date | null): boolean {
-  if (!expiresAt) return true
-  
-  const now = new Date()
-  const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-  
-  return expiresAt <= sevenDaysFromNow
-}
-
-/**
- * Refreshes an Instagram token if it's valid but near expiration
- */
-export async function refreshTokenIfNeeded(
-  integrationId: string,
-  currentToken: string,
-  expiresAt: Date | null
-): Promise<{
+export interface RefreshResult {
   success: boolean
   newToken?: string
   error?: string
-}> {
-  try {
-    // First check if token needs refreshing
-    if (!isTokenNearExpiration(expiresAt)) {
-      return { success: true, newToken: currentToken }
+}
+
+/**
+ * Validates Instagram access token health and expiration status
+ */
+export async function getTokenHealth(token: string, expiresAt: Date | null): Promise<TokenHealth> {
+  if (!token) {
+    return {
+      status: 'invalid',
+      message: 'No access token found',
+      needsRefresh: false,
+      daysUntilExpiration: null
     }
+  }
 
-    console.log('Token is near expiration, attempting refresh...')
-
-    // Validate current token first
-    const validation = await validateInstagramToken(currentToken)
-    if (!validation.isValid) {
-      return { success: false, error: 'Current token is invalid, cannot refresh' }
+  if (!expiresAt) {
+    return {
+      status: 'warning',
+      message: 'Token expiration date unknown',
+      needsRefresh: true,
+      daysUntilExpiration: null
     }
+  }
 
-    // Attempt to refresh the token
-    const refreshResponse = await axios.get(
-      `${process.env.INSTAGRAM_BASE_URL}/refresh_access_token?grant_type=ig_refresh_token&access_token=${currentToken}`,
-      { timeout: 10000 }
-    )
+  const now = new Date()
+  const expiration = new Date(expiresAt)
+  const daysUntilExpiration = Math.ceil((expiration.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 
-    if (refreshResponse.data?.access_token) {
-      const newToken = refreshResponse.data.access_token
-      const expiresIn = refreshResponse.data.expires_in || 5184000 // Default 60 days
-
-      // Calculate new expiration date
-      const newExpiresAt = new Date()
-      newExpiresAt.setSeconds(newExpiresAt.getSeconds() + expiresIn)
-
-      // Update token in database
-      await updateIntegration(newToken, newExpiresAt, integrationId)
-      
-      console.log('Token refreshed successfully')
-      return { success: true, newToken }
+  if (daysUntilExpiration <= 0) {
+    return {
+      status: 'expired',
+      message: 'Access token has expired',
+      needsRefresh: true,
+      daysUntilExpiration
     }
+  }
 
-    return { success: false, error: 'Failed to refresh token' }
-  } catch (error) {
-    console.error('Token refresh failed:', error)
-    
-    if (axios.isAxiosError(error)) {
-      const message = error.response?.data?.error?.message || error.message
-      return { success: false, error: `Refresh failed: ${message}` }
+  if (daysUntilExpiration <= 7) {
+    return {
+      status: 'warning',
+      message: `Token expires in ${daysUntilExpiration} day(s)`,
+      needsRefresh: true,
+      daysUntilExpiration
     }
-    
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown refresh error' 
-    }
+  }
+
+  return {
+    status: 'healthy',
+    message: `Token valid for ${daysUntilExpiration} more days`,
+    needsRefresh: false,
+    daysUntilExpiration
   }
 }
 
 /**
- * Validates required environment variables for Instagram integration
+ * Validates Instagram configuration environment variables
  */
-export function validateInstagramConfig(): {
-  isValid: boolean
-  missing: string[]
-} {
+export function validateInstagramConfig(): InstagramConfig {
   const required = [
-    'INSTAGRAM_BASE_URL',
     'INSTAGRAM_CLIENT_ID',
     'INSTAGRAM_CLIENT_SECRET',
-    'INSTAGRAM_TOKEN_URL',
-    'INSTAGRAM_EMBEDDED_OAUTH_URL'
+    'INSTAGRAM_REDIRECT_URI'
   ]
 
   const missing = required.filter(key => !process.env[key])
-  
+
   return {
     isValid: missing.length === 0,
     missing
@@ -152,83 +94,88 @@ export function validateInstagramConfig(): {
 }
 
 /**
- * Creates a secure token storage object with encryption metadata
+ * Refreshes Instagram token if needed (near expiration)
  */
-export function createSecureTokenData(token: string, instagramId: string) {
-  return {
-    token,
-    instagramId,
-    createdAt: new Date(),
-    source: 'oauth', // Track how the token was obtained
-    validated: false // Will be set to true after validation
+export async function refreshTokenIfNeeded(
+  integrationId: string,
+  currentToken: string,
+  expiresAt: Date | null
+): Promise<RefreshResult> {
+  try {
+    const tokenHealth = await getTokenHealth(currentToken, expiresAt)
+
+    // Only refresh if token needs refresh
+    if (!tokenHealth.needsRefresh) {
+      return {
+        success: true,
+        newToken: currentToken
+      }
+    }
+
+    // Attempt to refresh token via Instagram API
+    const refreshUrl = 'https://graph.instagram.com/refresh_access_token'
+    const response = await fetch(`${refreshUrl}?grant_type=ig_refresh_token&access_token=${currentToken}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      return {
+        success: false,
+        error: errorData.error?.message || 'Failed to refresh token'
+      }
+    }
+
+    const data = await response.json()
+    const newToken = data.access_token
+    const expiresIn = data.expires_in
+
+    if (!newToken) {
+      return {
+        success: false,
+        error: 'No access token returned from refresh'
+      }
+    }
+
+    // Calculate new expiration date (typically 60 days from now)
+    const newExpiresAt = new Date()
+    newExpiresAt.setSeconds(newExpiresAt.getSeconds() + (expiresIn || 60 * 24 * 60 * 60))
+
+    // Update token in database
+    await prisma.integrations.update({
+      where: { id: integrationId },
+      data: {
+        token: newToken,
+        expiresAt: newExpiresAt
+      }
+    })
+
+    return {
+      success: true,
+      newToken
+    }
+
+  } catch (error) {
+    console.error('Error refreshing Instagram token:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error during token refresh'
+    }
   }
 }
 
 /**
- * Checks token health and returns detailed status
+ * Validates Instagram access token by making a test API call
  */
-export async function getTokenHealth(
-  token: string,
-  expiresAt: Date | null
-): Promise<{
-  status: 'healthy' | 'warning' | 'expired' | 'invalid'
-  message: string
-  needsRefresh: boolean
-  daysUntilExpiration?: number
-}> {
+export async function validateInstagramToken(token: string): Promise<boolean> {
   try {
-    // Check expiration first
-    if (expiresAt) {
-      const now = new Date()
-      const daysUntilExpiration = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-      
-      if (expiresAt <= now) {
-        return {
-          status: 'expired',
-          message: 'Token has expired',
-          needsRefresh: true,
-          daysUntilExpiration: 0
-        }
-      }
-      
-      if (daysUntilExpiration <= 7) {
-        const validation = await validateInstagramToken(token)
-        return {
-          status: validation.isValid ? 'warning' : 'invalid',
-          message: validation.isValid 
-            ? `Token expires in ${daysUntilExpiration} days` 
-            : validation.error || 'Token validation failed',
-          needsRefresh: true,
-          daysUntilExpiration
-        }
-      }
-      
-      // Test token validity for healthy tokens
-      const validation = await validateInstagramToken(token)
-      return {
-        status: validation.isValid ? 'healthy' : 'invalid',
-        message: validation.isValid 
-          ? `Token is healthy, expires in ${daysUntilExpiration} days`
-          : validation.error || 'Token validation failed',
-        needsRefresh: !validation.isValid,
-        daysUntilExpiration
-      }
-    } else {
-      // No expiration date, validate the token
-      const validation = await validateInstagramToken(token)
-      return {
-        status: validation.isValid ? 'warning' : 'invalid',
-        message: validation.isValid 
-          ? 'Token is valid but has no expiration date'
-          : validation.error || 'Token validation failed',
-        needsRefresh: !validation.isValid
-      }
-    }
+    const response = await fetch(`https://graph.instagram.com/me?fields=id,username&access_token=${token}`)
+    return response.ok
   } catch (error) {
-    return {
-      status: 'invalid',
-      message: error instanceof Error ? error.message : 'Unknown error during health check',
-      needsRefresh: true
-    }
+    console.error('Error validating Instagram token:', error)
+    return false
   }
 } 

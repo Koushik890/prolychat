@@ -324,7 +324,7 @@ export function KeywordConfigurationModal({
             className="mb-8 text-center"
           >
             <h2 className="text-3xl font-bold text-purple-900 mb-2 tracking-tight">Configure Keywords</h2>
-            <p className="text-purple-600 text-sm font-medium">Set up keywords that will trigger your DM automation</p>
+            <p className="text-purple-600 text-sm font-medium font-mona">Set up keywords that will trigger your DM automation</p>
           </motion.div>
 
           {/* Keyword Input Section */}
@@ -408,7 +408,7 @@ export function KeywordConfigurationModal({
                   </motion.div>
                 ))}
                 {includeKeywords.length === 0 && (
-                  <div className="text-purple-400 text-sm italic py-4 text-center w-full">
+                  <div className="text-purple-400 text-sm italic py-4 text-center w-full font-mona">
                     No keywords added yet
                   </div>
                 )}
@@ -423,7 +423,7 @@ export function KeywordConfigurationModal({
             transition={{ delay: 0.6, duration: 0.5, type: 'spring', damping: 20 }}
             className="mb-6 text-center"
           >
-            <p className="text-purple-600 text-sm italic">
+            <p className="text-purple-600 text-sm italic font-mona">
               Keywords are not case-sensitive, e.g. "Hello" and "hello" are recognized as the same.
             </p>
           </motion.div>

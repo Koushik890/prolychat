@@ -362,7 +362,7 @@ export function TextConfigModal({
               className="mb-8 text-center"
             >
               <h2 className="text-3xl font-bold text-purple-900 mb-2 tracking-tight">Configure Message</h2>
-              <p className="text-purple-600 text-sm font-medium">Enter the message you want to send to the user</p>
+              <p className="text-purple-600 text-sm font-medium font-mona">Enter the message you want to send to the user</p>
             </motion.div>
 
             {/* Prompt Input */}

@@ -663,11 +663,11 @@ export function ContactModal({ isOpen, onClose, contact: initialContact, onConta
                     {contact.name.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <h1 className="text-2xl font-semibold text-gray-900 mb-1">{contact.name}</h1>
+                <h1 className="text-2xl font-semibold text-gray-900 mb-1 font-mona">{contact.name}</h1>
                 
                 <div className="flex items-center gap-1 text-green-600 mb-2">
                   {statusDetails.icon}
-                  <span>{statusDetails.label}</span>
+                  <span className="font-mona">{statusDetails.label}</span>
                 </div>
                 
                 {/* Pause status indicator */}
@@ -675,10 +675,10 @@ export function ContactModal({ isOpen, onClose, contact: initialContact, onConta
                   <div className="flex flex-col items-center mb-2">
                     <div className="flex items-center gap-1.5 text-amber-600 text-sm mb-1">
                       <Clock className="w-3.5 h-3.5" />
-                      <span>Automations paused temporarily</span>
+                      <span className="font-mona">Automations paused temporarily</span>
                     </div>
                     {pauseEndTime && (
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-500 font-mona">
                         {getFormattedEndTime()}
                       </div>
                     )}
@@ -687,12 +687,12 @@ export function ContactModal({ isOpen, onClose, contact: initialContact, onConta
                 
                 <div className="flex items-center text-gray-500 text-sm mb-3">
                   <User className="w-4 h-4 mr-2" />
-                  <span>{contact.username ? `@${contact.username}` : '—'}</span>
+                  <span className="font-mona">{contact.username ? `@${contact.username}` : '—'}</span>
                 </div>
                 
                 <div className="flex items-center mb-6 text-sm text-gray-500">
                   <Calendar className="w-4 h-4 mr-2" />
-                  <span>Joined February 15, 2025</span>
+                  <span className="font-mona">Joined February 15, 2025</span>
                 </div>
                 
                 <div className="flex flex-col w-full space-y-3">

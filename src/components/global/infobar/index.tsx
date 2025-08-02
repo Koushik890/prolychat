@@ -103,7 +103,7 @@ const InfoBar = ({ slug }: Props) => {
                 </button>
               </SheetTrigger>
               <SheetContent side="left" className={`p-0 transition-all duration-300 ${mobileSidebarExpanded ? 'w-[250px]' : 'w-[72px]'} [&>button]:hidden`}>
-                <div className={`flex h-full flex-col bg-gray-800 border-r border-gray-700 font-['Plus_Jakarta_Sans',-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Oxygen,Ubuntu,Cantarell,'Fira_Sans','Droid_Sans','Helvetica_Neue',sans-serif] text-base font-medium leading-6 transition-all duration-300 ${mobileSidebarExpanded ? 'w-[250px]' : 'w-[72px]'}`}>
+                <div className={`flex h-full flex-col bg-slate-50 border-r border-slate-200 font-['Plus_Jakarta_Sans',-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Oxygen,Ubuntu,Cantarell,'Fira_Sans','Droid_Sans','Helvetica_Neue',sans-serif] text-base font-medium leading-6 transition-all duration-300 ${mobileSidebarExpanded ? 'w-[250px]' : 'w-[72px]'}`}>
                   {/* Logo Section with Toggle */}
                   <div className="relative h-[70px] overflow-visible">
                     <div className={`flex h-full items-center transition-all duration-300 ${
@@ -155,7 +155,7 @@ const InfoBar = ({ slug }: Props) => {
                       <div className="flex flex-col">
                         {/* Divider below Contacts */}
                         <div className="relative mt-[44px] px-4">
-                          <div className="absolute left-4 right-4 h-[1px] bg-gradient-to-r from-gray-600/40 via-gray-500/60 to-gray-600/40" />
+                          <div className="absolute left-4 right-4 h-[1px] bg-gradient-to-r from-gray-300/40 via-gray-400/60 to-gray-300/40" />
                         </div>
                         {/* Help & Support Section */}
                         <div className="mt-6 px-4">
@@ -169,10 +169,10 @@ const InfoBar = ({ slug }: Props) => {
                           >
                             <div className="flex w-full items-center pl-[13px]">
                               <div className="flex w-[24px] items-center justify-center">
-                                <HelpCircle className={`h-[20px] w-[20px] ${pathname === '/help' ? 'text-purple-400' : 'text-gray-400'}`} />
-                              </div>
-                              {mobileSidebarExpanded && (
-                                <span className={`truncate pl-[18px] text-[17px] font-medium leading-6 ${pathname === '/help' ? 'text-purple-400' : 'text-gray-300'}`}>
+                                                      <HelpCircle className={`h-[20px] w-[20px] ${pathname === '/help' ? 'text-purple-600' : 'text-gray-600'}`} />
+                    </div>
+                    {mobileSidebarExpanded && (
+                      <span className={`truncate pl-[18px] text-[17px] font-medium leading-6 ${pathname === '/help' ? 'text-purple-600' : 'text-gray-700'}`}>
                                   Help & Support
                                 </span>
                               )}
@@ -184,19 +184,19 @@ const InfoBar = ({ slug }: Props) => {
 
                     {/* Settings Section */}
                     <div className="pb-[17px]">
-                      <div className="border-t border-gray-600/40 pt-6">
+                      <div className="border-t border-gray-300/40 pt-6">
                         <div className="px-4">
                           <Link
                             href={userSlug ? `/dashboard/${userSlug}/settings/account` : '/settings/account'}
-                            className={`relative flex h-[40px] ${mobileSidebarExpanded ? 'w-[218px]' : 'w-[44px]'} items-center rounded-2xl bg-gradient-to-br from-purple-600/20 via-purple-500/15 to-purple-600/20 shadow-[0_2px_8px_rgba(0,0,0,0.3)] transition-all hover:from-purple-600/30 hover:via-purple-500/25 hover:to-purple-600/30 hover:shadow-[0_3px_12px_rgba(0,0,0,0.4)]`}
+                                                          className={`relative flex h-[40px] ${mobileSidebarExpanded ? 'w-[218px]' : 'w-[44px]'} items-center rounded-2xl bg-gradient-to-br from-purple-600/15 via-purple-500/10 to-purple-600/15 shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all hover:from-purple-600/20 hover:via-purple-500/15 hover:to-purple-600/20 hover:shadow-[0_3px_12px_rgba(0,0,0,0.12)]`}
                           >
                             <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-white/10 via-white/5 to-transparent pointer-events-none" />
                             <div className="relative flex w-full items-center pl-[13px]">
                               <div className="flex w-[24px] items-center justify-center">
-                                <Settings className="h-[18px] w-[18px] text-purple-300" />
+                                <Settings className="h-[18px] w-[18px] text-purple-600" />
                               </div>
                               {mobileSidebarExpanded && (
-                                <span className="truncate pl-[18px] text-[17px] font-medium leading-6 text-purple-300">Settings</span>
+                                <span className="truncate pl-[18px] text-[17px] font-medium leading-6 text-purple-600">Settings</span>
                               )}
                             </div>
                           </Link>
