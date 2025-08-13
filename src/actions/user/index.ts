@@ -33,19 +33,31 @@ async function retryOperation<T>(
 
 export const onCurrentUser = async () => {
   try {
-    const user = await currentUser()
-    if (!user) {
-      console.warn('No user session found')
-      return { status: 401 }
-    }
+    // Enhanced retry logic for OAuth callback scenarios where sessions might be unstable
+    const user = await retryOperation(async () => {
+      const session = await currentUser()
+      if (!session) {
+        throw new Error('No user session found')
+      }
+      return session
+    }, MAX_RETRIES, RETRY_DELAY)
 
     return { status: 200, data: user }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    console.error('Error in onCurrentUser:', {
+    console.error('Error in onCurrentUser after retries:', {
       message: errorMessage,
+      maxRetries: MAX_RETRIES,
+      retryDelay: RETRY_DELAY,
       timestamp: new Date().toISOString()
     })
+    
+    // If still no session after retries, return 401
+    if (errorMessage.includes('No user session found')) {
+      console.warn('No user session found after retries - OAuth callback or session issue')
+      return { status: 401 }
+    }
+    
     return { status: 500 }
   }
 }

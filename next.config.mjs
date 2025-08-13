@@ -1,5 +1,23 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Allow ngrok domain for OAuth callback development
+  allowedDevOrigins: [
+    'set-akita-deadly.ngrok-free.app'
+  ],
+  // Enhanced headers for OAuth flows
+  async headers() {
+    return [
+      {
+        source: '/callback/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, max-age=0, must-revalidate'
+          }
+        ]
+      }
+    ]
+  },
   images: {
     domains: [
       'localhost',
