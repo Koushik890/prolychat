@@ -33,6 +33,20 @@ const config: Config = {
   				'Helvetica Neue',
   				'Arial',
   				'sans-serif'
+  			],
+  			'hubot': [
+  				'"Hubot Sans"',
+  				'system-ui',
+  				'-apple-system',
+  				'BlinkMacSystemFont',
+  				'sans-serif'
+  			],
+  			'mona': [
+  				'"Mona Sans"',
+  				'system-ui',
+  				'-apple-system',
+  				'BlinkMacSystemFont',
+  				'sans-serif'
   			]
   		},
   		colors: {
@@ -129,7 +143,11 @@ const config: Config = {
   		}
   	}
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+    require('tailwindcss-animate'),
+    require('tw-animate-css'),
+  ],
 } satisfies Config
 
 export default config;

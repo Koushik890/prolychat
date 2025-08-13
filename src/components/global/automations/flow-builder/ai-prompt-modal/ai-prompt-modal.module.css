@@ -84,6 +84,7 @@
   overflow-y: scroll;
   overflow-x: hidden;
   position: relative;
+  font-family: 'Mona Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   
   /* Hide default scrollbar - Firefox */
   scrollbar-width: none;
@@ -154,6 +155,7 @@
   background: rgba(255, 255, 255, 0.5);
   border: 1px solid rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
+  font-family: 'Mona Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .cancelButton:hover {
@@ -174,6 +176,7 @@
   border: none;
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(124, 58, 237, 0.1);
+  font-family: 'Mona Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .saveButton:hover {

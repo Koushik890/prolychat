@@ -69,9 +69,9 @@ export function PerformanceMetricsCard({
             }}
           />
 
-          <div className="relative z-10 p-4 sm:p-6 flex flex-col items-center h-full w-full">
+          <div className="relative z-10 p-3 sm:p-4 flex flex-col items-center h-full w-full">
             {/* Header - Fixed height */}
-            <div className="text-center mb-3 sm:mb-4 h-12 sm:h-14 flex flex-col justify-center">
+            <div className="text-center mb-2 sm:mb-3 h-10 sm:h-12 flex flex-col justify-center">
               <h3 className="text-slate-800 text-lg sm:text-xl font-semibold leading-tight whitespace-nowrap font-sans" style={{ fontFamily: 'inherit !important' }}>
                 Comments
               </h3>
@@ -83,19 +83,19 @@ export function PerformanceMetricsCard({
             {/* Content */}
             <div className="flex-1 flex flex-col justify-center">
               {isLoading ? (
-                <div className="h-16 sm:h-20 flex items-center justify-center">
+                <div className="h-12 sm:h-16 flex items-center justify-center">
                   <Spinner />
                 </div>
               ) : (
                 <>
                   {/* Number container with fixed height */}
-                  <div className="flex flex-col items-center h-16 sm:h-20 justify-center">
+                  <div className="flex flex-col items-center h-12 sm:h-16 justify-center">
                     <div className="text-slate-800 text-4xl sm:text-6xl font-bold leading-none">
                       {commentsReplied}
                     </div>
                   </div>
                   {/* Info container with fixed height */}
-                  <div className="h-12 sm:h-14 flex items-start justify-center">
+                  <div className="h-8 sm:h-10 flex items-start justify-center">
                     <div className="text-slate-500 text-sm font-medium flex gap-2 items-center">
                       out of <span className="text-slate-700">{totalComments}</span> total
                     </div>
@@ -143,9 +143,9 @@ export function PerformanceMetricsCard({
             }}
           />
 
-          <div className="relative z-10 p-4 sm:p-6 flex flex-col items-center h-full w-full">
+          <div className="relative z-10 p-3 sm:p-4 flex flex-col items-center h-full w-full">
             {/* Header - Fixed height */}
-            <div className="text-center mb-3 sm:mb-4 h-12 sm:h-14 flex flex-col justify-center">
+            <div className="text-center mb-2 sm:mb-3 h-10 sm:h-12 flex flex-col justify-center">
               <h3 className="text-slate-800 text-lg sm:text-xl font-semibold leading-tight whitespace-nowrap font-sans" style={{ fontFamily: 'inherit !important' }}>
                 Direct Messages
               </h3>
@@ -157,19 +157,19 @@ export function PerformanceMetricsCard({
             {/* Content */}
             <div className="flex-1 flex flex-col justify-center">
               {isLoading ? (
-                <div className="h-16 sm:h-20 flex items-center justify-center">
+                <div className="h-12 sm:h-16 flex items-center justify-center">
                   <Spinner />
                 </div>
               ) : (
                 <>
                   {/* Number container with fixed height */}
-                  <div className="flex flex-col items-center h-16 sm:h-20 justify-center">
+                  <div className="flex flex-col items-center h-12 sm:h-16 justify-center">
                     <div className="text-slate-800 text-4xl sm:text-6xl font-bold leading-none">
                       {totalDmResponses}
                     </div>
                   </div>
                   {/* Info container with fixed height */}
-                  <div className="h-12 sm:h-14 flex items-start justify-center">
+                  <div className="h-10 sm:h-12 flex items-start justify-center">
                     <div className="w-full">
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-1.5">

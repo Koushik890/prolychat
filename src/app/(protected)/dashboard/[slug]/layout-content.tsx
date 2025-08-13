@@ -55,10 +55,10 @@ export const DashboardLayoutContent = ({ children, slug }: ContentProps) => {
     <ToastProvider>
       <InstagramConnectionChecker>
         <div className={cn(
-          "min-h-screen relative no-scrollbar", 
+          "min-h-screen relative scrollbar-hide", 
           isContactsPage && "overflow-hidden"
         )}>
-          <div className="absolute inset-0 no-scrollbar" style={{ backgroundColor: '#f5f5f5' }} />
+          <div className="absolute inset-0 scrollbar-hide" style={{ backgroundColor: '#f5f5f5' }} />
           {showGridPattern && (
             <GridPattern 
               className="absolute inset-0 opacity-30 mix-blend-multiply"
@@ -71,8 +71,8 @@ export const DashboardLayoutContent = ({ children, slug }: ContentProps) => {
               }}
             />
           )}
-          <div className="flex min-h-screen relative no-scrollbar">
-            <div className="fixed left-0 top-0 h-full z-50 no-scrollbar">
+          <div className="flex min-h-screen relative scrollbar-hide">
+                          <div className="fixed left-0 top-0 h-full z-50 scrollbar-hide">
               <SidebarProvider>
                 <AppSidebar 
                   onCollapse={handleSidebarCollapse}
@@ -82,7 +82,7 @@ export const DashboardLayoutContent = ({ children, slug }: ContentProps) => {
             </div>
             <main 
               className={cn(
-                "flex-1 min-h-screen w-full transition-all duration-300 no-scrollbar",
+                "flex-1 min-h-screen w-full transition-all duration-300 scrollbar-hide",
                 "pl-0 lg:pl-[250px]",
                 isCollapsed && "lg:pl-[72px]",
                 isContactsPage && "overflow-hidden"
@@ -91,7 +91,7 @@ export const DashboardLayoutContent = ({ children, slug }: ContentProps) => {
             >
               <InfoBar slug={slug} />
               <div className={cn(
-                "p-8 no-scrollbar", 
+                "p-8 scrollbar-hide", 
                 isPaymentSettingsPage && "settings-section",
                 isContactsPage && "overflow-visible"
               )}

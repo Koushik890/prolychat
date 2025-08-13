@@ -93,6 +93,7 @@
   word-break: break-word;
   /* Remove right padding since we're hiding the scrollbar */
   padding-right: 0;
+  font-family: 'Mona Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .footer {
@@ -117,6 +118,7 @@
   border: none;
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(124, 58, 237, 0.1);
+  font-family: 'Mona Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .editButton:hover {

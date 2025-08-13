@@ -641,8 +641,8 @@ export function AutomatedActivityChart({ className }: AutomatedActivityChartProp
         padding: {
           left: -0.5,
           right: -0.5,
-          top: 0,
-          bottom: 4
+          top: 2,
+          bottom: 6
         }
       },
     };
@@ -783,7 +783,7 @@ export function AutomatedActivityChart({ className }: AutomatedActivityChartProp
             </div>
           </div>
 
-          <div className='h-[180px] -mx-4 -mb-2 mt-2'>
+          <div className='h-[140px] -mx-4 mb-2 mt-2'>
             <div className='h-full w-full px-4 relative'>
               <div className='absolute inset-0 overflow-hidden'>
                 {!hasData ? (

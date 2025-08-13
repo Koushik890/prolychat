@@ -11,8 +11,8 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const raleway = Raleway({ subsets: ['latin'], variable: '--font-raleway' });
 
 export const metadata: Metadata = {
-  	metadataBase: new URL('https://prolychat.com'),
-	title: 'Prolychat - Automate Your Social Media Engagement',
+  metadataBase: new URL('https://prolychat.com'),
+  title: 'Prolychat - Automate Your Social Media Engagement',
   description: 'Intelligent responses to comments, powered by AI. Connect with your audience automatically while maintaining authentic conversations.',
   icons: {
     icon: [
@@ -31,7 +31,13 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" suppressHydrationWarning className={`${inter.variable} ${raleway.variable} font-sans antialiased`}>
+      <html lang="en" suppressHydrationWarning className={`${inter.variable} ${raleway.variable} antialiased`}>
+        <head>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+          <link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet" />
+          <link href="https://fonts.googleapis.com/css2?family=Mona+Sans:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet" />
+        </head>
         <body
           suppressHydrationWarning
           className={`font-sans antialiased`}>

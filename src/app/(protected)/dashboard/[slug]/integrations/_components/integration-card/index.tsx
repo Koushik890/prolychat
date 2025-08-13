@@ -16,7 +16,15 @@ type Props = {
 
 const IntegrationCard = ({ description, icon, strategy, title }: Props) => {
   //WIP: wire up fetching data and get the integrations from the db
-  const onInstaOAuth = () => onOauthInstagram(strategy)
+  const onInstaOAuth = async () => {
+    try {
+      console.log('🎯 Integration card OAuth clicked for strategy:', strategy);
+      await onOauthInstagram(strategy);
+    } catch (error) {
+      console.error('💥 Integration card OAuth error:', error);
+      alert(`Failed to connect: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
 
   const { data } = useQuery({
     queryKey: ['user-profile'],

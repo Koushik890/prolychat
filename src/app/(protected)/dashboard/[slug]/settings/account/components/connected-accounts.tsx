@@ -606,8 +606,7 @@ const ConnectedAccounts: React.FC<ConnectedAccountsProps> = ({
         <DialogContent className="sm:max-w-xl fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-6 z-[1000] w-full border border-gray-200">
           <DialogHeader>
             <h2 
-              className="text-xl font-semibold text-gray-900" 
-              style={{ fontFamily: `${fontFamily} !important` }}
+              className="text-xl font-semibold text-gray-900 font-hubot" 
             >
               Remove Connection
             </h2>
@@ -618,12 +617,12 @@ const ConnectedAccounts: React.FC<ConnectedAccountsProps> = ({
               <div className="bg-amber-50 p-2 rounded-full">
                 <AlertCircle className="h-5 w-5 text-amber-600" />
               </div>
-              <p className="text-gray-700" style={{ fontFamily }}>
+              <p className="text-gray-700 font-mona">
                 Are you sure you want to disconnect your {providerToRemove?.toLowerCase()} account?
                 This action cannot be undone.
               </p>
             </div>
-            <p className="text-gray-500 text-sm" style={{ fontFamily }}>
+            <p className="text-gray-500 text-sm font-mona">
               You will no longer be able to sign in with {providerToRemove}.
             </p>
           </div>
@@ -631,17 +630,15 @@ const ConnectedAccounts: React.FC<ConnectedAccountsProps> = ({
           <DialogFooter className="flex justify-end gap-3">
             <Button
               onClick={cancelRemoveConnectedAccount}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg"
+              className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg font-mona"
               disabled={isRemoving}
-              style={{ fontFamily }}
             >
               Cancel
             </Button>
             <Button
               onClick={confirmRemoveConnectedAccount}
-              className="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg"
+              className="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg font-mona"
               disabled={isRemoving}
-              style={{ fontFamily }}
             >
               {isRemoving ? 'Removing...' : 'Disconnect Account'}
             </Button>

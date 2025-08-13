@@ -20,13 +20,24 @@ interface InstagramStatusModalProps {
   autoTrigger?: boolean // If true, modal was triggered automatically for new users
 }
 
+// Custom blurred overlay component for enhanced visual effect
+const BlurredDialogOverlay = ({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Overlay>) => (
+  <DialogPrimitive.Overlay
+    className={cn(
+      "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50 backdrop-blur-md",
+      className,
+    )}
+    {...props}
+  />
+)
+
 // Custom DialogContent without close button
 const CustomDialogContent = ({ className, children, ...props }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>) => (
   <DialogPortal>
-    <DialogOverlay />
+    <BlurredDialogOverlay />
     <DialogPrimitive.Content
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]",
+        "fixed left-[50%] top-[50%] z-[60] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]",
         className
       )}
       {...props}
@@ -52,10 +63,13 @@ export const InstagramStatusModal = ({ isOpen, onClose, autoTrigger = false }: I
 
   const handleConnect = async () => {
     try {
+      console.log('🚀 Starting Instagram connection...');
       setIsConnecting(true)
       await onOauthInstagram('INSTAGRAM')
+      console.log('✅ Instagram OAuth initiated successfully');
     } catch (error) {
-      console.error('Error connecting Instagram:', error)
+      console.error('❌ Error connecting Instagram:', error)
+      alert(`Failed to connect Instagram: ${error instanceof Error ? error.message : 'Unknown error'}`)
       setIsConnecting(false)
     }
   }
@@ -77,7 +91,7 @@ export const InstagramStatusModal = ({ isOpen, onClose, autoTrigger = false }: I
         <CustomDialogContent className="max-w-sm mx-auto rounded-3xl">
           <div className="flex items-center justify-center py-6">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500"></div>
-            <span className="ml-2 text-sm">Loading...</span>
+            <span className="ml-2 text-sm font-mona">Loading...</span>
           </div>
         </CustomDialogContent>
       </Dialog>
@@ -97,11 +111,11 @@ export const InstagramStatusModal = ({ isOpen, onClose, autoTrigger = false }: I
           <div className="flex flex-col justify-between md:w-1/2 px-6 mr-6">
             <div className="space-y-6">
               <div className="space-y-3">
-                <h1 className="text-[36px] text-[#030213] font-semibold leading-tight">
+                <h1 className="text-[36px] text-[#030213] font-semibold leading-tight font-hubot">
                   Connect Instagram
                 </h1>
 
-                <p className="text-[16px] text-[#4B4B5A] leading-relaxed">
+                <p className="text-[16px] text-[#4B4B5A] leading-relaxed font-mona">
                   						Use your Instagram account to connect to {autoTrigger ? 'Prolychat' : 'Prolychat'}.
                 </p>
               </div>
@@ -117,20 +131,20 @@ export const InstagramStatusModal = ({ isOpen, onClose, autoTrigger = false }: I
                 <Button
                   onClick={handleConnect}
                   disabled={isConnecting}
-                  className="w-full py-6 px-8 bg-[#7611F7] text-white text-[18px] font-medium rounded-xl hover:bg-[#6610E6] transition-colors shadow-lg hover:shadow-xl"
+                  className="w-full py-6 px-8 bg-[#7611F7] text-white text-[18px] font-medium rounded-xl hover:bg-[#6610E6] transition-colors shadow-lg hover:shadow-xl font-mona"
                 >
                   {isConnecting ? (
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                      Connecting...
+                      <span className="font-mona">Connecting...</span>
                     </div>
                   ) : (
-                    'Go To Instagram'
+                    <span className="font-mona">Go To Instagram</span>
                   )}
                 </Button>
               </div>
 
-              <p className="text-[14px] text-[#717182] text-center leading-relaxed px-4">
+              <p className="text-[14px] text-[#717182] text-center leading-relaxed px-4 font-mona">
                 Log in with Instagram and set your permissions. Once
                 						that's done, you're all set to connect to {autoTrigger ? 'Prolychat' : 'Prolychat'}!
               </p>
@@ -140,7 +154,7 @@ export const InstagramStatusModal = ({ isOpen, onClose, autoTrigger = false }: I
               <div className="flex items-center justify-center space-x-3 scale-110">
                 <MetaProviderLogo />
               </div>
-              <p className="text-[14px] text-[#717182] mt-3 text-center leading-relaxed">
+              <p className="text-[14px] text-[#717182] mt-3 text-center leading-relaxed font-mona">
                 						{autoTrigger ? 'Prolychat' : 'Prolychat'} has been certified by Meta as an official
                 Tech Provider.
               </p>
@@ -160,7 +174,7 @@ export const InstagramStatusModal = ({ isOpen, onClose, autoTrigger = false }: I
 
             <div className="absolute bottom-0 left-0 right-0">
               <div className="bg-gradient-to-t from-[#7c3aed] via-[#a855f7]/80 to-transparent px-6 pt-12 pb-2 rounded-b-[16px] flex items-end">
-                <p className="text-white text-[30px] font-bold leading-[1.3] font-['Inter','Roboto','-apple-system','BlinkMacSystemFont','Segoe_UI',system-ui,sans-serif] tracking-wider text-center">
+                <p className="text-white text-[30px] font-bold leading-[1.3] font-mona tracking-wider text-center">
                   Grow your Instagram audience intelligently
                 </p>
               </div>
