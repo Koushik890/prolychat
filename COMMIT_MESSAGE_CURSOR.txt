@@ -1,0 +1,15 @@
+﻿[Cursor] Create branch and commit: Instagram OAuth stability and UI improvements
+
+- Stabilize Instagram OAuth callback session handling (middleware, layout)
+- Add client-side fallback for OAuth with cache invalidation
+- Allow dev origins in config and headers updates
+- Reduce dashboard card heights and chart spacing symmetry
+- Add backdrop blur to Instagram modal
+- Restore OAuth fixes and session retry logic
+
+Files:
+- next.config.mjs
+- src/app/(protected)/callback/instagram/page.tsx
+- src/app/(protected)/callback/instagram/client.tsx
+- src/app/layout.tsx
+- src/middleware.ts

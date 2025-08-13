@@ -30,7 +30,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      experimental={{
+        __experimental_serverComponentsStreaming: true,
+      }}
+    >
       <html lang="en" suppressHydrationWarning className={`${inter.variable} ${raleway.variable} antialiased`}>
         <head>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
