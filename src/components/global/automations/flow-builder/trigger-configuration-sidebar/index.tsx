@@ -400,9 +400,8 @@ export const TriggerConfigurationSidebar: React.FC<TriggerConfigurationSidebarPr
 
   return (
     <>
-      <Sheet open={isOpen} onOpenChange={onClose}>
+      <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
         <MotionSheetContent 
-          showCloseButton={false}
           side="right" 
           className={cn(
             "p-6 w-[420px] top-0 h-screen flex flex-col overflow-hidden",
@@ -420,16 +419,6 @@ export const TriggerConfigurationSidebar: React.FC<TriggerConfigurationSidebarPr
             "absolute inset-0 pointer-events-none rounded-l-2xl",
             PURPLE_THEME.gradientOverlay
           )} />
-          
-          <button 
-            type="button"
-            onClick={onClose} 
-            className={cn(CLOSE_BUTTON_STYLES.base, "group")}
-            aria-label="Close sidebar"
-          >
-            <X className={CLOSE_BUTTON_STYLES.icon} />
-            <span className="sr-only">Close</span>
-          </button>
           
           <SheetHeader className={HEADER_STYLES.container}>
             <div className="pr-8">

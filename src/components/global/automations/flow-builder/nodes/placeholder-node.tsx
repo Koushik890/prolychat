@@ -117,6 +117,7 @@ export function PlaceholderNode({ id, data }: PlaceholderNodeProps) {
       },
       label: "Send Message",
       hotkey: "M",
+      icon: MessageSquare,
       onClick: () => {
         const actionId = `action-${Date.now()}`
         handleActionSelect(actionId, 'MESSAGE', 'Send Message', MessageSquare)
@@ -129,6 +130,7 @@ export function PlaceholderNode({ id, data }: PlaceholderNodeProps) {
       },
       label: "AI Assistant",
       hotkey: "A",
+      icon: Bot,
       onClick: () => {
         const actionId = `action-${Date.now()}`
         handleActionSelect(actionId, 'PROLYAI', 'AI Assistant', Bot)

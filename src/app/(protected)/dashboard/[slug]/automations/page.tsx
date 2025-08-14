@@ -91,14 +91,16 @@ interface SortConfig {
   direction: 'asc' | 'desc'
 }
 
-function getStatusVariant(status: string): 'success' | 'warning' {
+function getStatusVariant(
+  status: string
+): 'default' | 'secondary' | 'destructive' | 'outline' | null | undefined {
   switch (status) {
     case 'Live':
-      return 'success'
+      return 'outline'
     case 'Draft':
-      return 'warning'
+      return 'outline'
     default:
-      return 'warning'
+      return 'outline'
   }
 }
 
