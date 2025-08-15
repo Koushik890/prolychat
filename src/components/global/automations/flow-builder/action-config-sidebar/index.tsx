@@ -81,7 +81,7 @@ const ACTION_OPTIONS = [
   },
 ]
 
-const MotionSheetContent = motion.create(SheetContent)
+// const MotionSheetContent = motion.create(SheetContent) // Simplified for debugging
 
 // Card Preview Component
 interface CardPreviewProps {
@@ -398,41 +398,32 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
   return (
     <>
       <Sheet open={isOpen} onOpenChange={onClose}>
-        <MotionSheetContent 
+        <SheetContent 
           showCloseButton={false}
           side="right" 
           className={cn(
-            "p-6 w-[400px] top-0 h-screen",
-            PURPLE_THEME.glassBackground,
-            PURPLE_THEME.shadow,
-            PURPLE_THEME.border,
+            "p-6 w-[400px] top-0 h-screen z-[60]",
+            "bg-white border-gray-200 shadow-xl",
             "border-l"
           )}
-          {...SIDEBAR_ANIMATIONS.slideIn}
+          style={{ zIndex: 60 }}
         >
-          {/* Gradient overlay */}
-          <div className={cn(
-            "absolute inset-0 pointer-events-none rounded-l-2xl",
-            PURPLE_THEME.gradientOverlay
-          )} />
-          
           <button 
             onClick={onClose} 
-            className={cn(CLOSE_BUTTON_STYLES.base, "group")}
+            className="absolute top-4 right-4 p-2 bg-gray-100 hover:bg-gray-200 rounded z-10"
             aria-label="Close sidebar"
           >
-            <X className={CLOSE_BUTTON_STYLES.icon} />
+            <X className="w-4 h-4" />
             <span className="sr-only">Close</span>
           </button>
           
-          <SheetHeader className={HEADER_STYLES.container}>
-            <SheetTitle className={HEADER_STYLES.title}>Configure Message</SheetTitle>
-            <p className={HEADER_STYLES.subtitle}>Choose how you want to respond to the user</p>
+          <SheetHeader className="mb-6">
+            <SheetTitle className="text-lg font-semibold">Configure Message</SheetTitle>
+            <p className="text-sm text-gray-600">Choose how you want to respond to the user</p>
           </SheetHeader>
 
-          <motion.div 
+          <div 
             className="flex flex-col gap-8 overflow-y-auto max-h-[calc(100vh-8.5rem)] scrollbar-hide relative z-10"
-            {...SIDEBAR_ANIMATIONS.contentFadeIn}
           >
             {selectedText && (
               <motion.div 
@@ -556,8 +547,8 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
                 </div>
               </div>
             )}
-          </motion.div>
-        </MotionSheetContent>
+          </div>
+        </SheetContent>
       </Sheet>
 
       <TextConfigModal

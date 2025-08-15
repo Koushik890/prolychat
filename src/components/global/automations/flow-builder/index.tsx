@@ -206,6 +206,8 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
   const [isTriggerConfigOpen, setIsTriggerConfigOpen] = React.useState(false)
   const [isTriggerSidebarOpen, setIsTriggerSidebarOpen] = React.useState(false)
   const [isTriggerConfigurationOpen, setIsTriggerConfigurationOpen] = React.useState(false)
+  
+
   const [selectedTriggerForConfig, setSelectedTriggerForConfig] = React.useState<{
     id: string
     name: string
@@ -923,11 +925,19 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
         onActionSelect: handleActionSelect,
         onActionRemove: handleActionRemove,
         isConfigSidebarOpen: isTriggerConfigOpen,
-        onConfigSidebarClose: () => setIsTriggerConfigOpen(false),
-        onConfigSidebarOpen: () => setIsTriggerConfigOpen(true),
+        onConfigSidebarClose: () => {
+          setIsTriggerConfigOpen(false)
+        },
+        onConfigSidebarOpen: () => {
+          setIsTriggerConfigOpen(true)
+        },
         isTriggerSidebarOpen,
-        onTriggerSidebarOpen: () => setIsTriggerSidebarOpen(true),
-        onTriggerSidebarClose: () => setIsTriggerSidebarOpen(false),
+        onTriggerSidebarOpen: () => {
+          setIsTriggerSidebarOpen(true)
+        },
+        onTriggerSidebarClose: () => {
+          setIsTriggerSidebarOpen(false)
+        },
         onTriggerConfigurationOpen: handleTriggerConfigurationOpen,
         config: automationData.trigger?.[0]?.config,
         configurationStatus: automationData.trigger?.[0]?.config 
@@ -1129,13 +1139,10 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
     [nodes, setNodes, setEdges]
   )
 
-  // Handle node click
+  // Handle node click - removed to prevent conflicts with individual node handlers
   const onNodeClick = React.useCallback((event: React.MouseEvent, node: Node) => {
     setSelectedNode(node)
-    // Open FlowConfigSidebar when clicking on trigger node
-    if (node.type === 'trigger') {
-      setIsTriggerConfigOpen(true)
-    }
+    // Individual nodes now handle their own click logic
   }, [])
 
   // Sync nodes with selected actions
@@ -1192,7 +1199,6 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
     setNodes(nds => 
       nds.map(node => {
         if (node.type === 'trigger') {
-          console.log('Updating trigger node with selectedTriggers:', selectedTriggers);
           return {
             ...node,
             data: {
@@ -1203,11 +1209,19 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
               onActionSelect: handleActionSelect,
               onActionRemove: handleActionRemove,
               isConfigSidebarOpen: isTriggerConfigOpen,
-              onConfigSidebarClose: () => setIsTriggerConfigOpen(false),
-              onConfigSidebarOpen: () => setIsTriggerConfigOpen(true),
+              onConfigSidebarClose: () => {
+                setIsTriggerConfigOpen(false)
+              },
+              onConfigSidebarOpen: () => {
+                setIsTriggerConfigOpen(true)
+              },
               isTriggerSidebarOpen,
-              onTriggerSidebarOpen: () => setIsTriggerSidebarOpen(true),
-              onTriggerSidebarClose: () => setIsTriggerSidebarOpen(false),
+              onTriggerSidebarOpen: () => {
+                setIsTriggerSidebarOpen(true)
+              },
+              onTriggerSidebarClose: () => {
+                setIsTriggerSidebarOpen(false)
+              },
               onTriggerConfigurationOpen: handleTriggerConfigurationOpen
             }
           }
@@ -1540,6 +1554,8 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
           onTriggerConfig={handleTriggerConfig}
         />
       )}
+
+
     </div>
   )
 }

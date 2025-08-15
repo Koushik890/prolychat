@@ -54,10 +54,15 @@ export function TriggerNode({ data }: NodeProps<TriggerNodeData>) {
   const [isActionModalOpen, setIsActionModalOpen] = useState(false)
 
   const handleNodeClick = (e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent ReactFlow's node click handler
+    
     // Check if the click was on the "+ New Trigger" button
     const isNewTriggerButton = (e.target as HTMLElement).closest(`.${styles.addTrigger}`)
-    if (!isNewTriggerButton && data.onConfigSidebarOpen) {
-      data.onConfigSidebarOpen()
+    
+    if (!isNewTriggerButton) {
+      if (data.onConfigSidebarOpen) {
+        data.onConfigSidebarOpen()
+      }
     }
   }
 

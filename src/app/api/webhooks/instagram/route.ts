@@ -978,9 +978,9 @@ export async function POST(req: NextRequest) {
                 if (fullAutomation.listener?.type) {
                   automation.listener.type = fullAutomation.listener.type
                 }
-                // Also update the full listener data to include messageData
-                if (fullAutomation.listener) {
-                  automation.listener = fullAutomation.listener
+                // Also update messageData from the full listener data when available
+                if (fullAutomation.listener?.messageData) {
+                  automation.listener.messageData = fullAutomation.listener.messageData
                 }
               }
             }

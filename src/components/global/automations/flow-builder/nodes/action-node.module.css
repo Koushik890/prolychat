@@ -1,7 +1,7 @@
 .actionNode {
-  min-width: 406px;
-  max-width: 406px;
-  min-height: 203px;
+  min-width: 340px;
+  max-width: 340px;
+  min-height: 102px;
   /* Allow height to expand based on content */
   height: auto;
   background-color: #ffffff !important;
@@ -10,8 +10,8 @@
   border-radius: 18px;
   border: 1px solid rgba(168, 85, 247, 0.18);
   position: relative;
-  padding: 1.25rem;
-  padding-bottom: 2.25rem;
+  padding: 1rem;
+  padding-bottom: 0.875rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   z-index: 51;
@@ -22,13 +22,13 @@
 
 /* Expanded state for card content - allows dynamic height expansion */
 .cardExpanded {
-  min-width: 500px !important;
-  max-width: 500px !important;
-  min-height: 360px !important;
+  min-width: 420px !important;
+  max-width: 420px !important;
+  min-height: 205px !important;
   /* Removed max-height to allow dynamic expansion for card content */
   height: auto !important;
-  padding: 1.5rem !important;
-  padding-bottom: 3rem !important;
+  padding: 1.125rem !important;
+  padding-bottom: 1.25rem !important;
 }
 
 .actionNode::before {
@@ -64,18 +64,18 @@
 .header {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 0.875rem;
+  margin-bottom: 0.375rem;
   position: relative;
   background-color: #ffffff !important;
 }
 
 .iconWrapper {
   position: relative;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 1.9rem;
+  height: 1.9rem;
   background-color: #f5f3ff !important;
-  border-radius: 14px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -115,12 +115,12 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  height: 2.5rem;
+  height: 1.6rem;
   background-color: #ffffff !important;
 }
 
 .title {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 600;
   color: #1f2937;
   margin: 0;
@@ -154,22 +154,22 @@
 }
 
 .description {
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   color: #4b5563;
-  margin-bottom: 1.25rem;
-  line-height: 1.5;
+  margin-bottom: 0.375rem;
+  line-height: 1.4;
   letter-spacing: -0.01em;
   font-weight: 450;
 }
 
 .configureButton {
   width: 100%;
-  height: 2.75rem;
+  height: 2.25rem;
   border: 1.5px dashed rgba(147, 51, 234, 0.35);
   background: rgba(147, 51, 234, 0.03);
-  border-radius: 14px;
+  border-radius: 12px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.5rem;
   position: relative;
   cursor: pointer;
   overflow: hidden;
@@ -271,7 +271,7 @@
 }
 
 .messageContent {
-  margin-top: 1.5rem;
+  margin-top: 0.75rem;
   position: relative;
   background-color: #ffffff !important;
 }
@@ -280,7 +280,7 @@
   width: 100%;
   height: auto;
   min-height: auto;
-  padding: 0.75rem 1rem;
+  padding: 0.375rem 0.75rem;
   background-color: #ffffff !important;
   border: 1px solid rgba(168, 85, 247, 0.15);
   border-radius: 12px;

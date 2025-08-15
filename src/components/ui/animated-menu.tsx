@@ -13,6 +13,8 @@ interface MenuItem {
   label: string
   hotkey: string
   onClick?: () => void
+  // Optional static icon to display instead of Rive animation
+  icon?: React.ComponentType<{ className?: string }>
 }
 
 interface AnimatedMenuProps {
@@ -125,12 +127,16 @@ export function AnimatedMenu({ items, className, arrowAlign = 'left' }: Animated
               onClick={item.onClick}
             >
               <div className="shrink-0 w-6 h-6 flex items-center justify-center">
-                <RiveIcon 
-                  src={item.riveIcon.src} 
-                  stateMachine={item.riveIcon.stateMachine}
-                  index={index}
-                  activeIndex={hoveredIndex}
-                />
+                {item.icon ? (
+                  <item.icon className="size-5 text-purple-600" />
+                ) : (
+                  <RiveIcon 
+                    src={item.riveIcon.src} 
+                    stateMachine={item.riveIcon.stateMachine}
+                    index={index}
+                    activeIndex={hoveredIndex}
+                  />
+                )}
               </div>
               <span className="flex-1 text-left font-semibold tracking-tight">
                 {item.label}

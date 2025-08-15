@@ -21,7 +21,7 @@ interface FlowConfigSidebarProps {
   onTriggerConfigurationOpen?: (trigger: { id: string; name: string; icon: React.ComponentType<any> }) => void
 }
 
-const MotionSheetContent = motion.create(SheetContent)
+// const MotionSheetContent = motion.create(SheetContent) // Simplified for debugging
 
 export const FlowConfigSidebar: React.FC<FlowConfigSidebarProps> = ({
   isOpen,
@@ -47,43 +47,34 @@ export const FlowConfigSidebar: React.FC<FlowConfigSidebarProps> = ({
   }
 
   return (
-    <Sheet open={isOpen} onOpenChange={handleClose}>
-      <MotionSheetContent
+    <Sheet open={isOpen} onOpenChange={(open) => { if (!open) handleClose() }}>
+      <SheetContent
         showCloseButton={false}
         side="right"
         className={cn(
-          'p-6 w-[420px] top-0 h-screen flex flex-col overflow-hidden',
-          PURPLE_THEME.glassBackground,
-          PURPLE_THEME.shadow,
-          PURPLE_THEME.border,
+          'p-6 w-[420px] top-0 h-screen flex flex-col overflow-hidden z-[60]',
+          'bg-white border-gray-200 shadow-xl',
           "border-l"
         )}
-        {...SIDEBAR_ANIMATIONS.slideIn}
+        style={{ zIndex: 60 }}
       >
-        {/* Gradient overlay */}
-        <div className={cn(
-          "absolute inset-0 pointer-events-none rounded-l-2xl",
-          PURPLE_THEME.gradientOverlay
-        )} />
-        
         <button 
           type="button"
           onClick={handleClose} 
-          className={cn(CLOSE_BUTTON_STYLES.base, "group")}
+          className="absolute top-4 right-4 p-2 bg-gray-100 hover:bg-gray-200 rounded z-10"
           aria-label="Close sidebar"
         >
-          <X className={CLOSE_BUTTON_STYLES.icon} />
+          <X className="w-4 h-4" />
           <span className="sr-only">Close</span>
         </button>
         
-        <SheetHeader className={HEADER_STYLES.container}>
-          <SheetTitle className={HEADER_STYLES.title}>Configure Triggers</SheetTitle>
-          <p className={HEADER_STYLES.subtitle}>Set up your automation triggers and next steps</p>
+        <SheetHeader className="mb-6">
+          <SheetTitle className="text-lg font-semibold">Configure Triggers</SheetTitle>
+          <p className="text-sm text-gray-600">Set up your automation triggers and next steps</p>
         </SheetHeader>
 
-        <motion.div 
+        <div 
           className="flex flex-col gap-8 relative z-10"
-          {...SIDEBAR_ANIMATIONS.contentFadeIn}
         >
           {/* When Section */}
           <div className="flex flex-col gap-4">
@@ -182,8 +173,8 @@ export const FlowConfigSidebar: React.FC<FlowConfigSidebarProps> = ({
               </Button>
             )}
           </div>
-        </motion.div>
-      </MotionSheetContent>
+        </div>
+      </SheetContent>
     </Sheet>
   )
 } 

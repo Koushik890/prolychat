@@ -231,7 +231,11 @@ export const ActionNode: React.FC<ActionNodeProps> = ({ data, onMessageUpdate, o
     onPromptUpdate?.(data.id, prompt)
   }
 
-  const handleNodeClick = () => {
+  const handleNodeClick = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation() // Prevent ReactFlow's node click handler
+    }
+    
     if (isMessageAction) {
       setIsConfigOpen(true)
     } else if (hasConfiguredMessage) {

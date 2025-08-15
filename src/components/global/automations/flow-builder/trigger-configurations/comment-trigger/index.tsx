@@ -19,7 +19,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-hot-toast'
 import { useToast } from '@/contexts/toast-context'
 
-const MotionSheetContent = motion.create(SheetContent)
+// const MotionSheetContent = motion.create(SheetContent) // Simplified for debugging
 
 // Prevent page reload function
 const preventReload = (e: BeforeUnloadEvent) => {
@@ -316,47 +316,36 @@ export function CommentTriggerConfig({
 
   return (
     <>
-      <Sheet open={isOpen} onOpenChange={onClose}>
-        <MotionSheetContent 
+      <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
+        <SheetContent 
           showCloseButton={false}
           side="right" 
           className={cn(
-            "p-6 w-[420px] top-0 h-screen flex flex-col overflow-hidden",
-            PURPLE_THEME.glassBackground,
-            PURPLE_THEME.shadow,
-            PURPLE_THEME.border,
-            "border-l",
-            // Force override shadcn defaults
-            "!bg-white/95 !backdrop-blur-xl"
+            "p-6 w-[420px] top-0 h-screen flex flex-col overflow-hidden z-[60]",
+            "bg-white border-gray-200 shadow-xl",
+            "border-l"
           )}
-          {...SIDEBAR_ANIMATIONS.slideIn}
+          style={{ zIndex: 60 }}
         >
-          {/* Gradient overlay */}
-          <div className={cn(
-            "absolute inset-0 pointer-events-none rounded-l-2xl",
-            PURPLE_THEME.gradientOverlay
-          )} />
-          
           <button 
             type="button"
             onClick={onClose} 
-            className={cn(CLOSE_BUTTON_STYLES.base, "group")}
+            className="absolute top-4 right-4 p-2 bg-gray-100 hover:bg-gray-200 rounded z-10"
             aria-label="Close sidebar"
           >
-            <X className={CLOSE_BUTTON_STYLES.icon} />
+            <X className="w-4 h-4" />
             <span className="sr-only">Close</span>
           </button>
           
-          <SheetHeader className={HEADER_STYLES.container}>
+          <SheetHeader className="mb-6">
             <div className="pr-8">
-              <SheetTitle className={HEADER_STYLES.title}>Configure Post/Reel Comments</SheetTitle>
-              <p className={HEADER_STYLES.subtitle}>Set up your comment trigger settings</p>
+              <SheetTitle className="text-lg font-semibold">Configure Post/Reel Comments</SheetTitle>
+              <p className="text-sm text-gray-600">Set up your comment trigger settings</p>
             </div>
           </SheetHeader>
 
-          <motion.div 
+          <div 
             className="flex flex-col gap-8 flex-1 overflow-y-auto pr-6 -mr-6 scrollbar-hide relative z-10"
-            {...SIDEBAR_ANIMATIONS.contentFadeIn}
           >
             {/* Post/Reel Selection Section */}
             <motion.div 
@@ -371,7 +360,7 @@ export function CommentTriggerConfig({
                 {selectedPost ? (
                   <motion.div 
                     className={cn(
-                      "flex gap-4 p-4 rounded-xl transition-all duration-200",
+                      "flex gap-3 p-3 rounded-xl transition-all duration-200",
                       PURPLE_THEME.glassBackground,
                       PURPLE_THEME.border,
                       "hover:shadow-lg hover:-translate-y-0.5"
@@ -381,12 +370,12 @@ export function CommentTriggerConfig({
                     transition={{ delay: 0.1 }}
                     {...SIDEBAR_ANIMATIONS.scaleOnHover}
                   >
-                    <div className="relative flex-shrink-0 w-32 h-32 rounded-xl overflow-hidden">
+                    <div className="relative flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden">
                       <BlurImage
                         src={selectedPost.media_url}
                         alt={selectedPost.caption || 'Selected Instagram post'}
-                        width={120}
-                        height={120}
+                        width={112}
+                        height={112}
                         className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
                       />
                       {selectedPost.media_type === 'VIDEO' && (
@@ -395,7 +384,7 @@ export function CommentTriggerConfig({
                         </div>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0 flex flex-col gap-3">
+                    <div className="flex-1 min-w-0 flex flex-col gap-2.5">
                       <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         {selectedPost.media_type === 'VIDEO' ? 'Reel' : 'Post'}
                       </p>
@@ -406,7 +395,7 @@ export function CommentTriggerConfig({
                             : selectedPost.caption}
                         </p>
                       )}
-                      <div className="flex gap-2 mt-auto">
+                      <div className="flex gap-2 mt-auto items-center flex-wrap sm:flex-nowrap">
                         <motion.div
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
@@ -415,7 +404,7 @@ export function CommentTriggerConfig({
                             variant="ghost"
                             size="sm"
                             className={cn(
-                              "text-xs h-8 px-3 transition-all duration-200",
+                              "text-[11px] h-7 px-2 transition-all duration-200",
                               PURPLE_THEME.button.base,
                               PURPLE_THEME.button.hover,
                               PURPLE_THEME.button.text
@@ -433,7 +422,7 @@ export function CommentTriggerConfig({
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-xs h-8 px-3 text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 hover:border-red-300 transition-all duration-200"
+                            className="text-[11px] h-7 px-2 text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 hover:border-red-300 transition-all duration-200"
                             onClick={handleRemoveSelectedPost}
                           >
                             <X className="h-3 w-3 mr-1.5" />
@@ -588,8 +577,8 @@ export function CommentTriggerConfig({
                 )}
               </div>
             </motion.div>
-          </motion.div>
-        </MotionSheetContent>
+          </div>
+        </SheetContent>
       </Sheet>
 
       <PostSelectionModal

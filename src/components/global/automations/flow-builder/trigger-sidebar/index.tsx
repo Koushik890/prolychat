@@ -52,6 +52,8 @@ export const TriggerSidebar: React.FC<TriggerSidebarProps> = ({
   onSelect,
   selectedTriggers
 }) => {
+
+  
   // Create a memoized version of TRIGGER_OPTIONS with dynamic disabled state
   const dynamicTriggerOptions = React.useMemo(() => {
     return TRIGGER_OPTIONS.map(option => ({
@@ -69,42 +71,33 @@ export const TriggerSidebar: React.FC<TriggerSidebarProps> = ({
   })
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <MotionSheetContent
+    <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
+      <SheetContent
         showCloseButton={false}
         side="right"
         className={cn(
-          "p-6 w-[400px] top-0 h-screen",
-          PURPLE_THEME.glassBackground,
-          PURPLE_THEME.shadow,
-          PURPLE_THEME.border,
+          "p-6 w-[400px] top-0 h-screen z-[60]",
+          "bg-white border-gray-200 shadow-xl",
           "border-l"
         )}
-        {...SIDEBAR_ANIMATIONS.slideIn}
+        style={{ zIndex: 60 }}
       >
-        {/* Gradient overlay */}
-        <div className={cn(
-          "absolute inset-0 pointer-events-none rounded-l-2xl",
-          PURPLE_THEME.gradientOverlay
-        )} />
-        
         <button 
           onClick={onClose} 
-          className={cn(CLOSE_BUTTON_STYLES.base, "group")}
+          className="absolute top-4 right-4 p-2 bg-gray-100 hover:bg-gray-200 rounded z-10"
           aria-label="Close sidebar"
         >
-          <X className={CLOSE_BUTTON_STYLES.icon} />
+          <X className="w-4 h-4" />
           <span className="sr-only">Close</span>
         </button>
         
-        <SheetHeader className={HEADER_STYLES.container}>
-          <SheetTitle className={HEADER_STYLES.title}>Select a trigger</SheetTitle>
-          <p className={HEADER_STYLES.subtitle}>Pick one or more events to start this automation</p>
+        <SheetHeader className="mb-6">
+          <SheetTitle className="text-lg font-semibold">Select a trigger</SheetTitle>
+          <p className="text-sm text-gray-600">Pick one or more events to start this automation</p>
         </SheetHeader>
 
-        <motion.div 
+        <div 
           className="flex flex-col gap-8 relative z-10"
-          {...SIDEBAR_ANIMATIONS.contentFadeIn}
         >
           <div className="flex flex-col gap-4">
             <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2">
@@ -115,20 +108,17 @@ export const TriggerSidebar: React.FC<TriggerSidebarProps> = ({
               {dynamicTriggerOptions.map((option, index) => {
                 const isSelected = selectedTriggers.some(trigger => trigger.id === option.id)
                 return (
-                  <MotionButton
+                  <button
                     key={option.id}
                     className={cn(
-                      "flex flex-col justify-center gap-1 p-3 rounded-2xl transition-all duration-200 text-left w-full relative overflow-hidden",
-                      PURPLE_THEME.glassBackground,
-                      PURPLE_THEME.border,
-                      !option.isDisabled && "hover:-translate-y-0.5 hover:shadow-lg",
-                      option.isDisabled && "opacity-60 cursor-not-allowed bg-gray-50/80",
-                      isSelected && "bg-purple-50/80 border-purple-300/60"
+                      "flex flex-col justify-center gap-1 p-3 rounded-lg transition-all duration-200 text-left w-full relative overflow-hidden",
+                      "bg-white border border-gray-200 shadow-sm",
+                      !option.isDisabled && "hover:shadow-md hover:border-gray-300",
+                      option.isDisabled && "opacity-60 cursor-not-allowed bg-gray-50",
+                      isSelected && "bg-purple-50 border-purple-300"
                     )}
                     onClick={() => !option.isDisabled && handleTriggerSelect(option.id, option.name, option.icon)}
                     disabled={option.isDisabled}
-                    {...SIDEBAR_ANIMATIONS.staggeredItem(index)}
-                    {...(!option.isDisabled ? SIDEBAR_ANIMATIONS.buttonHover : {})}
                     role="button"
                     aria-disabled={option.isDisabled}
                     aria-pressed={isSelected}
@@ -140,16 +130,16 @@ export const TriggerSidebar: React.FC<TriggerSidebarProps> = ({
                           option.isDisabled 
                             ? "bg-gray-100 border border-gray-200" 
                             : isSelected 
-                              ? "bg-purple-100 border border-purple-300 text-purple-700"
-                              : cn(PURPLE_THEME.icon.background, PURPLE_THEME.icon.border)
+                              ? "bg-purple-100 border border-purple-300"
+                              : "bg-purple-50 border border-purple-200"
                         )}>
                           <option.icon className={cn(
-                            "w-4.5 h-4.5 transition-all duration-200",
+                            "w-4 h-4 transition-all duration-200",
                             option.isDisabled 
                               ? "text-gray-400" 
                               : isSelected 
                                 ? "text-purple-700" 
-                                : PURPLE_THEME.icon.text
+                                : "text-purple-600"
                           )} />
                         </div>
                         <div className="flex flex-col gap-0.5 min-w-0 flex-1">
@@ -182,13 +172,13 @@ export const TriggerSidebar: React.FC<TriggerSidebarProps> = ({
                         </span>
                       )}
                     </div>
-                  </MotionButton>
+                  </button>
                 )
               })}
             </div>
           </div>
-        </motion.div>
-      </MotionSheetContent>
+        </div>
+      </SheetContent>
     </Sheet>
   )
 } 

@@ -15,7 +15,7 @@ import { toast } from 'react-hot-toast'
 import { useToast } from '@/contexts/toast-context'
 import { cn } from '@/lib/utils'
 
-const MotionSheetContent = motion.create(SheetContent)
+// const MotionSheetContent = motion.create(SheetContent) // Simplified for debugging
 
 // Prevent page reload function
 const preventReload = (e: BeforeUnloadEvent) => {
@@ -98,26 +98,23 @@ export function MessageTriggerConfig({
   }, [])
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <MotionSheetContent
+    <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
+      <SheetContent
         showCloseButton={false}
         side="right"
         className={cn(
-          'p-6 w-[420px] top-0 h-screen flex flex-col overflow-hidden',
-          styles.sidebar
+          'p-6 w-[420px] top-0 h-screen flex flex-col overflow-hidden z-[60]',
+          'bg-white border-gray-200 shadow-xl border-l'
         )}
-        initial={{ x: '100%', opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={{ x: '100%', opacity: 0 }}
-        transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+        style={{ zIndex: 60 }}
       >
         <button 
           type="button"
           onClick={onClose} 
-          className={styles.closeButton}
+          className="absolute top-4 right-4 p-2 bg-gray-100 hover:bg-gray-200 rounded z-10"
           aria-label="Close sidebar"
         >
-          <X className={styles.closeIcon} />
+          <X className="w-4 h-4" />
           <span className="sr-only">Close</span>
         </button>
 
@@ -180,7 +177,7 @@ export function MessageTriggerConfig({
           onSave={handleKeywordSave}
           initialKeywords={keywords}
         />
-      </MotionSheetContent>
+      </SheetContent>
     </Sheet>
   )
 } 
