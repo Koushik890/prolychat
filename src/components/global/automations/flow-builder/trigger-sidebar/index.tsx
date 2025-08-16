@@ -88,19 +88,19 @@ export const TriggerSidebar: React.FC<TriggerSidebarProps> = ({
           aria-label="Close sidebar"
         >
           <X className="w-4 h-4" />
-          <span className="sr-only">Close</span>
+          <span className="sr-only font-mona">Close</span>
         </button>
         
         <SheetHeader className="mb-6">
-          <SheetTitle className="text-lg font-semibold">Select a trigger</SheetTitle>
-          <p className="text-sm text-gray-600">Pick one or more events to start this automation</p>
+          <SheetTitle className="text-lg font-semibold font-hubot">Select a trigger</SheetTitle>
+          <p className="text-sm text-gray-600 font-mona">Pick one or more events to start this automation</p>
         </SheetHeader>
 
         <div 
           className="flex flex-col gap-8 relative z-10"
         >
           <div className="flex flex-col gap-4">
-            <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2">
+            <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2 font-hubot">
               <InstagramIcon className="w-4.5 h-4.5 text-gray-600" />
               INSTAGRAM
             </h4>
@@ -144,30 +144,30 @@ export const TriggerSidebar: React.FC<TriggerSidebarProps> = ({
                         </div>
                         <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                           <span className={cn(
-                            "text-sm font-medium transition-colors duration-200",
+                            "text-sm font-medium transition-colors duration-200 font-mona",
                             option.isDisabled 
                               ? "text-gray-500" 
                               : isSelected 
                                 ? "text-purple-800" 
                                 : "text-gray-800"
                           )}>{option.name}</span>
-                          <span className="text-xs text-gray-500 font-normal truncate">
+                          <span className="text-xs text-gray-500 font-normal truncate font-mona">
                             {option.description}
                           </span>
                         </div>
                       </div>
                       {option.isDisabled ? (
                         isSelected ? (
-                          <span className="text-xs font-medium px-2 py-1 rounded-full bg-purple-100 border border-purple-300 text-purple-700 ml-2 flex-shrink-0" aria-label="Selected">
+                          <span className="text-xs font-medium px-2 py-1 rounded-full bg-purple-100 border border-purple-300 text-purple-700 ml-2 flex-shrink-0 font-mona" aria-label="Selected">
                             Selected
                           </span>
                         ) : (
-                          <span className="text-xs font-medium px-2 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-600 ml-2 flex-shrink-0" aria-label="Coming Soon">
+                          <span className="text-xs font-medium px-2 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-600 ml-2 flex-shrink-0 font-mona" aria-label="Coming Soon">
                             Coming Soon
                           </span>
                         )
                       ) : isSelected && (
-                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-purple-100 border border-purple-300 text-purple-700 ml-2 flex-shrink-0" aria-label="Selected">
+                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-purple-100 border border-purple-300 text-purple-700 ml-2 flex-shrink-0 font-mona" aria-label="Selected">
                           Selected
                         </span>
                       )}

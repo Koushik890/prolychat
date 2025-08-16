@@ -42,7 +42,7 @@ const TooltipContent = React.forwardRef<
     ref={ref}
     sideOffset={sideOffset}
     className={cn(
-      "z-50 overflow-hidden rounded-lg border border-purple-200/60 bg-white/95 backdrop-blur-xl px-3 py-1.5 text-sm text-purple-700 shadow-[0_8px_16px_rgba(139,92,246,0.08)] ring-1 ring-purple-900/[0.05] animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      "z-50 overflow-hidden rounded-lg border border-purple-200/60 bg-white/95 backdrop-blur-xl px-3 py-1.5 text-sm text-purple-700 font-mona shadow-[0_8px_16px_rgba(139,92,246,0.08)] ring-1 ring-purple-900/[0.05] animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
       className,
     )}
     {...props}
@@ -166,7 +166,7 @@ function PromptInputTextarea({
       onChange={(e) => setValue(e.target.value)}
       onKeyDown={handleKeyDown}
       className={cn(
-        "text-purple-900 placeholder:text-purple-400 min-h-[44px] w-full resize-none border-none bg-transparent shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
+        "text-purple-900 placeholder:text-purple-400 font-mona min-h-[44px] w-full resize-none border-none bg-transparent shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
         className
       )}
       rows={1}
@@ -361,7 +361,7 @@ export function TextConfigModal({
               transition={{ delay: 0.2, duration: 0.5, type: "spring", damping: 20 }}
               className="mb-8 text-center"
             >
-              <h2 className="text-3xl font-bold text-purple-900 mb-2 tracking-tight">Configure Message</h2>
+              <h2 className="text-3xl font-bold text-purple-900 mb-2 tracking-tight font-hubot">Configure Message</h2>
               <p className="text-purple-600 text-sm font-medium font-mona">Enter the message you want to send to the user</p>
             </motion.div>
 
@@ -391,7 +391,7 @@ export function TextConfigModal({
                 />
                 <PromptInputActions className="justify-end pt-3 relative z-10">
                   <PromptInputAction
-                    tooltip={isLoading ? "Stop generation" : "Send message"}
+                    tooltip={<span className="font-mona">{isLoading ? "Stop generation" : "Send message"}</span>}
                   >
                     <motion.div
                       whileHover={{ scale: 1.05 }}

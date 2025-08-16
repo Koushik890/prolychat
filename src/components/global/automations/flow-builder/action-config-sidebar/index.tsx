@@ -132,13 +132,13 @@ const CardPreview: React.FC<CardPreviewProps> = ({ cardData, onEdit, onDelete, i
       )}
       <div className="mb-3">
         {cardData.title && (
-          <h3 className="text-base font-semibold text-gray-800 mb-2 line-clamp-2">{cardData.title}</h3>
+          <h3 className="text-base font-semibold text-gray-800 mb-2 line-clamp-2 font-hubot">{cardData.title}</h3>
         )}
         {cardData.subtitle && (
-          <p className="text-sm text-gray-600 mb-3 line-clamp-3">{cardData.subtitle}</p>
+          <p className="text-sm text-gray-600 mb-3 line-clamp-3 font-mona">{cardData.subtitle}</p>
         )}
         {cardData.buttonAction && (
-          <div className="flex items-center justify-center w-full py-2 px-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-xs font-medium">
+          <div className="flex items-center justify-center w-full py-2 px-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-xs font-medium font-mona">
             {getButtonText()}
           </div>
         )}
@@ -147,7 +147,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ cardData, onEdit, onDelete, i
         <button 
           onClick={onEdit}
           className={cn(
-            "flex-1 py-2 px-3 text-xs font-medium rounded-lg transition-all duration-150",
+            "flex-1 py-2 px-3 text-xs font-medium rounded-lg transition-all duration-150 font-mona",
             PURPLE_THEME.button.base,
             PURPLE_THEME.button.hover,
             PURPLE_THEME.button.text
@@ -414,12 +414,12 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
             aria-label="Close sidebar"
           >
             <X className="w-4 h-4" />
-            <span className="sr-only">Close</span>
+                                  <span className="sr-only font-mona">Close</span>
           </button>
           
           <SheetHeader className="mb-6">
-            <SheetTitle className="text-lg font-semibold">Configure Message</SheetTitle>
-            <p className="text-sm text-gray-600">Choose how you want to respond to the user</p>
+            <SheetTitle className="text-lg font-semibold font-hubot">Configure Message</SheetTitle>
+            <p className="text-sm text-gray-600 font-mona">Choose how you want to respond to the user</p>
           </SheetHeader>
 
           <div 
@@ -438,7 +438,7 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
               >
                 <div className="flex items-center gap-2 relative mb-3">
                   <MessageCircle className="w-5 h-5 text-gray-600" />
-                  <h4 className="text-sm font-semibold text-gray-800 flex-grow">Selected Message</h4>
+                  <h4 className="text-sm font-semibold text-gray-800 flex-grow font-hubot">Selected Message</h4>
                   <button 
                     onClick={handleMessageDelete}
                     className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-gray-100 transition-colors duration-200"
@@ -461,7 +461,7 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
                   />
                 ) : (
                   <div className="flex items-start justify-between gap-4 py-2 px-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-800 leading-relaxed flex-1 break-words">{selectedText}</p>
+                    <p className="text-sm text-gray-800 leading-relaxed flex-1 break-words font-mona">{selectedText}</p>
                     <button 
                       onClick={() => {
                         if (selectedActionType === 'card') {
@@ -478,7 +478,7 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
                       )}
                       aria-label="Edit message"
                     >
-                      Edit
+                      <span className="font-mona">Edit</span>
                     </button>
                   </div>
                 )}
@@ -487,7 +487,7 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
 
             {!selectedText && (
               <div className="flex flex-col gap-4">
-                <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2">
+                <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2 font-hubot">
                   <Zap className="w-4.5 h-4.5 text-gray-600" />
                   ACTIONS
                 </h4>
@@ -524,17 +524,17 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
                           </div>
                           <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                             <span className={cn(
-                              "text-sm font-medium transition-colors duration-200",
+                              "text-sm font-medium transition-colors duration-200 font-hubot",
                               option.isDisabled ? "text-gray-500" : "text-gray-800"
                             )}>{option.name}</span>
-                            <span className="text-xs text-gray-500 font-normal truncate">
+                            <span className="text-xs text-gray-500 font-normal truncate font-mona">
                               {option.description}
                             </span>
                           </div>
                         </div>
                         {option.isDisabled && (
                           <span className={cn(
-                            "text-xs font-medium px-2 py-1 rounded-full transition-all duration-200",
+                            "text-xs font-medium px-2 py-1 rounded-full transition-all duration-200 font-mona",
                             "bg-purple-50 border border-purple-200 text-purple-600",
                             "ml-2 flex-shrink-0"
                           )} aria-label="Coming Soon">

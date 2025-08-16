@@ -351,7 +351,7 @@ export function CardConfigModal({
             {/* Title Input Field */}
             <div className={styles.section}>
               <div className={styles.inputContainer}>
-                <label htmlFor="card-title" className={styles.inputLabel}>
+                <label htmlFor="card-title" className={`${styles.inputLabel} font-mona`}>
                   Title
                 </label>
                 <div className={styles.titleInputContainer}>
@@ -368,7 +368,7 @@ export function CardConfigModal({
                     onKeyDown={(e) => e.stopPropagation()}
                   />
                   <div className={styles.inputFooter}>
-                    <div className={styles.characterCount}>
+                    <div className={`${styles.characterCount} font-mona`}>
                       {titleCharacterCount} / {titleCharacterLimit}
                     </div>
                     <div className={styles.emojiContainer}>
@@ -413,7 +413,7 @@ export function CardConfigModal({
             {/* Subtitle Input Field */}
             <div className={styles.section}>
               <div className={styles.inputContainer}>
-                <label htmlFor="card-subtitle" className={styles.inputLabel}>
+                <label htmlFor="card-subtitle" className={`${styles.inputLabel} font-mona`}>
                   Subtitle
                 </label>
                 <div className={styles.subtitleInputContainer}>
@@ -430,7 +430,7 @@ export function CardConfigModal({
                     rows={3}
                   />
                   <div className={styles.inputFooter}>
-                    <div className={styles.characterCount}>
+                    <div className={`${styles.characterCount} font-mona`}>
                       {subtitleCharacterCount} / {subtitleCharacterLimit}
                     </div>
                     <div className={styles.emojiContainer}>
@@ -525,7 +525,7 @@ export function CardConfigModal({
             {/* Footer */}
             <div className={styles.footer}>
               <button
-                className={styles.cancelButton}
+                className={`${styles.cancelButton} font-mona`}
                 onClick={(e) => {
                   e.stopPropagation()
                   onClose()
@@ -535,7 +535,7 @@ export function CardConfigModal({
                 Cancel
               </button>
               <button
-                className={styles.saveButton}
+                className={`${styles.saveButton} font-mona`}
                 onClick={(e) => {
                   e.stopPropagation()
                   handleSave()

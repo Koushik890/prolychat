@@ -41,7 +41,7 @@ const TooltipContent = React.forwardRef<
     ref={ref}
     sideOffset={sideOffset}
     className={cn(
-      "z-50 overflow-hidden rounded-lg border border-purple-200/60 bg-white/95 backdrop-blur-xl px-3 py-1.5 text-sm text-purple-700 shadow-[0_8px_16px_rgba(139,92,246,0.08)] ring-1 ring-purple-900/[0.05] animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      "z-50 overflow-hidden rounded-lg border border-purple-200/60 bg-white/95 backdrop-blur-xl px-3 py-1.5 text-sm text-purple-700 font-mona shadow-[0_8px_16px_rgba(139,92,246,0.08)] ring-1 ring-purple-900/[0.05] animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
       className,
     )}
     {...props}
@@ -144,7 +144,7 @@ function KeywordInputInput({
       onChange={(e) => setValue(e.target.value)}
       onKeyDown={handleKeyDown}
       className={cn(
-        "text-purple-900 placeholder:text-purple-400 h-[44px] w-full resize-none border-none bg-transparent shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
+        "text-purple-900 placeholder:text-purple-400 font-mona h-[44px] w-full resize-none border-none bg-transparent shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
         className
       )}
       disabled={disabled}
@@ -323,7 +323,7 @@ export function KeywordConfigurationModal({
             transition={{ delay: 0.2, duration: 0.5, type: 'spring', damping: 20 }}
             className="mb-8 text-center"
           >
-            <h2 className="text-3xl font-bold text-purple-900 mb-2 tracking-tight">Configure Keywords</h2>
+            <h2 className="text-3xl font-bold text-purple-900 mb-2 tracking-tight font-hubot">Configure Keywords</h2>
             <p className="text-purple-600 text-sm font-medium font-mona">Set up keywords that will trigger your DM automation</p>
           </motion.div>
 
@@ -352,7 +352,7 @@ export function KeywordConfigurationModal({
               />
               <KeywordInputActions className="justify-end pt-3 relative z-10">
                 <KeywordInputAction
-                  tooltip={isLoading ? 'Adding keyword...' : 'Add keyword'}
+                  tooltip={<span className="font-mona">{isLoading ? 'Adding keyword...' : 'Add keyword'}</span>}
                 >
                   <motion.div
                     whileHover={{ scale: 1.05 }}
@@ -390,7 +390,7 @@ export function KeywordConfigurationModal({
                 {includeKeywords.map((keyword) => (
                   <motion.div
                     key={keyword}
-                    className="flex items-center gap-2 bg-purple-100/80 text-purple-700 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 hover:bg-purple-200/80 hover:scale-105"
+                    className="flex items-center gap-2 bg-purple-100/80 text-purple-700 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 hover:bg-purple-200/80 hover:scale-105 font-mona"
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
@@ -450,12 +450,12 @@ export function KeywordConfigurationModal({
                   {isLoading ? (
                     <>
                       <Square className="size-5 fill-current animate-pulse" />
-                      Saving Keywords...
+                      <span className="font-mona">Saving Keywords...</span>
                     </>
                   ) : (
                     <>
                       <ArrowUp className="size-5 transition-transform duration-200 group-hover:translate-y-[-1px]" />
-                      Save Keywords
+                      <span className="font-mona">Save Keywords</span>
                     </>
                   )}
                 </div>

@@ -7,7 +7,7 @@
 .settings-section h4,
 .settings-section h5,
 .settings-section h6 {
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Apple Color Emoji", Inter, Roboto, "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
+  font-family: "Mona Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
 
 /* Custom styles for the payment page subnav */

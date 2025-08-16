@@ -416,17 +416,17 @@ export default function DashboardPage() {
         <div className="fixed top-0 left-0 w-full h-full bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
             <LoaderOne />
-            <p className="text-gray-400 font-medium">Creating automation...</p>
+            <p className="text-gray-400 font-medium font-mona">Creating automation...</p>
           </div>
         </div>
       )}
       
       {/* Header Section - Now responsive */}
       <div className="flex flex-col items-center px-4 sm:px-6 lg:px-8">
-        <h2 className="w-full max-w-7xl text-center text-sm sm:text-base font-medium leading-5 sm:leading-6 font-['Plus_Jakarta_Sans',-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,'Helvetica_Neue',Helvetica,Arial,sans-serif] text-[#282d47] mb-1">
+        <h2 className="w-full max-w-7xl text-center text-sm sm:text-base font-medium leading-5 sm:leading-6 font-mona text-[#282d47] mb-1">
           {dayAndDate}
         </h2>
-        <h1 className="w-full max-w-7xl text-center text-xl sm:text-2xl lg:text-3xl font-medium leading-6 sm:leading-8 lg:leading-10 font-['Plus_Jakarta_Sans',-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,'Helvetica_Neue',Helvetica,Arial,sans-serif] text-[#282d47]">
+        <h1 className="w-full max-w-7xl text-center text-xl sm:text-2xl lg:text-3xl font-medium leading-6 sm:leading-8 lg:leading-10 font-hubot text-[#282d47]">
           {getGreeting()}, {firstName}
         </h1>
       </div>

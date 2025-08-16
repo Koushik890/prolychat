@@ -72,10 +72,10 @@ export function PerformanceMetricsCard({
           <div className="relative z-10 p-3 sm:p-4 flex flex-col items-center h-full w-full">
             {/* Header - Fixed height */}
             <div className="text-center mb-2 sm:mb-3 h-10 sm:h-12 flex flex-col justify-center">
-              <h3 className="text-slate-800 text-lg sm:text-xl font-semibold leading-tight whitespace-nowrap font-sans" style={{ fontFamily: 'inherit !important' }}>
+              <h3 className="text-slate-800 text-lg sm:text-xl font-semibold leading-tight whitespace-nowrap font-hubot">
                 Comments
               </h3>
-              <p className="text-slate-600 text-xs mt-1">
+              <p className="text-slate-600 text-xs mt-1 font-mona">
                 On your posts
               </p>
             </div>
@@ -96,7 +96,7 @@ export function PerformanceMetricsCard({
                   </div>
                   {/* Info container with fixed height */}
                   <div className="h-8 sm:h-10 flex items-start justify-center">
-                    <div className="text-slate-500 text-sm font-medium flex gap-2 items-center">
+                    <div className="text-slate-500 text-sm font-medium font-mona flex gap-2 items-center">
                       out of <span className="text-slate-700">{totalComments}</span> total
                     </div>
                   </div>
@@ -106,7 +106,7 @@ export function PerformanceMetricsCard({
             
             {/* Footer */}
             <div className="w-full mt-auto pt-3 border-t-2 border-slate-300">
-              <p className="text-slate-700 text-xs font-medium text-center">
+              <p className="text-slate-700 text-xs font-medium font-mona text-center">
                 {isLoading ? "Calculating..." : `${commentsPercentage}% automated response rate`}
               </p>
             </div>
@@ -146,10 +146,10 @@ export function PerformanceMetricsCard({
           <div className="relative z-10 p-3 sm:p-4 flex flex-col items-center h-full w-full">
             {/* Header - Fixed height */}
             <div className="text-center mb-2 sm:mb-3 h-10 sm:h-12 flex flex-col justify-center">
-              <h3 className="text-slate-800 text-lg sm:text-xl font-semibold leading-tight whitespace-nowrap font-sans" style={{ fontFamily: 'inherit !important' }}>
+              <h3 className="text-slate-800 text-lg sm:text-xl font-semibold leading-tight whitespace-nowrap font-hubot">
                 Direct Messages
               </h3>
-              <p className="text-slate-600 text-xs mt-1">
+              <p className="text-slate-600 text-xs mt-1 font-mona">
                 Automated Responses
               </p>
             </div>
@@ -174,16 +174,16 @@ export function PerformanceMetricsCard({
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-1.5">
                           <MessageSquare size={12} className="text-slate-500" />
-                          <span className="text-slate-500 text-xs">From comments:</span>
+                          <span className="text-slate-500 text-xs font-mona">From comments:</span>
                         </div>
-                        <span className="text-slate-800 text-xs font-medium">{commentTriggeredDms}</span>
+                        <span className="text-slate-800 text-xs font-medium font-mona">{commentTriggeredDms}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
                           <Send size={12} className="text-slate-500" />
-                          <span className="text-slate-500 text-xs">Direct responses:</span>
+                          <span className="text-slate-500 text-xs font-mona">Direct responses:</span>
                         </div>
-                        <span className="text-slate-800 text-xs font-medium">{userMessageDms}</span>
+                        <span className="text-slate-800 text-xs font-medium font-mona">{userMessageDms}</span>
                       </div>
                     </div>
                   </div>
@@ -193,7 +193,7 @@ export function PerformanceMetricsCard({
             
             {/* Footer */}
             <div className="w-full mt-auto pt-3 border-t-2 border-slate-300">
-              <p className="text-slate-700 text-xs font-medium text-center">
+              <p className="text-slate-700 text-xs font-medium font-mona text-center">
                 {isLoading ? "Calculating..." : "Total automated messages sent"}
               </p>
             </div>

@@ -68,9 +68,9 @@ const ThenAction = ({ id }: Props) => {
                             >
                                 <div className="flex gap-x-2 items-center">
                                     {listener.icon}
-                                    <p>{listener.label}</p>
+                                    <p className="font-mona">{listener.label}</p>
                                 </div>
-                                <p>{listener.description}</p>
+                                <p className="font-mona">{listener.description}</p>
                             </div>
                         </SubscriptionPlan>
                     ) : (
@@ -86,9 +86,9 @@ const ThenAction = ({ id }: Props) => {
                         >
                             <div className="flex gap-x-2 items-center">
                                 {listener.icon}
-                                <p>{listener.label}</p>
+                                <p className="font-mona">{listener.label}</p>
                             </div>
-                            <p>{listener.description}</p>
+                            <p className="font-mona">{listener.description}</p>
                         </div>
                     )
                 )}

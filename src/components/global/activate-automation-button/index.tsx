@@ -89,7 +89,7 @@ const ActivateAutomationButton = ({ id }: Props) => {
             "w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full",
             isActive ? "bg-emerald-500 animate-pulse" : "bg-slate-400"
           )} />
-          {status}
+          <span className="font-mona">{status}</span>
         </div>
       </Badge>
       <ShimmerButton
@@ -112,7 +112,7 @@ const ActivateAutomationButton = ({ id }: Props) => {
                 "w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 transition-transform text-white",
                 isActive ? "" : "rotate-180"
               )} />
-              <span className="whitespace-pre-wrap text-center text-xs sm:text-sm font-medium leading-none tracking-tight text-white lg:text-lg">
+              <span className="whitespace-pre-wrap text-center text-xs sm:text-sm font-medium leading-none tracking-tight text-white lg:text-lg font-mona">
                 {isActive ? 'Deactivate' : 'Activate'}
               </span>
             </>

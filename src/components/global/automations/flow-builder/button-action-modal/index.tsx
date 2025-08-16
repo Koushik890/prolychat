@@ -145,10 +145,10 @@ export function ButtonActionModal({ isOpen, onClose, onSelect }: ButtonActionMod
               <MessageDotsIcon className="h-[18px] w-[18px] text-purple-600 group-hover:scale-110 transition-transform duration-300 ease-out" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-[15px] font-semibold text-gray-900 group-hover:text-purple-600 transition-colors duration-200">
+              <h3 className="text-[15px] font-semibold text-gray-900 group-hover:text-purple-600 transition-colors duration-200 font-hubot">
                 Send the user a message
               </h3>
-              <p className="text-[13px] text-gray-600 group-hover:text-gray-700 transition-colors duration-200 mt-0.5">
+              <p className="text-[13px] text-gray-600 group-hover:text-gray-700 transition-colors duration-200 mt-0.5 font-mona">
                 Button will send a direct message to the user
               </p>
             </div>
@@ -195,10 +195,10 @@ export function ButtonActionModal({ isOpen, onClose, onSelect }: ButtonActionMod
               <BotAddIcon className="h-[18px] w-[18px] text-purple-600 group-hover:scale-110 transition-transform duration-300 ease-out" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-[15px] font-semibold text-gray-900 group-hover:text-purple-600 transition-colors duration-200">
+              <h3 className="text-[15px] font-semibold text-gray-900 group-hover:text-purple-600 transition-colors duration-200 font-hubot">
                 Use Proly AI Assistant
               </h3>
-              <p className="text-[13px] text-gray-600 group-hover:text-gray-700 transition-colors duration-200 mt-0.5">
+              <p className="text-[13px] text-gray-600 group-hover:text-gray-700 transition-colors duration-200 mt-0.5 font-mona">
                 Let AI handle the user interaction automatically
               </p>
             </div>
@@ -245,10 +245,10 @@ export function ButtonActionModal({ isOpen, onClose, onSelect }: ButtonActionMod
               <ExternalLink className="h-[18px] w-[18px] text-blue-600 group-hover:scale-110 transition-transform duration-300 ease-out" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-[15px] font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
+              <h3 className="text-[15px] font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200 font-hubot">
                 Open website
               </h3>
-              <p className="text-[13px] text-gray-600 group-hover:text-gray-700 transition-colors duration-200 mt-0.5">
+              <p className="text-[13px] text-gray-600 group-hover:text-gray-700 transition-colors duration-200 mt-0.5 font-mona">
                 Button will open the specified URL in a new tab
               </p>
             </div>

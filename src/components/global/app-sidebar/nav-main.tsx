@@ -49,7 +49,7 @@ export function NavMain({ items, isExpanded }: NavMainProps) {
                     />
                   </div>
                   {isExpanded && (
-                    <span className={`truncate pl-[18px] text-[17px] font-medium leading-6 ${isActive ? 'text-purple-600' : 'text-gray-700'}`}>
+                    <span className={`truncate pl-[18px] text-[17px] font-medium font-mona leading-6 ${isActive ? 'text-purple-600' : 'text-gray-700'}`}>
                       {item.title}
                     </span>
                   )}

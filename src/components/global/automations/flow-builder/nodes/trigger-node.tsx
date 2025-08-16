@@ -100,7 +100,7 @@ export function TriggerNode({ data }: NodeProps<TriggerNodeData>) {
             <Zap className={styles.icon} />
           </div>
           <div className={styles.titleWrapper}>
-            <h3 className={styles.title}>When...</h3>
+            <h3 className={`${styles.title} font-hubot`}>When...</h3>
           </div>
         </div>
 
@@ -122,12 +122,12 @@ export function TriggerNode({ data }: NodeProps<TriggerNodeData>) {
                 <div className={styles.triggerIconWrapper}>
                   <trigger.icon className={styles.triggerIcon} />
                 </div>
-                <p className={styles.selectedTriggerText}>{trigger.name}</p>
+                <p className={`${styles.selectedTriggerText} font-mona`}>{trigger.name}</p>
               </motion.div>
             ))}
           </div>
         ) : (
-          <p className={styles.description}>
+          <p className={`${styles.description} font-mona`}>
             A Trigger is an event that starts your Automation.
             <br />
             Click to add a Trigger.
@@ -146,13 +146,13 @@ export function TriggerNode({ data }: NodeProps<TriggerNodeData>) {
               }
             }}
           >
-            <span className={styles.buttonContent}>+ New Trigger</span>
+            <span className={`${styles.buttonContent} font-mona`}>+ New Trigger</span>
           </Button>
         )}
 
         {/* Then text with flow indicator */}
         <div className={styles.flowIndicator}>
-          <span className={styles.thenText}>Then</span>
+          <span className={`${styles.thenText} font-mona`}>Then</span>
           <div className={styles.arrow}></div>
         </div>
 

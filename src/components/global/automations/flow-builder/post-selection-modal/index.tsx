@@ -138,8 +138,8 @@ function AllPostsModal({ isOpen, onClose, posts, selectedId, onPostSelect }: All
               transition={{ delay: 0.2, duration: 0.5, type: "spring", damping: 20 }}
               className="mb-8 text-center"
             >
-              <h2 className="text-3xl font-bold text-purple-900 mb-2 tracking-tight">All Posts & Reels</h2>
-              <p className="text-purple-600 text-sm font-medium">Choose from all your Instagram content</p>
+              <h2 className="text-3xl font-bold text-purple-900 mb-2 tracking-tight font-hubot">All Posts & Reels</h2>
+              <p className="text-purple-600 text-sm font-medium font-mona">Choose from all your Instagram content</p>
             </motion.div>
 
             {/* Posts Grid */}
@@ -211,7 +211,7 @@ function AllPostsModal({ isOpen, onClose, posts, selectedId, onPostSelect }: All
               <Button
                 onClick={onClose}
                 variant="outline"
-                className="bg-white/60 border-purple-200/60 text-purple-700 hover:bg-purple-50/60 hover:border-purple-300/60 px-6 py-2 rounded-full transition-all duration-200"
+                className="bg-white/60 border-purple-200/60 text-purple-700 hover:bg-purple-50/60 hover:border-purple-300/60 px-6 py-2 rounded-full transition-all duration-200 font-mona"
               >
                 Close
               </Button>
@@ -373,8 +373,8 @@ export function PostSelectionModal({ isOpen, onClose, onSelect, selectedPostId }
               transition={{ delay: 0.2, duration: 0.5, type: "spring", damping: 20 }}
               className="mb-8 text-center"
             >
-              <h2 className="text-3xl font-bold text-purple-900 mb-2 tracking-tight">Which Post or Reel do you want to use?</h2>
-              <p className="text-purple-600 text-sm font-medium">Select the content you want to monitor for this automation</p>
+              <h2 className="text-3xl font-bold text-purple-900 mb-2 tracking-tight font-hubot">Which Post or Reel do you want to use?</h2>
+              <p className="text-purple-600 text-sm font-medium font-mona">Select the content you want to monitor for this automation</p>
             </motion.div>
 
             {/* Content */}
@@ -387,13 +387,13 @@ export function PostSelectionModal({ isOpen, onClose, onSelect, selectedPostId }
               {/* Specific Post Selection */}
               <Card className="group relative flex flex-col gap-6 p-6 cursor-pointer bg-white/40 hover:bg-white/60 border border-purple-200/60 rounded-[1.5rem] hover:shadow-[0_16px_32px_rgba(139,92,246,0.12)] hover:-translate-y-[2px] hover:border-purple-300/60 transition-all duration-300 ease-out">
                 <div className="flex justify-between items-start">
-                  <h3 className="text-lg font-semibold text-purple-900">
+                  <h3 className="text-lg font-semibold text-purple-900 font-hubot">
                     Specific Post or Reel
                   </h3>
                   {postsData?.status === 200 && postsData.data.data.length > 3 && (
                     <Button
                       variant="link"
-                      className="text-sm text-purple-600 hover:text-purple-700 font-medium p-0 h-auto transition-colors duration-200"
+                      className="text-sm text-purple-600 hover:text-purple-700 font-medium p-0 h-auto transition-colors duration-200 font-mona"
                       onClick={handleSeeMore}
                     >
                       See More
@@ -405,12 +405,12 @@ export function PostSelectionModal({ isOpen, onClose, onSelect, selectedPostId }
                 <div className="grid grid-cols-3 gap-3 w-full">
                   {isLoading ? (
                     <div className="col-span-3 py-8 flex justify-center items-center">
-                      <Loader state>Loading posts...</Loader>
+                      <Loader state><span className="font-mona">Loading posts...</span></Loader>
                     </div>
                   ) : error ? (
-                    <div className="col-span-3 py-8 text-center text-purple-600">
-                      Failed to load posts. Please try again.
-                    </div>
+                                         <div className="col-span-3 py-8 text-center text-purple-600 font-mona">
+                       Failed to load posts. Please try again.
+                     </div>
                   ) : postsData?.status === 200 && postsData.data.data.length > 0 ? (
                     postsData.data.data.slice(0, 3).map((post: InstagramPostProps, index: number) => (
                       <motion.div
@@ -463,9 +463,9 @@ export function PostSelectionModal({ isOpen, onClose, onSelect, selectedPostId }
                       </motion.div>
                     ))
                   ) : (
-                    <div className="col-span-3 py-8 text-center text-purple-600">
-                      No posts found. Create some posts on Instagram first.
-                    </div>
+                                         <div className="col-span-3 py-8 text-center text-purple-600 font-mona">
+                       No posts found. Create some posts on Instagram first.
+                     </div>
                   )}
                 </div>
 
@@ -476,12 +476,12 @@ export function PostSelectionModal({ isOpen, onClose, onSelect, selectedPostId }
                     transition={{ type: "spring", damping: 20, stiffness: 300 }}
                     className="flex justify-end"
                   >
-                    <Button
-                      onClick={handleConfirmSelection}
-                      className="bg-gradient-to-r from-purple-500 to-purple-600 text-white font-medium hover:from-purple-600 hover:to-purple-700 active:from-purple-700 active:to-purple-800 transition-all duration-200 px-6 py-2 rounded-full shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30"
-                    >
-                      Confirm Selection
-                    </Button>
+                                         <Button
+                       onClick={handleConfirmSelection}
+                       className="bg-gradient-to-r from-purple-500 to-purple-600 text-white font-medium hover:from-purple-600 hover:to-purple-700 active:from-purple-700 active:to-purple-800 transition-all duration-200 px-6 py-2 rounded-full shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 font-mona"
+                     >
+                       Confirm Selection
+                     </Button>
                   </motion.div>
                 )}
               </Card>
@@ -493,17 +493,17 @@ export function PostSelectionModal({ isOpen, onClose, onSelect, selectedPostId }
                 transition={{ delay: 0.8, duration: 0.5, type: "spring", damping: 20 }}
               >
                 <Card className="group relative flex flex-row items-center gap-4 py-4 px-6 cursor-not-allowed opacity-75 bg-white/40 border border-purple-200/60 rounded-[1.5rem] transition-all duration-300 ease-out">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-purple-900 transition-colors duration-200">
-                      All Posts or Reels
-                    </h3>
-                    <p className="text-sm text-purple-600 transition-colors duration-200 mt-1">
-                      Monitor all your content automatically
-                    </p>
-                  </div>
-                  <div className="px-3 py-1.5 bg-gradient-to-r from-purple-100/80 to-purple-200/60 text-purple-700 text-xs font-semibold rounded-full border border-purple-200/60">
-                    Coming Soon
-                  </div>
+                                     <div className="flex-1">
+                     <h3 className="text-lg font-semibold text-purple-900 transition-colors duration-200 font-hubot">
+                       All Posts or Reels
+                     </h3>
+                     <p className="text-sm text-purple-600 transition-colors duration-200 mt-1 font-mona">
+                       Monitor all your content automatically
+                     </p>
+                   </div>
+                   <div className="px-3 py-1.5 bg-gradient-to-r from-purple-100/80 to-purple-200/60 text-purple-700 text-xs font-semibold rounded-full border border-purple-200/60 font-mona">
+                     Coming Soon
+                   </div>
                 </Card>
               </motion.div>
 
@@ -514,17 +514,17 @@ export function PostSelectionModal({ isOpen, onClose, onSelect, selectedPostId }
                 transition={{ delay: 0.9, duration: 0.5, type: "spring", damping: 20 }}
               >
                 <Card className="group relative flex flex-row items-center gap-4 py-4 px-6 cursor-not-allowed opacity-75 bg-white/40 border border-purple-200/60 rounded-[1.5rem] transition-all duration-300 ease-out">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-purple-900 transition-colors duration-200">
-                      Next Post or Reel
-                    </h3>
-                    <p className="text-sm text-purple-600 transition-colors duration-200 mt-1">
-                      Automatically apply to your next upload
-                    </p>
-                  </div>
-                  <div className="px-3 py-1.5 bg-gradient-to-r from-purple-100/80 to-purple-200/60 text-purple-700 text-xs font-semibold rounded-full border border-purple-200/60">
-                    Coming Soon
-                  </div>
+                                     <div className="flex-1">
+                     <h3 className="text-lg font-semibold text-purple-900 transition-colors duration-200 font-hubot">
+                       Next Post or Reel
+                     </h3>
+                     <p className="text-sm text-purple-600 transition-colors duration-200 mt-1 font-mona">
+                       Automatically apply to your next upload
+                     </p>
+                   </div>
+                   <div className="px-3 py-1.5 bg-gradient-to-r from-purple-100/80 to-purple-200/60 text-purple-700 text-xs font-semibold rounded-full border border-purple-200/60 font-mona">
+                     Coming Soon
+                   </div>
                 </Card>
               </motion.div>
             </motion.div>

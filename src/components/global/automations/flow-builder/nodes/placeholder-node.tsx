@@ -115,7 +115,7 @@ export function PlaceholderNode({ id, data }: PlaceholderNodeProps) {
         src: "https://public.rive.app/community/runtime-files/2063-4080-phone-icon.riv",
         stateMachine: "phoneIconSM"
       },
-      label: "Send Message",
+      label: <span className="font-mona">Send Message</span>,
       hotkey: "M",
       icon: MessageSquare,
       onClick: () => {
@@ -128,7 +128,7 @@ export function PlaceholderNode({ id, data }: PlaceholderNodeProps) {
         src: "https://public.rive.app/community/runtime-files/2487-5077-robot-dance.riv",
         stateMachine: "State Machine 1"
       },
-      label: "AI Assistant",
+      label: <span className="font-mona">AI Assistant</span>,
       hotkey: "A",
       icon: Bot,
       onClick: () => {
@@ -167,7 +167,7 @@ export function PlaceholderNode({ id, data }: PlaceholderNodeProps) {
               <div className={styles.iconWrapper}>
                 <Plus className={styles.icon} aria-hidden="true" />
               </div>
-              <p className={styles.text}>{data.label || 'Add Node'}</p>
+              <p className={`${styles.text} font-mona`}>{data.label || 'Add Node'}</p>
             </div>
           </PopoverTrigger>
           

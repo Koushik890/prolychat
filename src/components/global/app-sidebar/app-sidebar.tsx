@@ -76,7 +76,7 @@ export function AppSidebar({ onCollapse, defaultExpanded = true }: AppSidebarPro
 
   return (
     <aside 
-      className={`fixed left-0 top-0 z-20 h-full border-r border-slate-200 bg-slate-50 font-['Plus_Jakarta_Sans',-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Oxygen,Ubuntu,Cantarell,'Fira_Sans','Droid_Sans','Helvetica_Neue',sans-serif] text-base font-medium leading-6 shadow-[0_0_20px_rgba(0,0,0,0.08)] transition-all duration-300 hidden lg:block ${
+      className={`fixed left-0 top-0 z-20 h-full border-r border-slate-200 bg-slate-50 font-mona text-base font-medium leading-6 shadow-[0_0_20px_rgba(0,0,0,0.08)] transition-all duration-300 hidden lg:block ${
         isExpanded ? "w-[250px]" : "w-[72px]"
       }`}
     >

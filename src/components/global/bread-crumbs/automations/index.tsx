@@ -153,7 +153,7 @@ const AutomationsBreadCrumb = ({ id }: Props) => {
                 </button>
               </SheetTrigger>
               <SheetContent side="left" className={`p-0 transition-all duration-300 ${mobileSidebarExpanded ? 'w-[250px]' : 'w-[72px]'}`}>
-                <div className={`flex h-full flex-col bg-[#fafafa] border-r-[2px] border-gray-300/50 font-['Plus_Jakarta_Sans',-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Oxygen,Ubuntu,Cantarell,'Fira_Sans','Droid_Sans','Helvetica_Neue',sans-serif] text-base font-medium leading-6 transition-all duration-300 ${mobileSidebarExpanded ? 'w-[250px]' : 'w-[72px]'}`}>
+                <div className={`flex h-full flex-col bg-[#fafafa] border-r-[2px] border-gray-300/50 font-mona text-base font-medium leading-6 transition-all duration-300 ${mobileSidebarExpanded ? 'w-[250px]' : 'w-[72px]'}`}>
                   {/* Logo Section with Toggle */}
                   <div className="relative h-[70px] overflow-visible">
                     <div className={`flex h-full items-center transition-all duration-300 ${
@@ -222,7 +222,7 @@ const AutomationsBreadCrumb = ({ id }: Props) => {
                                 <HelpCircle className={`h-[20px] w-[20px] ${pathname === '/help' ? 'text-[#282d47]' : 'text-[#8c92a0]'}`} />
                               </div>
                               {mobileSidebarExpanded && (
-                                <span className={`truncate pl-[18px] text-[17px] font-medium leading-6 ${pathname === '/help' ? 'text-[#282d47]' : 'text-[#8c92a0]'}`}>
+                                <span className={`truncate pl-[18px] text-[17px] font-medium leading-6 font-mona ${pathname === '/help' ? 'text-[#282d47]' : 'text-[#8c92a0]'}`}>
                                   Help & Support
                                 </span>
                               )}
@@ -246,7 +246,7 @@ const AutomationsBreadCrumb = ({ id }: Props) => {
                                 <Settings className="h-[18px] w-[18px] text-gray-600" />
                               </div>
                               {mobileSidebarExpanded && (
-                                <span className="truncate pl-[18px] text-[17px] font-medium leading-6 text-gray-700">Settings</span>
+                                <span className="truncate pl-[18px] text-[17px] font-medium leading-6 text-gray-700 font-mona">Settings</span>
                               )}
                             </div>
                           </Link>
@@ -259,18 +259,18 @@ const AutomationsBreadCrumb = ({ id }: Props) => {
             </Sheet>
           </span>
           <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
-            <span className="text-xs sm:text-sm lg:text-lg font-[600] leading-tight font-heading text-gray-900 flex-shrink-0">
+            <span className="text-xs sm:text-sm lg:text-lg font-semibold leading-tight font-hubot text-gray-900 flex-shrink-0">
               Automations
             </span>
             <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 lg:h-6 lg:w-6 text-gray-900 flex-shrink-0" />
-            <div className="text-sm sm:text-lg lg:text-xl font-[600] leading-tight font-heading text-gray-900 min-w-0 flex-1">
+            <div className="text-sm sm:text-lg lg:text-xl font-semibold leading-tight font-hubot text-gray-900 min-w-0 flex-1">
               {edit ? (
                 <Input
                   ref={inputRef}
                   autoFocus
                   defaultValue={latestVariable?.variables?.name || data?.data?.name || 'Untitled'}
                   placeholder={isPending ? latestVariable.variables : 'Add a new name'}
-                  className="bg-transparent h-auto outline-none text-sm sm:text-lg lg:text-xl leading-tight border-none p-0 font-heading font-[600] text-center placeholder:text-center text-gray-900"
+                  className="bg-transparent h-auto outline-none text-sm sm:text-lg lg:text-xl leading-tight border-none p-0 font-hubot font-semibold text-center placeholder:text-center text-gray-900"
                 />
               ) : (
                 <div className="flex items-center gap-1 sm:gap-2 min-w-0">
@@ -294,7 +294,7 @@ const AutomationsBreadCrumb = ({ id }: Props) => {
         {/* Right: Status & Actions */}
         <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 flex-shrink-0">
           <p className={cn(
-            "text-xs sm:text-sm font-medium leading-tight font-['Plus_Jakarta_Sans'] transition-opacity duration-200 hidden lg:block",
+            "text-xs sm:text-sm font-medium leading-tight font-mona transition-opacity duration-200 hidden lg:block",
             isSaving ? "text-gray-500" : "text-gray-900",
             !lastSaved && "opacity-0"
           )}>

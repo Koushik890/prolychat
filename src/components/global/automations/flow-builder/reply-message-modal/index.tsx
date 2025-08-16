@@ -281,7 +281,7 @@ export function ReplyMessageModal({
                 onKeyDown={(e) => e.key === 'Enter' && handleSelectYesSection()}
               >
                 <div className="flex justify-between items-start">
-                  <h3 className="text-lg font-semibold text-purple-900">
+                  <h3 className="text-lg font-semibold text-purple-900 font-hubot">
                     Yes, random multiple replies
                   </h3>
                 </div>
@@ -385,7 +385,7 @@ export function ReplyMessageModal({
                             value={newReplyText}
                             onChange={(e) => setNewReplyText(e.target.value)}
                             placeholder="Type your reply..."
-                            className="bg-white border-purple-300 focus:border-purple-500 focus:ring-purple-200 text-purple-900"
+                            className="bg-white border-purple-300 focus:border-purple-500 focus:ring-purple-200 text-purple-900 font-mona"
                             autoFocus
                           />
                           <div className="flex justify-end gap-2">
@@ -419,7 +419,7 @@ export function ReplyMessageModal({
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
-                        <p className="text-purple-600 font-medium text-center">+ New Reply</p>
+                        <p className="text-purple-600 font-medium text-center font-mona">+ New Reply</p>
                       </motion.div>
                     </>
                   ) : showNewReplyOptions ? (
@@ -434,7 +434,7 @@ export function ReplyMessageModal({
                           disabled={isGenerating}
                         >
                           <Sparkles className="h-4 w-4" />
-                          {isGenerating ? 'Generating...' : 'Generate with AI'}
+                          <span className="font-mona">{isGenerating ? 'Generating...' : 'Generate with AI'}</span>
                         </Button>
                         <Button
                           onClick={handleManualInput}
@@ -442,7 +442,7 @@ export function ReplyMessageModal({
                           variant="outline"
                         >
                           <Type className="h-4 w-4" />
-                          Type manually
+                          <span className="font-mona">Type manually</span>
                         </Button>
                       </div>
                     </>
@@ -486,7 +486,7 @@ export function ReplyMessageModal({
                 onKeyDown={(e) => e.key === 'Enter' && handleSelectNoSection()}
               >
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-purple-900 transition-colors duration-200">
+                  <h3 className="text-lg font-semibold text-purple-900 transition-colors duration-200 font-hubot">
                     No
                   </h3>
                 </div>

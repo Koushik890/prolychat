@@ -116,10 +116,10 @@ export function AnimatedMenu({ items, className, arrowAlign = 'left' }: Animated
             <button
               className={cn(
                 "h-[42px] rounded-xl flex gap-3 w-full items-center px-3.5",
-                "text-[14px] font-medium text-gray-700",
+                "text-[14px] font-medium text-gray-700 font-mona",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/40",
                 "relative z-10 select-none transition-all duration-200",
-                "hover:text-purple-700",
+                "hover:text-purple-700 cursor-pointer",
                 "active:scale-[0.98]"
               )}
               onMouseEnter={() => setHoveredIndex(index)}
@@ -138,11 +138,11 @@ export function AnimatedMenu({ items, className, arrowAlign = 'left' }: Animated
                   />
                 )}
               </div>
-              <span className="flex-1 text-left font-semibold tracking-tight">
+              <span className="flex-1 text-left font-semibold tracking-tight font-mona">
                 {item.label}
               </span>
-              <span className="text-[12px] font-medium text-gray-400 bg-gray-100/80 px-2 py-1 rounded-md min-w-[24px] text-center">
-                <span className="sr-only">Hotkey: </span>
+              <span className="text-[12px] font-medium text-gray-400 bg-gray-100/80 px-2 py-1 rounded-md min-w-[24px] text-center font-mona">
+                <span className="sr-only font-mona">Hotkey: </span>
                 {item.hotkey}
               </span>
             </button>

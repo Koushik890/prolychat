@@ -143,13 +143,13 @@ const options: ChartOptions<'line'> = {
                   font-weight: 600;
                   font-size: 14px;
                   color: #1a1a1a;
-                  font-family: var(--font-raleway), sans-serif;
+                  font-family: "Hubot Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
                 ">${formattedValue}k</span>
                 <span style="
                   font-weight: 400;
                   font-size: 12px;
                   color: #8c92a0;
-                  font-family: var(--font-raleway), sans-serif;
+                  font-family: "Hubot Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
                 ">automation</span>
               </div>
               <div style="
@@ -219,7 +219,7 @@ const options: ChartOptions<'line'> = {
           color: '#94A3B8',
           font: {
             size: 11,
-            family: 'var(--font-raleway), sans-serif',
+            family: '"Hubot Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
             weight: 'normal'
           },
           padding: 4,  
@@ -511,6 +511,7 @@ export function AutomatedActivityChart({ className }: AutomatedActivityChartProp
               title.style.fontSize = '13px';
               title.style.color = '#334155';
               title.style.marginBottom = '2px';
+              title.style.fontFamily = '"Hubot Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
               
               // Get the time label from the chart data
               if (tooltipModel.dataPoints && tooltipModel.dataPoints.length > 0) {
@@ -529,6 +530,7 @@ export function AutomatedActivityChart({ className }: AutomatedActivityChartProp
                 const body = document.createElement('div');
                 body.style.fontSize = '12px';
                 body.style.color = '#475569';
+                body.style.fontFamily = '"Hubot Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
                 body.textContent = `${dataPoint.formattedValue} automation`;
                 content.appendChild(body);
               }
@@ -592,7 +594,7 @@ export function AutomatedActivityChart({ className }: AutomatedActivityChartProp
             color: '#94A3B8',
             font: {
               size: 11,
-              family: 'var(--font-raleway), sans-serif',
+              family: '"Hubot Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
               weight: 'normal'
             },
             padding: 4,  
@@ -642,7 +644,7 @@ export function AutomatedActivityChart({ className }: AutomatedActivityChartProp
           left: -0.5,
           right: -0.5,
           top: 2,
-          bottom: 6
+          bottom: 16
         }
       },
     };
@@ -734,15 +736,15 @@ export function AutomatedActivityChart({ className }: AutomatedActivityChartProp
             {/* Title and Count Section - centered on mobile, left-aligned on desktop */}
             <div className='space-y-2.5 text-center sm:text-left'>
               <div className='flex items-center gap-1.5 justify-center sm:justify-start'>
-                <h2 className='text-[13px] font-semibold leading-[18px] text-slate-800 tracking-[-0.2px] font-sans whitespace-nowrap' style={{ fontFamily: 'inherit !important' }}>
+                <h2 className='text-[13px] font-semibold leading-[18px] text-slate-800 tracking-[-0.2px] font-hubot whitespace-nowrap'>
                   Automated Activity
                 </h2>
               </div>
               <div className='flex items-baseline gap-2.5 justify-center sm:justify-start'>
-                <span className='text-[40px] font-bold leading-[44px] tracking-[-0.8px] text-slate-800 font-sans'>
+                <span className='text-[40px] font-bold leading-[44px] tracking-[-0.8px] text-slate-800 font-hubot'>
                   {totalForRange}
                 </span>
-                <span className='text-[15px] font-medium leading-[22px] tracking-[-0.1px] text-slate-500 font-sans'>
+                <span className='text-[15px] font-medium leading-[22px] tracking-[-0.1px] text-slate-500 font-mona'>
                   automation
                 </span>
               </div>
@@ -752,7 +754,7 @@ export function AutomatedActivityChart({ className }: AutomatedActivityChartProp
             <div className='inline-flex items-center border border-slate-200 rounded-[20px] p-1 shadow-sm bg-white/50 backdrop-blur-sm'>
               <button 
                 onClick={() => setSelectedRange('today')}
-                className={`flex-shrink-0 px-3 py-1.5 text-sm font-medium transition-all duration-200 rounded-[16px] whitespace-nowrap ${
+                className={`flex-shrink-0 px-3 py-1.5 text-sm font-medium font-mona transition-all duration-200 rounded-[16px] whitespace-nowrap ${
                   selectedRange === 'today'
                     ? 'bg-[#FFE600] text-slate-800 shadow-sm'
                     : 'text-slate-500 hover:text-slate-600 hover:bg-white/80'
@@ -762,7 +764,7 @@ export function AutomatedActivityChart({ className }: AutomatedActivityChartProp
               </button>
               <button 
                 onClick={() => setSelectedRange('week')}
-                className={`flex-shrink-0 px-3 py-1.5 text-sm font-medium transition-all duration-200 rounded-[16px] whitespace-nowrap ${
+                className={`flex-shrink-0 px-3 py-1.5 text-sm font-medium font-mona transition-all duration-200 rounded-[16px] whitespace-nowrap ${
                   selectedRange === 'week'
                     ? 'bg-[#FFE600] text-slate-800 shadow-sm'
                     : 'text-slate-500 hover:text-slate-600 hover:bg-white/80'
@@ -772,7 +774,7 @@ export function AutomatedActivityChart({ className }: AutomatedActivityChartProp
               </button>
               <button 
                 onClick={() => setSelectedRange('month')}
-                className={`hidden sm:flex flex-shrink-0 px-3 py-1.5 text-sm font-medium transition-all duration-200 rounded-[16px] whitespace-nowrap ${
+                className={`hidden sm:flex flex-shrink-0 px-3 py-1.5 text-sm font-medium font-mona transition-all duration-200 rounded-[16px] whitespace-nowrap ${
                   selectedRange === 'month'
                     ? 'bg-[#FFE600] text-slate-800 shadow-sm'
                     : 'text-slate-500 hover:text-slate-600 hover:bg-white/80'
@@ -788,7 +790,7 @@ export function AutomatedActivityChart({ className }: AutomatedActivityChartProp
               <div className='absolute inset-0 overflow-hidden'>
                 {!hasData ? (
                   <div className="flex flex-col items-center justify-center h-full w-full">
-                    <p className="text-sm text-slate-500">No activity data for {getRangeLabel().toLowerCase()}</p>
+                    <p className="text-sm text-slate-500 font-mona">No activity data for {getRangeLabel().toLowerCase()}</p>
                   </div>
                 ) : (
                 <div className="relative z-20">
