@@ -163,7 +163,7 @@ export function WebsiteConfigModal({ isOpen, onClose, onSave, initialData }: Web
         )}>
           {/* Button Title Field */}
           <div className={styles.fieldContainer}>
-            <label htmlFor="button-title" className={styles.fieldLabel}>
+            <label htmlFor="button-title" className={`${styles.fieldLabel} font-mona`}>
               Button title
             </label>
             <input
@@ -179,7 +179,7 @@ export function WebsiteConfigModal({ isOpen, onClose, onSave, initialData }: Web
 
           {/* Website URL Field */}
           <div className={styles.fieldContainer}>
-            <label htmlFor="website-url" className={styles.fieldLabel}>
+            <label htmlFor="website-url" className={`${styles.fieldLabel} font-mona`}>
               Website URL
             </label>
             <div className={styles.urlInputContainer}>
@@ -200,7 +200,7 @@ export function WebsiteConfigModal({ isOpen, onClose, onSave, initialData }: Web
                 />
               </div>
               {urlError && (
-                <div className={styles.errorMessage}>
+                <div className={`${styles.errorMessage} font-mona`}>
                   {urlError}
                 </div>
               )}
@@ -211,14 +211,14 @@ export function WebsiteConfigModal({ isOpen, onClose, onSave, initialData }: Web
           <div className={styles.footer}>
             <button
               type="button"
-              className={styles.removeButton}
+              className={`${styles.removeButton} font-mona`}
               onClick={handleRemove}
             >
               Remove
             </button>
             <button
               type="button"
-              className={styles.doneButton}
+              className={`${styles.doneButton} font-mona`}
               onClick={handleSave}
               disabled={!isFormValid}
             >

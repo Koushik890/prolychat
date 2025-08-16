@@ -374,7 +374,7 @@ export default function AutomationsPage() {
           <div className="fixed top-0 left-0 w-full h-full bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
             <div className="flex flex-col items-center gap-4">
               <LoaderOne />
-              <p className="text-gray-400 font-medium">Creating automation...</p>
+              <p className="text-gray-400 font-medium font-mona">Creating automation...</p>
             </div>
           </div>
         )}
@@ -396,7 +396,7 @@ export default function AutomationsPage() {
                   variant="outline"
                   className="h-10 px-4 bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300 shadow-sm w-[180px]"
                 >
-                  <span>Sort by</span>
+                  <span className="font-mona">Sort by</span>
                   <ChevronDown className="ml-2 h-4 w-4 text-gray-500/80" />
                 </Button>
               </DropdownMenuTrigger>
@@ -409,21 +409,21 @@ export default function AutomationsPage() {
                   className="flex items-center gap-2.5 px-2.5 py-2 text-sm text-gray-600 hover:text-gray-900 data-[highlighted]:bg-gray-100 data-[highlighted]:text-gray-900 rounded-md cursor-pointer transition-colors"
                 >
                   <Calendar className="h-4 w-4 text-gray-500 flex-shrink-0" strokeWidth={1.5} />
-                  <span className="truncate">Name</span>
+                  <span className="truncate font-mona">Name</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => handleSort('lastPublished')}
                   className="flex items-center gap-2.5 px-2.5 py-2 text-sm text-gray-600 hover:text-gray-900 data-[highlighted]:bg-gray-100 data-[highlighted]:text-gray-900 rounded-md cursor-pointer transition-colors"
                 >
                   <CalendarDays className="h-4 w-4 text-gray-500 flex-shrink-0" strokeWidth={1.5} />
-                  <span className="truncate">Last Published</span>
+                  <span className="truncate font-mona">Last Published</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => handleSort('runs')}
                   className="flex items-center gap-2.5 px-2.5 py-2 text-sm text-gray-600 hover:text-gray-900 data-[highlighted]:bg-gray-100 data-[highlighted]:text-gray-900 rounded-md cursor-pointer transition-colors"
                 >
                   <LoaderCircle className="h-4 w-4 text-gray-500 flex-shrink-0" strokeWidth={1.5} />
-                  <span className="truncate">Number of Runs</span>
+                  <span className="truncate font-mona">Number of Runs</span>
                 </DropdownMenuItem>
                 <div className="h-px my-1.5 bg-gray-100" />
                 <DropdownMenuItem
@@ -431,14 +431,14 @@ export default function AutomationsPage() {
                   className="flex items-center gap-2.5 px-2.5 py-2 text-sm text-gray-600 hover:text-gray-900 data-[highlighted]:bg-gray-100 data-[highlighted]:text-gray-900 rounded-md cursor-pointer transition-colors"
                 >
                   <ArrowUpDown className="h-4 w-4 text-gray-500 flex-shrink-0" strokeWidth={1.5} />
-                  <span className="truncate">Ascending</span>
+                  <span className="truncate font-mona">Ascending</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => setSortConfig(c => ({ ...c, direction: 'desc' }))}
                   className="flex items-center gap-2.5 px-2.5 py-2 text-sm text-gray-600 hover:text-gray-900 data-[highlighted]:bg-gray-100 data-[highlighted]:text-gray-900 rounded-md cursor-pointer transition-colors"
                 >
                   <ArrowDownUp className="h-4 w-4 text-gray-500 flex-shrink-0" strokeWidth={1.5} />
-                  <span className="truncate">Descending</span>
+                  <span className="truncate font-mona">Descending</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -461,7 +461,7 @@ export default function AutomationsPage() {
                     variant="outline"
                     className="h-10 px-4 bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300 shadow-sm w-[180px]"
                   >
-                    <span>Bulk Actions</span>
+                    <span className="font-mona">Bulk Actions</span>
                     <ChevronDown className="ml-2 h-4 w-4 text-gray-500/80" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -481,7 +481,7 @@ export default function AutomationsPage() {
                     className="flex items-center gap-2.5 px-2.5 py-2 text-sm text-gray-600 hover:text-gray-900 data-[highlighted]:bg-gray-100 data-[highlighted]:text-gray-900 rounded-md cursor-pointer transition-colors"
                   >
                     <Copy className="mr-2 h-4 w-4 text-gray-500" />
-                    <span>Duplicate</span>
+                    <span className="font-mona">Duplicate</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={async () => {
@@ -545,13 +545,13 @@ export default function AutomationsPage() {
                     className="flex items-center gap-2.5 px-2.5 py-2 text-sm text-red-500 hover:text-red-600 data-[highlighted]:bg-red-50 data-[highlighted]:text-red-600 rounded-md cursor-pointer mt-1 border-t border-gray-200 transition-colors"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    <span>Delete</span>
+                    <span className="font-mona">Delete</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
             {selectedRows.length > 0 && (
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 font-mona">
                 Selected Automations: {selectedRows.length}
               </span>
             )}
@@ -579,10 +579,10 @@ export default function AutomationsPage() {
                       className="border-gray-300 data-[state=checked]:bg-primary/90 data-[state=checked]:border-primary/30"
                   />
                 </TableHead>
-                  <TableHead className="w-[250px] pl-4 font-medium text-gray-700">Name</TableHead>
-                  <TableHead className="w-[120px] pl-8 font-medium text-gray-700">Status</TableHead>
-                  <TableHead className="w-[120px] text-right pl-8 pr-8 font-medium text-gray-700">Runs</TableHead>
-                  <TableHead className="w-[180px] pl-8 font-medium text-gray-700">Modified</TableHead>
+                  <TableHead className="w-[250px] pl-4 font-medium text-gray-700 font-hubot">Name</TableHead>
+                  <TableHead className="w-[120px] pl-8 font-medium text-gray-700 font-hubot">Status</TableHead>
+                  <TableHead className="w-[120px] text-right pl-8 pr-8 font-medium text-gray-700 font-hubot">Runs</TableHead>
+                  <TableHead className="w-[180px] pl-8 font-medium text-gray-700 font-hubot">Modified</TableHead>
                   <TableHead className="w-[80px] pl-8"></TableHead>
               </TableRow>
             </TableHeader>
@@ -602,7 +602,7 @@ export default function AutomationsPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                           </svg>
                         </div>
-                        <p className="text-sm text-red-500/90">Failed to load automations</p>
+                        <p className="text-sm text-red-500/90 font-mona">Failed to load automations</p>
                         <Button 
                           onClick={fetchAutomations}
                           variant="outline"
@@ -621,7 +621,7 @@ export default function AutomationsPage() {
                         <div className="h-12 w-12 rounded-xl bg-gradient-to-b from-gray-50 to-white shadow-sm border border-gray-200 flex items-center justify-center">
                           <Plus className="h-6 w-6 text-gray-400 transition-transform group-hover:scale-110 duration-200" strokeWidth={1.5} />
                         </div>
-                        <p className="text-sm text-gray-500/90">No automations found</p>
+                        <p className="text-sm text-gray-500/90 font-mona">No automations found</p>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -647,7 +647,7 @@ export default function AutomationsPage() {
                           className="border-gray-300 data-[state=checked]:bg-primary/90 data-[state=checked]:border-primary/30"
                     />
                   </TableCell>
-                      <TableCell className="font-medium pl-4 text-gray-900">{automation.name}</TableCell>
+                      <TableCell className="font-medium pl-4 text-gray-900 font-mona">{automation.name}</TableCell>
                       <TableCell className="pl-8">
                     <Badge 
                           variant={getStatusVariant(automation.status)}
@@ -660,7 +660,7 @@ export default function AutomationsPage() {
                           {automation.status}
                     </Badge>
                   </TableCell>
-                      <TableCell className="text-right pl-8 pr-8 text-gray-600 tabular-nums font-medium">{automation.runs}</TableCell>
+                      <TableCell className="text-right pl-8 pr-8 text-gray-600 tabular-nums font-medium font-mona">{automation.runs}</TableCell>
                       <TableCell className="pl-8 text-gray-500">
                         <RelativeTime date={automation.rawDate || new Date()} />
                       </TableCell>
@@ -685,21 +685,21 @@ export default function AutomationsPage() {
                               className="flex items-center gap-2.5 px-2.5 py-2 text-sm text-gray-600 hover:text-gray-900 data-[highlighted]:bg-gray-100 data-[highlighted]:text-gray-900 rounded-md cursor-pointer transition-colors"
                             >
                               <Pencil className="mr-2 h-4 w-4 text-gray-500" />
-                              <span>Edit</span>
+                              <span className="font-mona">Edit</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                               onClick={() => handleActivation(automation.id, automation.active)}
                               className="flex items-center gap-2.5 px-2.5 py-2 text-sm text-gray-600 hover:text-gray-900 data-[highlighted]:bg-gray-100 data-[highlighted]:text-gray-900 rounded-md cursor-pointer transition-colors"
                             >
                               <Copy className="mr-2 h-4 w-4 text-gray-500" />
-                              <span>Set to {automation.active ? 'Draft' : 'Live'}</span>
+                              <span className="font-mona">Set to {automation.active ? 'Draft' : 'Live'}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                               onClick={() => handleDelete(automation.id)}
                               className="flex items-center gap-2.5 px-2.5 py-2 text-sm text-red-500 hover:text-red-600 data-[highlighted]:bg-red-50 data-[highlighted]:text-red-600 rounded-md cursor-pointer mt-1 border-t border-gray-200 transition-colors"
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
-                          <span>Delete</span>
+                          <span className="font-mona">Delete</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -714,9 +714,9 @@ export default function AutomationsPage() {
         {/* Pagination - only show when there are automations and no errors/loading */}
         {!isLoading && !error && automations.length > 0 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
-            <div className="text-sm text-gray-500">
-              Showing <span className="font-medium text-gray-900">{Math.min(currentPage * itemsPerPage, sortedAutomations.length)}</span> of{' '}
-              <span className="font-medium text-gray-900">{sortedAutomations.length}</span> automations
+            <div className="text-sm text-gray-500 font-mona">
+              Showing <span className="font-medium text-gray-900 font-hubot">{Math.min(currentPage * itemsPerPage, sortedAutomations.length)}</span> of{' '}
+              <span className="font-medium text-gray-900 font-hubot">{sortedAutomations.length}</span> automations
             </div>
             
             <div className="flex items-center space-x-2">

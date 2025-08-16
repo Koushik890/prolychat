@@ -115,7 +115,7 @@ export default function Component() {
             viewport={{ once: true }}
           >
             <div>
-              <h3 className="font-semibold mb-2 text-primary">
+              <h3 className="font-semibold mb-2 text-primary font-mona">
                 {feature.title}
               </h3>
               <p className="text-foreground font-mona">{feature.description}</p>

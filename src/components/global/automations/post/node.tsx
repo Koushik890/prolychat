@@ -34,7 +34,7 @@ const PostNode = ({ id }: Props) => {
         <div className="w-full lg:w-10/12 xl:w-6/12 p-5 rounded-xl flex flex-col bg-white/95 gap-y-3 text-gray-900 backdrop-blur-sm border border-black/10 shadow-lg">
             <div className="flex items-center gap-2">
                 <Warning />
-                Posts...
+                <span className="font-mona">Posts...</span>
             </div>
             <PostButton id={id} />
         </div>

@@ -32,7 +32,7 @@ const CreateAutomation = ({
     >
       <span className="relative z-10 flex items-center gap-2">
         <Plus className="h-4 w-4" strokeWidth={1.5} />
-        <span>Create Automation</span>
+        <span className="font-mona">Create Automation</span>
       </span>
     </PulsatingButton>
   );

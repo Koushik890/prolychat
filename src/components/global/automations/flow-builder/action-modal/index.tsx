@@ -146,10 +146,10 @@ export function ActionModal({ isOpen, onClose, onSelect }: ActionModalProps) {
               <MessageDotsIcon className="h-[18px] w-[18px] text-purple-600 group-hover:scale-110 transition-transform duration-300 ease-out" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-[15px] font-semibold text-gray-900 group-hover:text-purple-600 transition-colors duration-200">
+              <h3 className="text-[15px] font-semibold text-gray-900 group-hover:text-purple-600 transition-colors duration-200 font-hubot">
                 Send the user a message
               </h3>
-              <p className="text-[13px] text-gray-600 group-hover:text-gray-700 transition-colors duration-200 mt-0.5">
+              <p className="text-[13px] text-gray-600 group-hover:text-gray-700 transition-colors duration-200 mt-0.5 font-mona">
                 Enter the message that you want to send the user
               </p>
             </div>
@@ -195,10 +195,10 @@ export function ActionModal({ isOpen, onClose, onSelect }: ActionModalProps) {
               <BotAddIcon className="h-[18px] w-[18px] text-purple-600 group-hover:scale-110 transition-transform duration-300 ease-out" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-[15px] font-semibold text-gray-900 group-hover:text-purple-600 transition-colors duration-200">
+              <h3 className="text-[15px] font-semibold text-gray-900 group-hover:text-purple-600 transition-colors duration-200 font-hubot">
                 Use Proly AI Assistant
               </h3>
-              <p className="text-[13px] text-gray-600 group-hover:text-gray-700 transition-colors duration-200 mt-0.5">
+              <p className="text-[13px] text-gray-600 group-hover:text-gray-700 transition-colors duration-200 mt-0.5 font-mona">
                 Let Proly AI handle the conversation with smart responses
               </p>
             </div>

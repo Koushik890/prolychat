@@ -65,12 +65,12 @@ export const FlowConfigSidebar: React.FC<FlowConfigSidebarProps> = ({
           aria-label="Close sidebar"
         >
           <X className="w-4 h-4" />
-          <span className="sr-only">Close</span>
+          <span className="sr-only font-mona">Close</span>
         </button>
         
         <SheetHeader className="mb-6">
-          <SheetTitle className="text-lg font-semibold">Configure Triggers</SheetTitle>
-          <p className="text-sm text-gray-600">Set up your automation triggers and next steps</p>
+          <SheetTitle className="text-lg font-semibold font-hubot">Configure Triggers</SheetTitle>
+          <p className="text-sm text-gray-600 font-mona">Set up your automation triggers and next steps</p>
         </SheetHeader>
 
         <div 
@@ -78,7 +78,7 @@ export const FlowConfigSidebar: React.FC<FlowConfigSidebarProps> = ({
         >
           {/* When Section */}
           <div className="flex flex-col gap-4">
-            <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2">
+            <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2 font-hubot">
               <Zap className="w-4.5 h-4.5 text-gray-600" />
               WHEN
             </h4>
@@ -99,7 +99,7 @@ export const FlowConfigSidebar: React.FC<FlowConfigSidebarProps> = ({
                       <trigger.icon className="w-4.5 h-4.5 text-purple-700" />
                     </div>
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-sm font-medium text-purple-800">{trigger.name}</span>
+                      <span className="text-sm font-medium text-purple-800 font-mona">{trigger.name}</span>
                     </div>
                   </div>
                   <button 
@@ -123,14 +123,14 @@ export const FlowConfigSidebar: React.FC<FlowConfigSidebarProps> = ({
                 )}
                 onClick={onNewTrigger}
               >
-                <span className="relative z-10">+ New Trigger</span>
+                <span className="relative z-10 font-mona">+ New Trigger</span>
               </Button>
             )}
           </div>
 
           {/* Then Section */}
           <div className="flex flex-col gap-4">
-            <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2">
+            <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2 font-hubot">
               THEN
             </h4>
             <div className="flex flex-col gap-3">
@@ -148,7 +148,7 @@ export const FlowConfigSidebar: React.FC<FlowConfigSidebarProps> = ({
                       <action.icon className="w-4.5 h-4.5 text-purple-700" />
                     </div>
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-sm font-medium text-purple-800">{action.name}</span>
+                      <span className="text-sm font-medium text-purple-800 font-mona">{action.name}</span>
                     </div>
                   </div>
                   <button 
@@ -169,7 +169,7 @@ export const FlowConfigSidebar: React.FC<FlowConfigSidebarProps> = ({
                 )}
                 onClick={onChooseNextStep}
               >
-                <span>Choose Next Step</span>
+                <span className="font-mona">Choose Next Step</span>
               </Button>
             )}
           </div>

@@ -104,7 +104,7 @@ const gradientButtonVariants = cva(
     "inline-flex items-center justify-center",
     "rounded-[11px] min-w-[132px] px-9 py-4",
     "text-base leading-[19px] font-[500] text-white",
-    "font-sans font-bold",
+    "font-mona font-bold",
     "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
     "disabled:pointer-events-none disabled:opacity-50",
   ],
@@ -191,7 +191,7 @@ const FeatureItem = ({ icon, text }: FeatureItemProps) => {
       className="flex items-center gap-3 py-1"
     >
       <span className="text-gray-500">{icon}</span>
-      <span className="text-sm font-medium text-gray-700">{text}</span>
+      <span className="text-sm font-medium text-gray-700 font-mona">{text}</span>
     </motion.div>
   )
 }
@@ -1358,7 +1358,7 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
             {/* Header */}
             <div className="space-y-4 text-center">
               <motion.h2 
-                className="text-lg font-semibold text-gray-900 tracking-tight"
+                className="text-lg font-semibold text-gray-900 tracking-tight font-hubot"
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
@@ -1366,7 +1366,7 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
                 Automation Flow Builder
               </motion.h2>
               <motion.p 
-                className="text-sm text-gray-600 leading-relaxed max-w-xs mx-auto"
+                className="text-sm text-gray-600 leading-relaxed max-w-xs mx-auto font-mona"
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.5 }}
@@ -1409,7 +1409,7 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
               transition={{ delay: 0.8, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               className="pt-2"
             >
-              <GradientButton onClick={toggleDesktopMode} className="w-full text-sm py-3 flex items-center justify-center gap-2">
+              <GradientButton onClick={toggleDesktopMode} className="w-full text-sm py-3 flex items-center justify-center gap-2 font-mona">
                 <Monitor size={14} />
                 Enable Desktop Mode
               </GradientButton>
@@ -1417,7 +1417,7 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
 
             {/* Info Text */}
             <motion.p 
-              className="text-xs text-gray-500 text-center leading-relaxed"
+              className="text-xs text-gray-500 text-center leading-relaxed font-mona"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.0, duration: 0.5 }}
@@ -1507,7 +1507,7 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
                 onClick={toggleDesktopMode}
                 variant="outline"
                 size="sm"
-                className="bg-white border border-gray-300 shadow-sm text-xs px-3 py-2"
+                className="bg-white border border-gray-300 shadow-sm text-xs px-3 py-2 font-mona"
               >
                 📱 Mobile View
               </Button>

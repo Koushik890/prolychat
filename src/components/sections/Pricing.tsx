@@ -32,7 +32,7 @@ export default function PricingSection() {
         </label>
         <span className="ml-2 font-semibold font-mona">Yearly</span>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 sm:2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {siteConfig.pricing.map((plan, index) => (
           <motion.div
             key={index}
@@ -42,18 +42,10 @@ export default function PricingSection() {
                 ? {
                     y: 0,
                     opacity: 1,
-                    x:
-                      index === siteConfig.pricing.length - 1
-                        ? -30
-                        : index === 0
-                        ? 30
-                        : 0,
-                    scale:
-                      index === 0 || index === siteConfig.pricing.length - 1
-                        ? 0.94
-                        : 1.0,
+                    x: index === 0 ? 15 : -15,
+                    scale: index === 1 ? 1.02 : 0.98,
                   }
-                : {}
+                : { y: 0, opacity: 1 }
             }
             viewport={{ once: true }}
             transition={{
@@ -66,12 +58,9 @@ export default function PricingSection() {
             }}
             className={cn(
               `rounded-2xl border-[1px] p-6 bg-background text-center lg:flex lg:flex-col lg:justify-center relative`,
-              plan.isPopular ? "border-primary border-[2px]" : "border-border",
-              index === 0 || index === siteConfig.pricing.length - 1
-                ? "z-0 transform translate-x-0 translate-y-0 -translate-z-[50px] rotate-y-[10deg]"
-                : "z-10",
+              plan.isPopular ? "border-primary border-[2px] z-10" : "border-border z-0",
               index === 0 && "origin-right",
-              index === siteConfig.pricing.length - 1 && "origin-left"
+              index === 1 && "origin-left"
             )}
           >
             {plan.isPopular && (

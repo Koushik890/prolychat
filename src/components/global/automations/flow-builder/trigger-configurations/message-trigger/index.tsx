@@ -115,13 +115,13 @@ export function MessageTriggerConfig({
           aria-label="Close sidebar"
         >
           <X className="w-4 h-4" />
-          <span className="sr-only">Close</span>
+          <span className="sr-only font-mona">Close</span>
         </button>
 
         <SheetHeader className={styles.header}>
           <div className="pr-8">
-            <SheetTitle className={styles.title}>Configure Instagram Message</SheetTitle>
-            <p className={styles.subtitle}>Set up your message trigger settings</p>
+            <SheetTitle className={`${styles.title} font-hubot`}>Configure Instagram Message</SheetTitle>
+            <p className={`${styles.subtitle} font-mona`}>Set up your message trigger settings</p>
           </div>
         </SheetHeader>
 
@@ -133,7 +133,7 @@ export function MessageTriggerConfig({
         >
           {/* Keywords Section */}
           <div className={styles.section}>
-            <h4 className={styles.sectionTitle}>
+            <h4 className={`${styles.sectionTitle} font-hubot`}>
               <Hash className={styles.sectionIcon} />
               KEYWORDS
             </h4>
@@ -143,7 +143,7 @@ export function MessageTriggerConfig({
                 className={styles.configButton}
                 onClick={() => setIsKeywordModalOpen(true)}
               >
-                <span className={styles.buttonText}>
+                <span className={`${styles.buttonText} font-mona`}>
                   {keywords.include.length > 0 
                     ? `${keywords.include.length} Keywords Configured` 
                     : 'Configure Keywords'}
@@ -155,7 +155,7 @@ export function MessageTriggerConfig({
                   <div className={styles.keywordGroup}>
                     <div className={styles.keywordTags}>
                       {keywords.include.map((keyword) => (
-                        <div key={keyword} className={styles.keywordTag}>
+                        <div key={keyword} className={`${styles.keywordTag} font-mona`}>
                           {keyword}
                         </div>
                       ))}
@@ -163,7 +163,7 @@ export function MessageTriggerConfig({
                   </div>
                 </div>
               )}
-              <p className={styles.helperText}>
+              <p className={`${styles.helperText} font-mona`}>
                 Configure keywords to filter incoming messages
               </p>
             </div>

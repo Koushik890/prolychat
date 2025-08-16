@@ -334,13 +334,13 @@ export function CommentTriggerConfig({
             aria-label="Close sidebar"
           >
             <X className="w-4 h-4" />
-            <span className="sr-only">Close</span>
+            <span className="sr-only font-mona">Close</span>
           </button>
           
           <SheetHeader className="mb-6">
             <div className="pr-8">
-              <SheetTitle className="text-lg font-semibold">Configure Post/Reel Comments</SheetTitle>
-              <p className="text-sm text-gray-600">Set up your comment trigger settings</p>
+              <SheetTitle className="text-lg font-semibold font-hubot">Configure Post/Reel Comments</SheetTitle>
+              <p className="text-sm text-gray-600 font-mona">Set up your comment trigger settings</p>
             </div>
           </SheetHeader>
 
@@ -446,7 +446,7 @@ export function CommentTriggerConfig({
                       )}
                       onClick={() => setIsPostSelectionModalOpen(true)}
                     >
-                      <span className="text-sm font-medium">Select Post or Reel</span>
+                      <span className="text-sm font-medium font-mona">Select Post or Reel</span>
                       <ChevronRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-0.5" />
                     </Button>
                   </motion.div>
@@ -462,7 +462,7 @@ export function CommentTriggerConfig({
               className="flex flex-col gap-4"
               {...SIDEBAR_ANIMATIONS.staggeredItem(1)}
             >
-              <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2">
+              <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2 font-hubot">
                 <Hash className="w-4.5 h-4.5 text-gray-600" />
                 KEYWORDS
               </h4>
@@ -480,7 +480,7 @@ export function CommentTriggerConfig({
                     )}
                     onClick={() => setIsKeywordModalOpen(true)}
                   >
-                    <span className="text-sm font-medium">Configure Keywords</span>
+                    <span className="text-sm font-medium font-mona">Configure Keywords</span>
                     <ChevronRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-0.5" />
                   </Button>
                 </motion.div>
@@ -499,12 +499,12 @@ export function CommentTriggerConfig({
                     transition={{ duration: 0.3, type: 'spring', damping: 20 }}
                   >
                     <div className="flex flex-col gap-3">
-                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Keywords:</span>
+                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider font-hubot">Keywords:</span>
                       <div className="flex flex-wrap gap-2">
                         {keywords.include.map((keyword, index) => (
                           <motion.div 
                             key={keyword} 
-                            className="group relative text-xs font-medium text-purple-700 bg-purple-100 hover:bg-purple-200 px-3 py-1.5 rounded-full border border-purple-200 transition-all duration-200 cursor-pointer"
+                            className="group relative text-xs font-medium text-purple-700 bg-purple-100 hover:bg-purple-200 px-3 py-1.5 rounded-full border border-purple-200 transition-all duration-200 cursor-pointer font-mona"
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: index * 0.05, duration: 0.2 }}
@@ -536,7 +536,7 @@ export function CommentTriggerConfig({
               className="flex flex-col gap-4"
               {...SIDEBAR_ANIMATIONS.staggeredItem(2)}
             >
-              <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2">
+              <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2 font-hubot">
                 <MessageSquare className="w-4.5 h-4.5 text-gray-600" />
                 AUTO REPLY
               </h4>
@@ -554,11 +554,11 @@ export function CommentTriggerConfig({
                     )}
                     onClick={() => setIsReplyMessageModalOpen(true)}
                   >
-                    <span className="text-sm font-medium">Configure Reply Message</span>
+                    <span className="text-sm font-medium font-mona">Configure Reply Message</span>
                     <ChevronRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-0.5" />
                   </Button>
                 </motion.div>
-                <p className="text-xs text-gray-500 -mt-1 leading-relaxed">
+                <p className="text-xs text-gray-500 -mt-1 leading-relaxed font-mona">
                   Set up the message you want to send in response
                 </p>
                 {replyMessage && (
@@ -572,7 +572,7 @@ export function CommentTriggerConfig({
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.3, type: 'spring', damping: 20 }}
                   >
-                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap max-h-24 overflow-y-auto scrollbar-hide">{replyMessage}</p>
+                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap max-h-24 overflow-y-auto scrollbar-hide font-mona">{replyMessage}</p>
                   </motion.div>
                 )}
               </div>

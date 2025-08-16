@@ -33,7 +33,7 @@ export function EnhancedText({
   return (
     <Component
       className={cn(
-        'font-raleway',
+        'font-hubot',
         baseStyles[variant],
         gradientStyles,
         className

@@ -45,13 +45,13 @@ const ActionNodeCardPreview: React.FC<ActionNodeCardPreviewProps> = ({ cardData 
       )}
       <div className={styles.actionCardContent}>
         {cardData.title && (
-          <h4 className={styles.actionCardTitle}>{cardData.title}</h4>
+          <h4 className={`${styles.actionCardTitle} font-hubot`}>{cardData.title}</h4>
         )}
         {cardData.subtitle && (
-          <p className={styles.actionCardSubtitle}>{cardData.subtitle}</p>
+          <p className={`${styles.actionCardSubtitle} font-mona`}>{cardData.subtitle}</p>
         )}
         {cardData.buttonAction && (
-          <div className={styles.actionCardButton}>
+          <div className={`${styles.actionCardButton} font-mona`}>
             {getButtonText()}
           </div>
         )}
@@ -261,7 +261,7 @@ export const ActionNode: React.FC<ActionNodeProps> = ({ data, onMessageUpdate, o
             )}
           </div>
           <div className={styles.titleWrapper}>
-            <h3 className={styles.title}>
+            <h3 className={`${styles.title} font-hubot`}>
               {isMessageAction ? 'Send Message' : 'AI Assistant'}
             </h3>
           </div>
@@ -285,19 +285,19 @@ export const ActionNode: React.FC<ActionNodeProps> = ({ data, onMessageUpdate, o
                   (data.listener.messageData?.type === 'CARD' || data.listener.actionType === 'card') && getCardDataFromMessage() ? (
                     <ActionNodeCardPreview cardData={getCardDataFromMessage()!} />
                   ) : (
-                    <p className={styles.configuredMessage} title={getMessageDisplayText()}>
+                    <p className={`${styles.configuredMessage} font-mona`} title={getMessageDisplayText()}>
                       {getMessageDisplayText()}
                     </p>
                   )
                 ) : (
-                  'View AI Prompt'
+                  <span className="font-mona">View AI Prompt</span>
                 )}
               </span>
             </Button>
           </div>
         ) : (
           <>
-            <p className={styles.description}>
+            <p className={`${styles.description} font-mona`}>
               {isMessageAction
                 ? 'Configure the message that will be sent to the user.'
                 					: 'Configure how Proly AI should respond to the user.'}
@@ -314,7 +314,7 @@ export const ActionNode: React.FC<ActionNodeProps> = ({ data, onMessageUpdate, o
                 }
               }}
             >
-              <span className={styles.buttonContent}>
+              <span className={`${styles.buttonContent} font-mona`}>
                 {isMessageAction ? '+ Configure Action' : '+ Type Prompt'}
               </span>
             </Button>

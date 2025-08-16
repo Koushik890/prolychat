@@ -293,6 +293,60 @@
     }
   }
 
+  /* Cursor utilities for clickable elements */
+  .cursor-pointer {
+    cursor: pointer !important;
+  }
+
+  .cursor-default {
+    cursor: default !important;
+  }
+
+  .cursor-not-allowed {
+    cursor: not-allowed !important;
+  }
+
+  /* Global cursor behavior for common interactive elements */
+  button:not([disabled]),
+  [role="button"]:not([disabled]),
+  [onclick]:not([disabled]),
+  [type="button"]:not([disabled]),
+  [type="submit"]:not([disabled]),
+  [type="reset"]:not([disabled]),
+  a[href],
+  [role="link"],
+  [tabindex]:not([tabindex="-1"]):not([disabled]),
+  input[type="file"],
+  input[type="checkbox"],
+  input[type="radio"],
+  select,
+  [contenteditable="true"],
+  .clickable,
+  [data-clickable="true"] {
+    cursor: pointer !important;
+  }
+
+  /* Disabled state cursor override */
+  button[disabled],
+  [role="button"][disabled],
+  [onclick][disabled],
+  input[disabled],
+  select[disabled],
+  textarea[disabled],
+  [aria-disabled="true"],
+  .disabled,
+  [data-disabled="true"] {
+    cursor: not-allowed !important;
+  }
+
+  /* Focus and hover states for accessibility */
+  button:not([disabled]):focus-visible,
+  [role="button"]:not([disabled]):focus-visible,
+  a[href]:focus-visible,
+  [tabindex]:not([tabindex="-1"]):not([disabled]):focus-visible {
+    cursor: pointer !important;
+  }
+
   /* Scrollbar hiding utilities */
   .scrollbar-hide {
     /* Modern browsers */

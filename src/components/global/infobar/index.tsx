@@ -103,7 +103,7 @@ const InfoBar = ({ slug }: Props) => {
                 </button>
               </SheetTrigger>
               <SheetContent side="left" className={`p-0 transition-all duration-300 ${mobileSidebarExpanded ? 'w-[250px]' : 'w-[72px]'} [&>button]:hidden`}>
-                <div className={`flex h-full flex-col bg-slate-50 border-r border-slate-200 font-['Plus_Jakarta_Sans',-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Oxygen,Ubuntu,Cantarell,'Fira_Sans','Droid_Sans','Helvetica_Neue',sans-serif] text-base font-medium leading-6 transition-all duration-300 ${mobileSidebarExpanded ? 'w-[250px]' : 'w-[72px]'}`}>
+                <div className={`flex h-full flex-col bg-slate-50 border-r border-slate-200 font-mona text-base font-medium leading-6 transition-all duration-300 ${mobileSidebarExpanded ? 'w-[250px]' : 'w-[72px]'}`}>
                   {/* Logo Section with Toggle */}
                   <div className="relative h-[70px] overflow-visible">
                     <div className={`flex h-full items-center transition-all duration-300 ${
@@ -172,7 +172,7 @@ const InfoBar = ({ slug }: Props) => {
                                                       <HelpCircle className={`h-[20px] w-[20px] ${pathname === '/help' ? 'text-purple-600' : 'text-gray-600'}`} />
                     </div>
                     {mobileSidebarExpanded && (
-                      <span className={`truncate pl-[18px] text-[17px] font-medium leading-6 ${pathname === '/help' ? 'text-purple-600' : 'text-gray-700'}`}>
+                      <span className={`truncate pl-[18px] text-[17px] font-medium font-mona leading-6 ${pathname === '/help' ? 'text-purple-600' : 'text-gray-700'}`}>
                                   Help & Support
                                 </span>
                               )}
@@ -196,7 +196,7 @@ const InfoBar = ({ slug }: Props) => {
                                 <Settings className="h-[18px] w-[18px] text-purple-600" />
                               </div>
                               {mobileSidebarExpanded && (
-                                <span className="truncate pl-[18px] text-[17px] font-medium leading-6 text-purple-600">Settings</span>
+                                <span className="truncate pl-[18px] text-[17px] font-medium font-mona leading-6 text-purple-600">Settings</span>
                               )}
                             </div>
                           </Link>
