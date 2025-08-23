@@ -24,7 +24,6 @@ import { usePaths } from '@/hooks/user-nav'
 import { useParams, usePathname } from 'next/navigation'
 import ActivateAutomationButton from '@/components/global/activate-automation-button'
 import { SidebarProvider } from '@/components/ui/sidebar'
-import { UserButton } from "@clerk/nextjs"
 
 type Props = {
   id: string
@@ -32,7 +31,7 @@ type Props = {
 
 const AutomationsBreadCrumb = ({ id }: Props) => {
   const { data } = useQueryAutomation(id)
-  const { edit, enableEdit, inputRef, isPending } = useEditAutomation(id)
+  const { edit, enableEdit, inputRef, isPending, handleUpdateName } = useEditAutomation(id)
   const { latestVariable } = useMutationDataState(['update-automation'])
   const { page } = usePaths()
   const params = useParams()
@@ -270,7 +269,18 @@ const AutomationsBreadCrumb = ({ id }: Props) => {
                   autoFocus
                   defaultValue={latestVariable?.variables?.name || data?.data?.name || 'Untitled'}
                   placeholder={isPending ? latestVariable.variables : 'Add a new name'}
-                  className="bg-transparent h-auto outline-none text-sm sm:text-lg lg:text-xl leading-tight border-none p-0 font-hubot font-semibold text-center placeholder:text-center text-gray-900"
+                  className="bg-transparent h-auto outline-none text-sm sm:text-lg lg:text-xl leading-tight border-none p-0 font-hubot font-semibold text-center placeholder:text-center text-gray-900 max-w-[200px] sm:max-w-[300px] lg:max-w-[400px]"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const value = e.currentTarget.value;
+                      if (value && value.trim()) {
+                        handleUpdateName(value);
+                      }
+                    }
+                    if (e.key === 'Escape') {
+                      inputRef.current?.blur();
+                    }
+                  }}
                 />
               ) : (
                 <div className="flex items-center gap-1 sm:gap-2 min-w-0">

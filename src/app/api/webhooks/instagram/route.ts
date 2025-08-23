@@ -664,7 +664,7 @@ export async function POST(req: NextRequest) {
             )
 
             // Handle message action for comments
-            if (isSameActionType(automation.listener.type, ACTION_TYPE.MESSAGE)) {
+            if (automation.listener && isSameActionType(automation.listener.type, ACTION_TYPE.MESSAGE)) {
               console.log(
                 'COMMENT VERSION:',
                 webhook_payload.entry[0].changes[0].value.from.id
@@ -980,13 +980,17 @@ export async function POST(req: NextRequest) {
                 }
                 // Also update messageData from the full listener data when available
                 if (fullAutomation.listener?.messageData) {
-                  automation.listener.messageData = fullAutomation.listener.messageData
+                  // Type-safe assignment by creating a new listener object with messageData
+                  automation.listener = {
+                    ...automation.listener,
+                    messageData: fullAutomation.listener.messageData
+                  } as any
                 }
               }
             }
             
             // Handle message action
-            if (isSameActionType(automation.listener.type, ACTION_TYPE.MESSAGE)) {
+            if (automation.listener && isSameActionType(automation.listener.type, ACTION_TYPE.MESSAGE)) {
               console.log('Processing MESSAGE listener')
               
               const direct_message = await sendDM(
@@ -1022,6 +1026,7 @@ export async function POST(req: NextRequest) {
 
             // Handle AI action
             if (
+              automation.listener && 
               isSameActionType(automation.listener.type, ACTION_TYPE.PROLYAI) &&
               automation.User?.subscription?.plan === 'PRO'
             ) {
@@ -1306,15 +1311,16 @@ export async function POST(req: NextRequest) {
             
             // Log the automation type to help with debugging
             console.log('Automation type for comment handling:', {
-              type: automation.listener.type,
-              isProlyAI: isSameActionType(automation.listener.type, ACTION_TYPE.PROLYAI),
-              isMessage: isSameActionType(automation.listener.type, ACTION_TYPE.MESSAGE),
+              type: automation.listener?.type,
+              isProlyAI: automation.listener && isSameActionType(automation.listener.type, ACTION_TYPE.PROLYAI),
+              isMessage: automation.listener && isSameActionType(automation.listener.type, ACTION_TYPE.MESSAGE),
               subscription: automation.User?.subscription?.plan
             });
 
             if (automations_post) {
               // Handle Proly AI action for comments first
               if (
+                automation.listener &&
                 isSameActionType(automation.listener.type, ACTION_TYPE.PROLYAI) &&
                 automation.User?.subscription?.plan === 'PRO'
               ) {
@@ -1452,7 +1458,7 @@ export async function POST(req: NextRequest) {
               }
               
               // Handle message action for comments
-              if (isSameActionType(automation.listener.type, ACTION_TYPE.MESSAGE)) {
+              if (automation.listener && isSameActionType(automation.listener.type, ACTION_TYPE.MESSAGE)) {
                 console.log(
                   'SENDING DM, WEBHOOK PAYLOAD:',
                   webhook_payload,
@@ -1675,6 +1681,7 @@ export async function POST(req: NextRequest) {
 
                 // Handle AI action for comments
                 if (
+                  automation.listener &&
                   isSameActionType(automation.listener.type, ACTION_TYPE.PROLYAI) &&
                   automation.User?.subscription?.plan === 'PRO'
                 ) {

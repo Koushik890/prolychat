@@ -11,11 +11,24 @@ import { getTokenHealth, validateInstagramConfig } from '@/lib/auth-validation'
  */
 export async function GET(req: NextRequest) {
   try {
-    // Check if user is authenticated
+    // Check if user is authenticated with enhanced error details
     const user = await onCurrentUser()
     if (user.status !== 200 || !user.data) {
+      console.warn('Instagram health check failed - user authentication issue:', {
+        status: user.status,
+        hasData: !!user.data,
+        timestamp: new Date().toISOString(),
+        userAgent: req.headers.get('user-agent'),
+        ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip')
+      })
+      
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { 
+          error: 'Session expired or unavailable',
+          message: 'Please refresh the page and try again',
+          code: 'SESSION_UNAVAILABLE',
+          retry: true
+        },
         { status: 401 }
       )
     }

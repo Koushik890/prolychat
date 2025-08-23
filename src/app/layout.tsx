@@ -47,7 +47,7 @@ export default function RootLayout({
           className={`font-sans antialiased`}>
           <ThemeProvider
             attribute="class"
-            defaultTheme="dark"
+            defaultTheme="light"
             enableSystem={true}
             disableTransitionOnChange
           >

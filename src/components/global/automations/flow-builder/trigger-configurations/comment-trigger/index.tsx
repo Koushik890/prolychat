@@ -132,9 +132,12 @@ export function CommentTriggerConfig({
     setIsPostSelectionModalOpen(false)
   }
 
-  const handleKeywordSave = async (newKeywords: KeywordState) => {
+  const handleKeywordSave = async (newKeywords: KeywordState, options?: { isDeletion?: boolean }) => {
     try {
-      showToast('loading', 'Saving keyword configuration', true)
+      // Only show toast if it's not a deletion (deletion has its own toast in modal)
+      if (!options?.isDeletion) {
+        showToast('loading', 'Saving keyword configuration', true)
+      }
       // Add reload prevention
       window.addEventListener('beforeunload', preventReload)
       
@@ -174,7 +177,9 @@ export function CommentTriggerConfig({
       
       // Remove reload prevention and show success
       window.removeEventListener('beforeunload', preventReload)
-      showToast('success', 'Keywords saved successfully', true)
+      if (!options?.isDeletion) {
+        showToast('success', 'Keywords saved successfully', true)
+      }
     } catch (error) {
       // Remove reload prevention on error
       window.removeEventListener('beforeunload', preventReload)
@@ -504,7 +509,7 @@ export function CommentTriggerConfig({
                         {keywords.include.map((keyword, index) => (
                           <motion.div 
                             key={keyword} 
-                            className="group relative text-xs font-medium text-purple-700 bg-purple-100 hover:bg-purple-200 px-3 py-1.5 rounded-full border border-purple-200 transition-all duration-200 cursor-pointer font-mona"
+                            className="relative text-xs font-medium text-purple-700 bg-purple-100 hover:bg-purple-200 px-3 py-1.5 rounded-full border border-purple-200 transition-all duration-200 cursor-default font-mona"
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: index * 0.05, duration: 0.2 }}
@@ -512,16 +517,6 @@ export function CommentTriggerConfig({
                             whileTap={{ scale: 0.95 }}
                           >
                             {keyword}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleKeywordRemove(keyword)
-                              }}
-                              className="absolute right-0 top-0 bottom-0 px-2 hidden group-hover:flex items-center justify-center hover:bg-red-100 hover:text-red-600 rounded-r-full transition-colors"
-                              aria-label={`Remove keyword ${keyword}`}
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
                           </motion.div>
                         ))}
                       </div>
@@ -593,7 +588,6 @@ export function CommentTriggerConfig({
         onClose={() => setIsKeywordModalOpen(false)}
         onSave={handleKeywordSave}
         initialKeywords={keywords}
-        key={JSON.stringify(keywords)}
       />
 
       <ReplyMessageModal

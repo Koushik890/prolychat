@@ -90,14 +90,14 @@ export function PerformanceMetricsCard({
                 <>
                   {/* Number container with fixed height */}
                   <div className="flex flex-col items-center h-12 sm:h-16 justify-center">
-                    <div className="text-slate-800 text-4xl sm:text-6xl font-bold leading-none">
+                    <div className="text-slate-800 text-4xl sm:text-6xl font-bold leading-none font-hubot">
                       {commentsReplied}
                     </div>
                   </div>
                   {/* Info container with fixed height */}
                   <div className="h-8 sm:h-10 flex items-start justify-center">
                     <div className="text-slate-500 text-sm font-medium font-mona flex gap-2 items-center">
-                      out of <span className="text-slate-700">{totalComments}</span> total
+                      out of <span className="text-slate-700 font-hubot">{totalComments}</span> total
                     </div>
                   </div>
                 </>
@@ -107,7 +107,11 @@ export function PerformanceMetricsCard({
             {/* Footer */}
             <div className="w-full mt-auto pt-3 border-t-2 border-slate-300">
               <p className="text-slate-700 text-xs font-medium font-mona text-center">
-                {isLoading ? "Calculating..." : `${commentsPercentage}% automated response rate`}
+                {isLoading ? "Calculating..." : (
+                  <>
+                    <span className="font-hubot">{commentsPercentage}%</span> automated response rate
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -164,7 +168,7 @@ export function PerformanceMetricsCard({
                 <>
                   {/* Number container with fixed height */}
                   <div className="flex flex-col items-center h-12 sm:h-16 justify-center">
-                    <div className="text-slate-800 text-4xl sm:text-6xl font-bold leading-none">
+                    <div className="text-slate-800 text-4xl sm:text-6xl font-bold leading-none font-hubot">
                       {totalDmResponses}
                     </div>
                   </div>
@@ -176,14 +180,14 @@ export function PerformanceMetricsCard({
                           <MessageSquare size={12} className="text-slate-500" />
                           <span className="text-slate-500 text-xs font-mona">From comments:</span>
                         </div>
-                        <span className="text-slate-800 text-xs font-medium font-mona">{commentTriggeredDms}</span>
+                        <span className="text-slate-800 text-xs font-medium font-hubot">{commentTriggeredDms}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
                           <Send size={12} className="text-slate-500" />
                           <span className="text-slate-500 text-xs font-mona">Direct responses:</span>
                         </div>
-                        <span className="text-slate-800 text-xs font-medium font-mona">{userMessageDms}</span>
+                        <span className="text-slate-800 text-xs font-medium font-hubot">{userMessageDms}</span>
                       </div>
                     </div>
                   </div>

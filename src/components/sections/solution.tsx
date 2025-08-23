@@ -11,7 +11,7 @@ const features = [
     title: "Maximize Link Clicks",
     description:
       "Ditch the 'link in bio.' Drive higher conversion by sending clickable links directly to your audience's DMs.",
-    className: "hover:bg-red-500/10 transition-all duration-500 ease-out",
+    className: "hover:bg-purple-500/10 transition-all duration-500 ease-out",
     content: (
       <div className="absolute bottom-0 left-0 right-0 flex items-end justify-center -mb-4">
         <img 

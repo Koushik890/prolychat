@@ -84,184 +84,179 @@ export const TestimonialCard = ({
 
 const testimonials = [
   {
-    name: "Alex Rivera",
-    role: "CTO at InnovateTech",
-    img: "https://randomuser.me/api/portraits/men/91.jpg",
-    description: (
-      <p>
-        The AI-driven analytics from #QuantumInsights have revolutionized our
-        product development cycle.
-        <Highlight>
-          Insights are now more accurate and faster than ever.
-        </Highlight>{" "}
-        A game-changer for tech companies.
-      </p>
-    ),
-  },
-  {
-    name: "Samantha Lee",
-    role: "Marketing Director at NextGen Solutions",
+    name: "Sarah Chen",
+    role: "Social Media Manager at Fashion Forward",
     img: "https://randomuser.me/api/portraits/women/12.jpg",
     description: (
       <p>
-        Implementing #AIStream&apos;s customer prediction model has drastically
-        improved our targeting strategy.
-        <Highlight>Seeing a 50% increase in conversion rates!</Highlight> Highly
-        recommend their solutions.
+        The Instagram automation tools have completely transformed how we manage
+        customer engagement.
+        <Highlight>
+          Response time improved from hours to minutes!
+        </Highlight>{" "}
+        Our followers love the quick, personalized replies.
       </p>
     ),
   },
   {
-    name: "Raj Patel",
-    role: "Founder & CEO at StartUp Grid",
-    img: "https://randomuser.me/api/portraits/men/45.jpg",
+    name: "Marcus Rodriguez",
+    role: "Marketing Director at TechStart Solutions",
+    img: "https://randomuser.me/api/portraits/men/91.jpg",
     description: (
       <p>
-        As a startup, we need to move fast and stay ahead. #CodeAI&apos;s
-        automated coding assistant helps us do just that.
-        <Highlight>Our development speed has doubled.</Highlight> Essential tool
-        for any startup.
+        Managing multiple Instagram accounts used to be a nightmare. Now it&apos;s
+        effortless with automated responses and smart engagement tools.
+        <Highlight>Freed up 20+ hours per week for content creation.</Highlight>{" "}
+        Game-changer for our marketing team.
       </p>
     ),
   },
   {
-    name: "Emily Chen",
-    role: "Product Manager at Digital Wave",
+    name: "Priya Patel",
+    role: "Founder at EcoBeauty Co",
     img: "https://randomuser.me/api/portraits/women/83.jpg",
     description: (
       <p>
-        #VoiceGen&apos;s AI-driven voice synthesis has made creating global
-        products a breeze.
-        <Highlight>Localization is now seamless and efficient.</Highlight> A
-        must-have for global product teams.
+        As a small business, we couldn&apos;t afford to miss customer inquiries.
+        The automation ensures we never do.
+        <Highlight>
+          Customer satisfaction scores increased by 40%.
+        </Highlight>{" "}
+        Essential tool for any growing business.
       </p>
     ),
   },
   {
-    name: "Michael Brown",
-    role: "Data Scientist at FinTech Innovations",
-    img: "https://randomuser.me/api/portraits/men/1.jpg",
+    name: "David Kim",
+    role: "CEO at Digital Marketing Pro",
+    img: "https://randomuser.me/api/portraits/men/45.jpg",
     description: (
       <p>
-        Leveraging #DataCrunch&apos;s AI for our financial models has given us
-        an edge in predictive accuracy.
+        The comment automation features have made our Instagram presence feel
+        incredibly responsive and personal.
         <Highlight>
-          Our investment strategies are now powered by real-time data analytics.
+          Engagement rates doubled in just two months.
         </Highlight>{" "}
-        Transformative for the finance industry.
+        Our clients are amazed by the results.
       </p>
     ),
   },
   {
-    name: "Linda Wu",
-    role: "VP of Operations at LogiChain Solutions",
+    name: "Amanda Foster",
+    role: "Brand Manager at Lifestyle Co",
     img: "https://randomuser.me/api/portraits/women/5.jpg",
     description: (
       <p>
-        #LogiTech&apos;s supply chain optimization tools have drastically
-        reduced our operational costs.
+        Managing customer inquiries across multiple time zones was impossible
+        before. Now our automation handles it perfectly.
         <Highlight>
-          Efficiency and accuracy in logistics have never been better.
+          24/7 customer support without the overhead.
         </Highlight>{" "}
+        Our international customers love the instant responses.
       </p>
     ),
   },
   {
-    name: "Carlos Gomez",
-    role: "Head of R&D at EcoInnovate",
+    name: "James Wilson",
+    role: "E-commerce Owner at Urban Outfitters",
     img: "https://randomuser.me/api/portraits/men/14.jpg",
     description: (
       <p>
-        By integrating #GreenTech&apos;s sustainable energy solutions,
-        we&apos;ve seen a significant reduction in carbon footprint.
+        The automated reply system has been incredible for our customer service.
         <Highlight>
-          Leading the way in eco-friendly business practices.
+          Social media ROI increased by 300% this quarter.
         </Highlight>{" "}
-        Pioneering change in the industry.
+        More sales, happier customers, less stress.
       </p>
     ),
   },
   {
-    name: "Aisha Khan",
-    role: "Chief Marketing Officer at Fashion Forward",
+    name: "Lisa Thompson",
+    role: "Social Media Specialist at HealthTech",
     img: "https://randomuser.me/api/portraits/women/56.jpg",
     description: (
       <p>
-        #TrendSetter&apos;s market analysis AI has transformed how we approach
-        fashion trends.
+        Our healthcare brand needed to maintain a personal touch while scaling
+        rapidly. The automation tools deliver exactly that.
         <Highlight>
-          Our campaigns are now data-driven with higher customer engagement.
+          Professional responses that feel genuinely caring.
         </Highlight>{" "}
-        Revolutionizing fashion marketing.
+        Perfect balance of efficiency and empathy.
       </p>
     ),
   },
   {
-    name: "Tom Chen",
-    role: "Director of IT at HealthTech Solutions",
+    name: "Carlos Mendez",
+    role: "Marketing Manager at Food & Beverage Co",
     img: "https://randomuser.me/api/portraits/men/18.jpg",
     description: (
       <p>
-        Implementing #MediCareAI in our patient care systems has improved
-        patient outcomes significantly.
+        Restaurant customers expect quick responses, especially during peak hours.
+        The automation ensures we never miss an opportunity.
         <Highlight>
-          Technology and healthcare working hand in hand for better health.
+          Table bookings from Instagram increased by 60%.
         </Highlight>{" "}
-        A milestone in medical technology.
+        Our waitstaff can focus on in-person service.
       </p>
     ),
   },
   {
-    name: "Sofia Patel",
-    role: "CEO at EduTech Innovations",
+    name: "Rachel Green",
+    role: "Content Creator at Travel Adventures",
     img: "https://randomuser.me/api/portraits/women/73.jpg",
     description: (
       <p>
-        #LearnSmart&apos;s AI-driven personalized learning plans have doubled
-        student performance metrics.
+        As a travel influencer, I need to engage with followers even when
+        I&apos;m exploring remote locations.
         <Highlight>
-          Education tailored to every learner&apos;s needs.
+          Never miss a comment, no matter where I am.
         </Highlight>{" "}
-        Transforming the educational landscape.
+        The automation keeps my community engaged 24/7.
       </p>
     ),
   },
   {
-    name: "Jake Morrison",
-    role: "CTO at SecureNet Tech",
+    name: "Michael Chang",
+    role: "Digital Marketing Consultant",
     img: "https://randomuser.me/api/portraits/men/25.jpg",
     description: (
       <p>
-        With #CyberShield&apos;s AI-powered security systems, our data
-        protection levels are unmatched.
-        <Highlight>Ensuring safety and trust in digital spaces.</Highlight>{" "}
-        Redefining cybersecurity standards.
+        I manage social media for multiple clients, and this platform has
+        revolutionized my workflow.
+        <Highlight>
+          Can handle 10x more accounts with better results.
+        </Highlight>{" "}
+        My clients are thrilled with the improved engagement.
       </p>
     ),
   },
   {
-    name: "Nadia Ali",
-    role: "Product Manager at Creative Solutions",
+    name: "Natalie Brooks",
+    role: "Customer Success Manager at SaaS Startup",
     img: "https://randomuser.me/api/portraits/women/78.jpg",
     description: (
       <p>
-        #DesignPro&apos;s AI has streamlined our creative process, enhancing
-        productivity and innovation.
-        <Highlight>Bringing creativity and technology together.</Highlight> A
-        game-changer for creative industries.
+        Our startup needed to scale customer support without hiring more staff.
+        The automation tools have been perfect.
+        <Highlight>
+          Support tickets resolved 3x faster.
+        </Highlight>{" "}
+        Our customers get instant help, our team stays lean.
       </p>
     ),
   },
   {
-    name: "Omar Farooq",
-    role: "Founder at Startup Hub",
+    name: "Ahmed Hassan",
+    role: "Founder at Local Business Network",
     img: "https://randomuser.me/api/portraits/men/54.jpg",
     description: (
       <p>
-        #VentureAI&apos;s insights into startup ecosystems have been invaluable
-        for our growth and funding strategies.
-        <Highlight>Empowering startups with data-driven decisions.</Highlight> A
-        catalyst for startup success.
+        Running a local business network means managing dozens of social media
+        accounts. This platform makes it manageable and effective.
+        <Highlight>
+          Unified approach across all our member businesses.
+        </Highlight>{" "}
+        Everyone wins with better customer engagement.
       </p>
     ),
   },

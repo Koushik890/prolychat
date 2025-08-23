@@ -39,16 +39,73 @@ function AllPostsModal({ isOpen, onClose, posts, selectedId, onPostSelect }: All
     }
   }
 
+  // Handle body scroll lock and interaction blocking when modal is open
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+      
+      // Block all interactions behind modal
+      document.body.style.pointerEvents = 'none'
+      document.body.classList.add('modal-open')
+      
+      // Ensure sidebar and other UI elements are non-interactive
+      const sidebar = document.querySelector('[data-sidebar]') as HTMLElement
+      const infobar = document.querySelector('[data-infobar]') as HTMLElement
+      const mainContent = document.querySelector('main') as HTMLElement
+      
+      if (sidebar) sidebar.style.pointerEvents = 'none'
+      if (infobar) infobar.style.pointerEvents = 'none'  
+      if (mainContent) mainContent.style.pointerEvents = 'none'
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+      document.body.style.pointerEvents = ''
+      document.body.classList.remove('modal-open')
+      
+      // Restore sidebar and UI interactions
+      const sidebar = document.querySelector('[data-sidebar]') as HTMLElement
+      const infobar = document.querySelector('[data-infobar]') as HTMLElement
+      const mainContent = document.querySelector('main') as HTMLElement
+      
+      if (sidebar) sidebar.style.pointerEvents = ''
+      if (infobar) infobar.style.pointerEvents = ''
+      if (mainContent) mainContent.style.pointerEvents = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+      document.body.style.pointerEvents = ''
+      document.body.classList.remove('modal-open')
+      
+      const sidebar = document.querySelector('[data-sidebar]') as HTMLElement
+      const infobar = document.querySelector('[data-infobar]') as HTMLElement
+      const mainContent = document.querySelector('main') as HTMLElement
+      
+      if (sidebar) sidebar.style.pointerEvents = ''
+      if (infobar) infobar.style.pointerEvents = ''
+      if (mainContent) mainContent.style.pointerEvents = ''
+    }
+  }, [isOpen])
+
   // Handle Escape key press
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
         e.preventDefault()
+        e.stopPropagation()
         onClose()
       }
     }
-    window.addEventListener('keydown', handleEscape)
-    return () => window.removeEventListener('keydown', handleEscape)
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape, { capture: true })
+    }
+    return () => {
+      document.removeEventListener('keydown', handleEscape, { capture: true })
+    }
   }, [isOpen, onClose])
 
   // Focus management - ensure modal receives focus when opened
@@ -66,7 +123,7 @@ function AllPostsModal({ isOpen, onClose, posts, selectedId, onPostSelect }: All
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[10002] flex items-center justify-center p-6 sm:p-8"
+      className="fixed inset-0 z-[60000] flex items-center justify-center p-6 sm:p-8"
       onClick={handleBackdropClick}
     >
       {/* Backdrop */}
@@ -233,16 +290,73 @@ export function PostSelectionModal({ isOpen, onClose, onSelect, selectedPostId }
   const [showAllPostsModal, setShowAllPostsModal] = React.useState(false)
   const modalRef = React.useRef<HTMLDivElement>(null)
 
+  // Handle body scroll lock and interaction blocking when modal is open
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+      
+      // Block all interactions behind modal
+      document.body.style.pointerEvents = 'none'
+      document.body.classList.add('modal-open')
+      
+      // Ensure sidebar and other UI elements are non-interactive
+      const sidebar = document.querySelector('[data-sidebar]') as HTMLElement
+      const infobar = document.querySelector('[data-infobar]') as HTMLElement
+      const mainContent = document.querySelector('main') as HTMLElement
+      
+      if (sidebar) sidebar.style.pointerEvents = 'none'
+      if (infobar) infobar.style.pointerEvents = 'none'  
+      if (mainContent) mainContent.style.pointerEvents = 'none'
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+      document.body.style.pointerEvents = ''
+      document.body.classList.remove('modal-open')
+      
+      // Restore sidebar and UI interactions
+      const sidebar = document.querySelector('[data-sidebar]') as HTMLElement
+      const infobar = document.querySelector('[data-infobar]') as HTMLElement
+      const mainContent = document.querySelector('main') as HTMLElement
+      
+      if (sidebar) sidebar.style.pointerEvents = ''
+      if (infobar) infobar.style.pointerEvents = ''
+      if (mainContent) mainContent.style.pointerEvents = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+      document.body.style.pointerEvents = ''
+      document.body.classList.remove('modal-open')
+      
+      const sidebar = document.querySelector('[data-sidebar]') as HTMLElement
+      const infobar = document.querySelector('[data-infobar]') as HTMLElement
+      const mainContent = document.querySelector('main') as HTMLElement
+      
+      if (sidebar) sidebar.style.pointerEvents = ''
+      if (infobar) infobar.style.pointerEvents = ''
+      if (mainContent) mainContent.style.pointerEvents = ''
+    }
+  }, [isOpen])
+
   // Handle Escape key press
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
         e.preventDefault()
+        e.stopPropagation()
         onClose()
       }
     }
-    window.addEventListener('keydown', handleEscape)
-    return () => window.removeEventListener('keydown', handleEscape)
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape, { capture: true })
+    }
+    return () => {
+      document.removeEventListener('keydown', handleEscape, { capture: true })
+    }
   }, [isOpen, onClose])
 
   // Focus management - ensure modal receives focus when opened
@@ -298,7 +412,7 @@ export function PostSelectionModal({ isOpen, onClose, onSelect, selectedPostId }
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[10001] flex items-center justify-center p-6 sm:p-8"
+      className="fixed inset-0 z-[60000] flex items-center justify-center p-6 sm:p-8"
       onClick={handleBackdropClick}
     >
       {/* Backdrop */}

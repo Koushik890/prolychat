@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { Check } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import { motion, AnimatePresence, HTMLMotionProps } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -129,7 +130,7 @@ export function ToastNotification({
                   {state === 'error' && (
                     <>
                       <div className="p-0.5 bg-red-500/10 dark:bg-red-500/25 rounded-[99px] shadow-sm border border-red-500/20 dark:border-red-500/25 justify-center items-center gap-1.5 flex overflow-hidden">
-                        <div className="w-3.5 h-3.5 text-red-600 dark:text-red-500 font-bold text-center">×</div>
+                        <X className="w-3.5 h-3.5 text-red-600 dark:text-red-500" strokeWidth={3} />
                       </div>
                       <div className="text-[13px] font-normal leading-tight whitespace-nowrap">
                         {errorText}

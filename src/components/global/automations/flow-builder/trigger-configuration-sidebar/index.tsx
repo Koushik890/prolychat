@@ -273,7 +273,6 @@ export const TriggerConfigurationSidebar: React.FC<TriggerConfigurationSidebarPr
   const handleKeywordSave = async (newKeywords: { include: string[] }) => {
     // Update local state first
     setKeywords(newKeywords)
-    setIsKeywordModalOpen(false)
 
     // Then update the configuration
     if (onTriggerConfig && selectedTrigger) {
@@ -296,6 +295,8 @@ export const TriggerConfigurationSidebar: React.FC<TriggerConfigurationSidebarPr
         // Use async/await to ensure state updates complete
         await Promise.resolve()
         onTriggerConfig(selectedTrigger.id, config)
+        // Close the modal after successful parent update
+        setIsKeywordModalOpen(false)
       } catch (error) {
         console.error('Error saving keywords:', error)
       }
@@ -677,7 +678,6 @@ export const TriggerConfigurationSidebar: React.FC<TriggerConfigurationSidebarPr
         onClose={() => setIsKeywordModalOpen(false)}
         onSave={handleKeywordSave}
         initialKeywords={keywords}
-        key={JSON.stringify(keywords)}
       />
 
       <ReplyMessageModal

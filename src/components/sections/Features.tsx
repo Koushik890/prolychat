@@ -1,35 +1,35 @@
 import Features from "@/components/features-horizontal";
 import Section from "@/components/section";
-import { BarChart3, Brain, FileText, LineChart } from "lucide-react";
+import { Key, Megaphone } from "lucide-react";
 
 const data = [
   {
     id: 1,
-    title: "AI-Powered Dashboard",
-    content: "Visualize trends and gain insights at a glance.",
-    image: "/dashboard.png",
-    icon: <BarChart3 className="h-6 w-6 text-primary" />,
+    title: "Select Posts or Reels",
+    content: "Choose your best content for DM automation campaigns.",
+    image: "/select-post-reel.png",
+    icon: <img src="/Reels.svg" alt="Reels" className="h-6 w-6" />,
   },
   {
     id: 2,
-    title: "Natural Language Processing",
-    content: "Analyze text and extract sentiment effortlessly.",
-    image: "/dashboard.png",
-    icon: <Brain className="h-6 w-6 text-primary" />,
+    title: "Define Keywords",
+    content: "Configure key terms that will attract your target audience.",
+    image: "/configure-keywords.png",
+    icon: <Key className="h-6 w-6 text-primary" />,
   },
   {
     id: 3,
-    title: "Predictive Analytics",
-    content: "Forecast trends and make data-driven decisions.",
-    image: "/dashboard.png",
-    icon: <LineChart className="h-6 w-6 text-primary" />,
+    title: "Automate DMs",
+    content: "Schedule and send personalized messages with ease.",
+    image: "/configure-message.png",
+    icon: <img src="/Messages.svg" alt="Automate DMs" className="h-6 w-6" />,
   },
   {
     id: 4,
-    title: "Automated Reporting",
-    content: "Generate comprehensive reports with one click.",
-    image: "/dashboard.png",
-    icon: <FileText className="h-6 w-6 text-primary" />,
+    title: "Wait to go Viral!",
+    content: "Watch your engagement grow effortlessly and organically.",
+    video: "/grow-engagement.mp4",
+    icon: <Megaphone className="h-6 w-6 text-primary" />,
   },
 ];
 

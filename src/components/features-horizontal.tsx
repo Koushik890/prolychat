@@ -267,29 +267,62 @@ export default function Features({
                 ltr && "md:order-1"
               }`}
             >
-              {data[currentIndex]?.image ? (
-                <motion.img
-                  key={currentIndex}
-                  src={data[currentIndex].image}
-                  alt="feature"
-                  className="aspect-auto h-full w-full object-cover relative border rounded-lg shadow-lg"
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
+              <div className="relative">
+                {data[currentIndex]?.image ? (
+                  <motion.img
+                    key={currentIndex}
+                    src={data[currentIndex].image}
+                    alt="feature"
+                    className="aspect-video h-full w-full object-cover relative border rounded-lg shadow-lg"
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                  />
+                ) : data[currentIndex]?.video ? (
+                  <video
+                    preload="auto"
+                    src={data[currentIndex].video}
+                    className="aspect-video h-full w-full rounded-lg object-cover border shadow-lg"
+                    autoPlay
+                    loop
+                    muted
+                  />
+                ) : (
+                  <div className="aspect-video h-full w-full rounded-xl border border-neutral-300/50 bg-gray-200 p-1"></div>
+                )}
+                
+                {/* Gradual transition blur - above bottom blur */}
+                <div 
+                  className="absolute bottom-0 left-0 right-0 h-[250px] backdrop-blur-sm pointer-events-none"
+                  style={{
+                    maskImage: 'linear-gradient(to top, transparent 0%, black 30%, black 50%, transparent 85%)',
+                    WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 30%, black 50%, transparent 85%)',
+                    maskComposite: 'intersect',
+                    WebkitMaskComposite: 'source-in'
+                  }}
                 />
-              ) : data[currentIndex]?.video ? (
-                <video
-                  preload="auto"
-                  src={data[currentIndex].video}
-                  className="aspect-auto h-full w-full rounded-lg object-cover border shadow-lg"
-                  autoPlay
-                  loop
-                  muted
+                
+                {/* Transition opacity overlay */}
+                <div className="absolute bottom-0 left-0 right-0 h-[200px] bg-gradient-to-t from-transparent via-white/20 to-transparent dark:via-background/20 pointer-events-none" />
+                
+                {/* Bottom blur fade effect - positioned lower */}
+                <div 
+                  className="absolute bottom-0 left-0 right-0 h-[150px] backdrop-blur-3xl pointer-events-none rounded-b-lg"
+                  style={{
+                    maskImage: 'linear-gradient(to top, black 0%, black 50%, transparent 70%)',
+                    WebkitMaskImage: 'linear-gradient(to top, black 0%, black 50%, transparent 70%)',
+                    maskComposite: 'intersect',
+                    WebkitMaskComposite: 'source-in'
+                  }}
                 />
-              ) : (
-                <div className="aspect-auto h-full w-full rounded-xl border border-neutral-300/50 bg-gray-200 p-1 min-h-[600px]"></div>
-              )}
+                
+                {/* Bottom opacity fade overlay - positioned lower */}
+                <div className="absolute bottom-0 left-0 right-0 h-[100px] bg-gradient-to-t from-white via-white/95 to-transparent dark:from-background dark:via-background/95 pointer-events-none rounded-b-lg" />
+                
+                {/* Border masking overlay - complete border elimination */}
+                <div className="absolute bottom-0 left-0 right-0 h-[20px] bg-white dark:bg-background pointer-events-none rounded-b-lg" />
+              </div>
               <BorderBeam
                 size={400}
                 duration={12}
