@@ -49,7 +49,7 @@ export const InstagramStatusIndicator = () => {
     }
   }, [hasIntegration, userData])
 
-  const checkHealthStatus = async () => {
+  const checkHealthStatus = async (retryCount = 0) => {
     if (!hasIntegration) return
     
     setIsCheckingHealth(true)
@@ -62,6 +62,22 @@ export const InstagramStatusIndicator = () => {
           message: data.message,
           needsRefresh: data.needsRefresh,
           daysUntilExpiration: data.daysUntilExpiration
+        })
+      } else if (response.status === 401 && retryCount < 2) {
+        // Handle session unavailable with retry
+        const errorData = await response.json().catch(() => ({}))
+        if (errorData.retry && errorData.code === 'SESSION_UNAVAILABLE') {
+          console.warn(`Session unavailable, retrying in 2 seconds... (attempt ${retryCount + 1}/2)`)
+          setTimeout(() => {
+            checkHealthStatus(retryCount + 1)
+          }, 2000)
+          return
+        }
+        
+        setHealthStatus({
+          status: 'invalid',
+          message: errorData.message || 'Authentication failed',
+          needsRefresh: true
         })
       } else {
         setHealthStatus({

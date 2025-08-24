@@ -149,6 +149,7 @@ export const useEditAutomation = (automationId: string) => {
     disableEdit,
     inputRef,
     isPending,
+    handleUpdateName,
   };
 }
 

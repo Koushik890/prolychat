@@ -120,14 +120,14 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.577 0.245 27.325);
+  --primary: oklch(0.648 0.222 291.11);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.577 0.245 27.325);
+  --secondary-foreground: oklch(0.648 0.222 291.11);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.577 0.245 27.325);
+  --accent-foreground: oklch(0.648 0.222 291.11);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
   --border: oklch(0.922 0 0);
@@ -163,14 +163,14 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.145 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.577 0.245 27.325);
+  --primary: oklch(0.648 0.222 291.11);
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.577 0.245 27.325);
+  --secondary-foreground: oklch(0.648 0.222 291.11);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.577 0.245 27.325);
+  --accent-foreground: oklch(0.648 0.222 291.11);
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.985 0 0);
   --border: oklch(0.269 0 0);
@@ -278,6 +278,32 @@
 }
 
 @layer utilities {
+  /* Prose font customizations for blog articles */
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    font-family: "Hubot Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif !important;
+  }
+  
+  .prose p,
+  .prose li,
+  .prose a,
+  .prose strong,
+  .prose em,
+  .prose blockquote,
+  .prose td,
+  .prose th {
+    font-family: "Mona Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif !important;
+  }
+  
+  .prose code,
+  .prose pre {
+    font-family: 'Courier New', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+  }
+
   /* Container utilities */
   .container {
     width: 100%;

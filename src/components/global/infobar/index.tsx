@@ -11,7 +11,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { EnhancedText } from '@/components/ui/enhanced-typography'
-import { UserButton } from "@clerk/nextjs"
+import { CustomUserButton } from '@/components/global/custom-user-button'
 import { useParams, usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
@@ -221,14 +221,7 @@ const InfoBar = ({ slug }: Props) => {
 
         {/* Right: User Actions */}
         <div className="flex items-center gap-4">
-          <UserButton
-            afterSignOutUrl="/"
-            appearance={{
-              elements: {
-                avatarBox: "h-[32px] w-[32px]"
-              }
-            }}
-          />
+          <CustomUserButton />
         </div>
       </div>
     </div>

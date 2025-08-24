@@ -5,7 +5,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { X, Hash, ChevronRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import styles from './message-trigger.module.css'
 import { KeywordConfigurationModal } from '../../keyword-configuration-modal'
 import { BaseTriggerConfigProps, KeywordState, updateConfigurationStatus } from '../types'
 import { useAutomationSync } from '@/hooks/use-automations'
@@ -50,9 +49,12 @@ export function MessageTriggerConfig({
     }
   }, [automationData?.data])
 
-  const handleKeywordSave = async (newKeywords: KeywordState) => {
+  const handleKeywordSave = async (newKeywords: KeywordState, options?: { isDeletion?: boolean }) => {
     try {
-      showToast('loading', 'Saving keyword configuration', true)
+      // Only show toast if it's not a deletion (deletion has its own toast in modal)
+      if (!options?.isDeletion) {
+        showToast('loading', 'Saving keyword configuration', true)
+      }
       // Add reload prevention
       window.addEventListener('beforeunload', preventReload)
 
@@ -79,7 +81,9 @@ export function MessageTriggerConfig({
 
       // Remove reload prevention and show success
       window.removeEventListener('beforeunload', preventReload)
-      showToast('success', 'Keywords saved successfully', true)
+      if (!options?.isDeletion) {
+        showToast('success', 'Keywords saved successfully', true)
+      }
     } catch (error) {
       // Remove reload prevention on error
       window.removeEventListener('beforeunload', preventReload)
@@ -98,7 +102,7 @@ export function MessageTriggerConfig({
   }, [])
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
+    <Sheet open={isOpen} modal={false} onOpenChange={(open) => { if (!open) onClose() }}>
       <SheetContent
         showCloseButton={false}
         side="right"
@@ -107,6 +111,9 @@ export function MessageTriggerConfig({
           'bg-white border-gray-200 shadow-xl border-l'
         )}
         style={{ zIndex: 60 }}
+        onOpenAutoFocus={(e) => { if (isKeywordModalOpen) e.preventDefault() }}
+        onCloseAutoFocus={(e) => { if (isKeywordModalOpen) e.preventDefault() }}
+        onInteractOutside={(e) => { if (isKeywordModalOpen) e.preventDefault() }}
       >
         <button 
           type="button"
@@ -118,57 +125,87 @@ export function MessageTriggerConfig({
           <span className="sr-only font-mona">Close</span>
         </button>
 
-        <SheetHeader className={styles.header}>
+        <SheetHeader className="mb-6">
           <div className="pr-8">
-            <SheetTitle className={`${styles.title} font-hubot`}>Configure Instagram Message</SheetTitle>
-            <p className={`${styles.subtitle} font-mona`}>Set up your message trigger settings</p>
+            <SheetTitle className="text-lg font-semibold font-hubot">Configure Direct Message</SheetTitle>
+            <p className="text-sm text-gray-600 font-mona">Set up your message trigger settings</p>
           </div>
         </SheetHeader>
 
-        <motion.div 
-          className={styles.content}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+        <div 
+          className="flex flex-col gap-8 flex-1 overflow-y-auto pr-6 -mr-6 scrollbar-hide relative z-10"
         >
           {/* Keywords Section */}
-          <div className={styles.section}>
-            <h4 className={`${styles.sectionTitle} font-hubot`}>
-              <Hash className={styles.sectionIcon} />
+          <motion.div 
+            className="flex flex-col gap-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <h4 className="flex items-center gap-3 text-xs font-semibold text-gray-600 tracking-wider py-2 font-hubot">
+              <Hash className="w-4.5 h-4.5 text-gray-600" />
               KEYWORDS
             </h4>
-            <div className={styles.sectionContent}>
-              <Button
-                variant="outline"
-                className={styles.configButton}
-                onClick={() => setIsKeywordModalOpen(true)}
+            <div className="flex flex-col gap-3">
+              <motion.div
+                whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                whileTap={{ y: -1 }}
               >
-                <span className={`${styles.buttonText} font-mona`}>
-                  {keywords.include.length > 0 
-                    ? `${keywords.include.length} Keywords Configured` 
-                    : 'Configure Keywords'}
-                </span>
-                <ChevronRight className={styles.buttonIcon} />
-              </Button>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full h-12 justify-between px-4 rounded-xl transition-all duration-200",
+                    "bg-white border border-gray-200 hover:bg-purple-50 hover:border-purple-300",
+                    "text-gray-600 hover:text-purple-700 group"
+                  )}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setIsKeywordModalOpen(true)
+                  }}
+                >
+                  <span className="text-sm font-medium font-mona">
+                    {keywords.include.length > 0 
+                      ? `${keywords.include.length} Keywords Configured` 
+                      : 'Configure Keywords'}
+                  </span>
+                  <ChevronRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                </Button>
+              </motion.div>
               {keywords.include.length > 0 && (
-                <div className={styles.keywordsSummary}>
-                  <div className={styles.keywordGroup}>
-                    <div className={styles.keywordTags}>
-                      {keywords.include.map((keyword) => (
-                        <div key={keyword} className={`${styles.keywordTag} font-mona`}>
+                <motion.div 
+                  className={cn(
+                    "p-4 rounded-xl",
+                    "bg-white border border-gray-200"
+                  )}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, type: 'spring', damping: 20 }}
+                >
+                  <div className="flex flex-col gap-3">
+                    <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider font-hubot">Keywords:</span>
+                    <div className="flex flex-wrap gap-2">
+                      {keywords.include.map((keyword, index) => (
+                        <motion.div 
+                          key={keyword} 
+                          className="text-xs font-medium text-purple-700 bg-purple-100 px-3 py-1.5 rounded-full border border-purple-200 transition-all duration-200 font-mona"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: index * 0.05 }}
+                        >
                           {keyword}
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
                   </div>
-                </div>
+                </motion.div>
               )}
-              <p className={`${styles.helperText} font-mona`}>
+              <p className="text-xs text-gray-500 -mt-1 leading-relaxed font-mona">
                 Configure keywords to filter incoming messages
               </p>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
 
         {/* Keyword Configuration Modal */}
         <KeywordConfigurationModal

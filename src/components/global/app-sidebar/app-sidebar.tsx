@@ -12,7 +12,6 @@ import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useParams, usePathname, useRouter } from "next/navigation"
-import { UserButton } from "@clerk/nextjs"
 
 import { NavMain } from "./nav-main"
 import { SidebarToggle } from "./sidebar-toggle"

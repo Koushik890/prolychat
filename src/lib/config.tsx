@@ -1,16 +1,16 @@
 export const BLUR_FADE_DELAY = 0.15;
 
 export const siteConfig = {
-  name: "acme.ai",
-  description: "Automate your workflow with AI",
+  name: "Prolychat",
+  description: "All rights reserved",
   url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-  keywords: ["SaaS", "Template", "Next.js", "React", "Tailwind CSS"],
+  keywords: ["Social Media", "AI Automation", "Instagram", "Engagement", "Comments"],
   links: {
-    email: "support@acme.ai",
-    twitter: "https://twitter.com/magicuidesign",
-    discord: "https://discord.gg/87p2vpsat5",
-    github: "https://github.com/magicuidesign/magicui",
-    instagram: "https://instagram.com/magicuidesign/",
+    email: "support@prolychat.com",
+    twitter: "https://twitter.com/prolychat",
+    discord: "https://discord.gg/prolychat",
+    github: "https://github.com/prolychat",
+    instagram: "https://instagram.com/prolychat/",
   },
   header: [
     {
@@ -119,54 +119,57 @@ export const siteConfig = {
   ],
   faqs: [
     {
-      question: "What is acme.ai?",
+      question: "What is Prolychat?",
       answer: (
         <span>
-          acme.ai is a platform that helps you build and manage your AI-powered
-          applications. It provides tools and services to streamline the
-          development and deployment of AI solutions.
+          Prolychat is an AI-powered social media automation platform that helps you
+          automate authentic conversations with your audience. Connect your Instagram
+          account and let our AI respond to comments and direct messages while maintaining
+          your brand voice and personality.
         </span>
       ),
     },
     {
-      question: "How can I get started with acme.ai?",
+      question: "How does Prolychat work with Instagram?",
       answer: (
         <span>
-          You can get started with acme.ai by signing up for an account on our
-          website, creating a new project, and following our quick-start guide.
-          We also offer tutorials and documentation to help you along the way.
+          Simply connect your Instagram business account through our secure integration.
+          Prolychat monitors your posts for new comments and can automatically respond
+          based on the automation rules you set up. You maintain full control over
+          when and how responses are sent.
         </span>
       ),
     },
     {
-      question: "What types of AI models does acme.ai support?",
+      question: "Will the AI responses sound natural and authentic?",
       answer: (
         <span>
-          acme.ai supports a wide range of AI models, including but not limited
-          to natural language processing, computer vision, and predictive
-          analytics. We continuously update our platform to support the latest
-          AI technologies.
+          Yes! Prolychat uses advanced AI that understands context and can adapt to your
+          brand voice. You can customize response templates, set conversation tone, and
+          the AI learns from your preferences to maintain authentic, engaging conversations
+          that feel genuinely human.
         </span>
       ),
     },
     {
-      question: "Is acme.ai suitable for beginners in AI development?",
+      question: "Can I control which comments get automated responses?",
       answer: (
         <span>
-          Yes, acme.ai is designed to be user-friendly for both beginners and
-          experienced developers. We offer intuitive interfaces, pre-built
-          templates, and extensive learning resources to help users of all skill
-          levels create AI-powered applications.
+          Absolutely! You have complete control over your automation rules. Set up keyword
+          triggers, choose specific post types to automate, exclude certain words or phrases,
+          and always have the option to manually review or override any automated response
+          before it's sent.
         </span>
       ),
     },
     {
-      question: "What kind of support does acme.ai provide?",
+      question: "Is my Instagram account safe with Prolychat?",
       answer: (
         <span>
-          acme.ai provides comprehensive support including documentation, video
-          tutorials, a community forum, and dedicated customer support. We also
-          offer premium support plans for enterprises with more complex needs.
+          Your security is our top priority. Prolychat uses official Instagram API
+          connections with bank-level encryption. We never store your Instagram password,
+          and you can revoke access at any time. Our platform is fully compliant with
+          Instagram's terms of service and privacy policies.
         </span>
       ),
     },
@@ -177,24 +180,19 @@ export const siteConfig = {
       links: [
         { href: "#", text: "Features", icon: null },
         { href: "#", text: "Pricing", icon: null },
-        { href: "#", text: "Documentation", icon: null },
-        { href: "#", text: "API", icon: null },
       ],
     },
     {
       title: "Company",
       links: [
         { href: "#", text: "About Us", icon: null },
-        { href: "#", text: "Careers", icon: null },
         { href: "#", text: "Blog", icon: null },
-        { href: "#", text: "Press", icon: null },
         { href: "#", text: "Partners", icon: null },
       ],
     },
     {
       title: "Resources",
       links: [
-        { href: "#", text: "Community", icon: null },
         { href: "#", text: "Contact", icon: null },
         { href: "#", text: "Support", icon: null },
         { href: "#", text: "Status", icon: null },
@@ -204,19 +202,19 @@ export const siteConfig = {
       title: "Social",
       links: [
         {
-          href: "#",
+          href: "https://twitter.com/prolychat",
           text: "Twitter",
-          icon: null,
+          icon: "twitter",
         },
         {
-          href: "#",
+          href: "https://instagram.com/prolychat/",
           text: "Instagram",
-          icon: null,
+          icon: "instagram",
         },
         {
           href: "#",
           text: "Youtube",
-          icon: null,
+          icon: "youtube",
         },
       ],
     },

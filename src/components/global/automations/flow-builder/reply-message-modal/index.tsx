@@ -1,14 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -87,13 +81,73 @@ export function ReplyMessageModal({
     }
   }, [isOpen, initialMessage])
 
+  // Handle body scroll lock and interaction blocking when modal is open
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+      
+      // Block all interactions behind modal
+      document.body.style.pointerEvents = 'none'
+      document.body.classList.add('modal-open')
+      
+      // Ensure sidebar and other UI elements are non-interactive
+      const sidebar = document.querySelector('[data-sidebar]') as HTMLElement
+      const infobar = document.querySelector('[data-infobar]') as HTMLElement
+      const mainContent = document.querySelector('main') as HTMLElement
+      
+      if (sidebar) sidebar.style.pointerEvents = 'none'
+      if (infobar) infobar.style.pointerEvents = 'none'  
+      if (mainContent) mainContent.style.pointerEvents = 'none'
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+      document.body.style.pointerEvents = ''
+      document.body.classList.remove('modal-open')
+      
+      // Restore sidebar and UI interactions
+      const sidebar = document.querySelector('[data-sidebar]') as HTMLElement
+      const infobar = document.querySelector('[data-infobar]') as HTMLElement
+      const mainContent = document.querySelector('main') as HTMLElement
+      
+      if (sidebar) sidebar.style.pointerEvents = ''
+      if (infobar) infobar.style.pointerEvents = ''
+      if (mainContent) mainContent.style.pointerEvents = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+      document.body.style.pointerEvents = ''
+      document.body.classList.remove('modal-open')
+      
+      const sidebar = document.querySelector('[data-sidebar]') as HTMLElement
+      const infobar = document.querySelector('[data-infobar]') as HTMLElement
+      const mainContent = document.querySelector('main') as HTMLElement
+      
+      if (sidebar) sidebar.style.pointerEvents = ''
+      if (infobar) infobar.style.pointerEvents = ''
+      if (mainContent) mainContent.style.pointerEvents = ''
+    }
+  }, [isOpen])
+
   // Handle Escape key press
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) onClose()
+      if (e.key === 'Escape' && isOpen) {
+        e.preventDefault()
+        e.stopPropagation()
+        onClose()
+      }
     }
-    window.addEventListener('keydown', handleEscape)
-    return () => window.removeEventListener('keydown', handleEscape)
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape, { capture: true })
+    }
+    return () => {
+      document.removeEventListener('keydown', handleEscape, { capture: true })
+    }
   }, [isOpen, onClose])
 
   const handleSelectYesSection = () => {
@@ -200,38 +254,76 @@ export function ReplyMessageModal({
     }
   }, [isOpen])
 
-  return (
-    <Dialog 
-      open={isOpen} 
-      onOpenChange={(open) => !open && onClose()}
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose()
+    }
+  }
+
+  if (!isOpen) return null
+
+  const modalContent = (
+    <div
+      className="fixed inset-0 z-[60000] flex items-center justify-center p-6 sm:p-8"
+      style={{ pointerEvents: 'auto', touchAction: 'none' }}
+      onClick={handleBackdropClick}
+      onContextMenu={(e) => e.preventDefault()}
+      onWheel={(e) => e.preventDefault()}
+      onTouchMove={(e) => e.preventDefault()}
     >
-      <DialogContent 
-        className={cn(
-          'sm:max-w-[520px] p-0 gap-0',
-          'bg-white/95 backdrop-blur-xl',
-          'border border-purple-200/60',
-          'shadow-[0_24px_48px_rgba(139,92,246,0.12),0_8px_16px_rgba(139,92,246,0.08)]',
-          'ring-1 ring-purple-900/[0.05]',
-          'sm:!rounded-[2rem]',
-          '[&>button]:hidden overflow-hidden'
-        )}
+      {/* Backdrop */}
+      <motion.div
+        initial={{
+          opacity: 0,
+          backdropFilter: "blur(0px)"
+        }}
+        animate={{
+          opacity: 1,
+          backdropFilter: "blur(8px)"
+        }}
+        exit={{
+          opacity: 0,
+          backdropFilter: "blur(0px)"
+        }}
+        transition={{ type: "spring", damping: 20, stiffness: 300 }}
+        className="absolute inset-0 bg-black/30 cursor-pointer"
+        style={{
+          pointerEvents: 'auto',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          msUserSelect: 'none',
+          WebkitTouchCallout: 'none'
+        }}
+        onClick={onClose}
+        onMouseDown={(e) => e.preventDefault()}
+      />
+      
+      {/* Modal */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+        transition={{ type: "spring", damping: 20, stiffness: 300 }}
+        className="relative w-full max-w-[520px] outline-none"
+        onClick={(e) => e.stopPropagation()}
+        tabIndex={-1}
       >
-        {/* Subtle gradient overlay matching animated-menu */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-50/80 via-transparent to-purple-100/40 rounded-2xl pointer-events-none" />
-        
-        {/* Animated Background Effects */}
-        <div className="absolute inset-0 opacity-20">
-          {/* Floating Gradient Orbs */}
-          <div className="absolute top-4 right-8 w-32 h-32 bg-gradient-to-br from-purple-500/30 to-purple-600/20 rounded-full blur-2xl animate-pulse" 
-               style={{ animationDuration: '4s', animationDelay: '0s' }} />
-          <div className="absolute bottom-8 left-4 w-24 h-24 bg-gradient-to-tr from-purple-400/20 to-purple-500/15 rounded-full blur-xl animate-pulse" 
-               style={{ animationDuration: '6s', animationDelay: '2s' }} />
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-gradient-to-r from-purple-500/15 to-transparent rounded-full blur-3xl animate-pulse" 
-               style={{ animationDuration: '8s', animationDelay: '1s' }} />
-        </div>
-        
-        {/* Content with relative positioning */}
-        <div className="relative z-10">
+        <div className="relative bg-white/95 backdrop-blur-xl rounded-[2rem] border border-purple-200/60 shadow-[0_24px_48px_rgba(139,92,246,0.12),0_8px_16px_rgba(139,92,246,0.08)] ring-1 ring-purple-900/[0.05] overflow-hidden cursor-default">
+          {/* Subtle gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-50/80 via-transparent to-purple-100/40 rounded-2xl pointer-events-none" />
+          
+          {/* Animated Background Effects */}
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute top-4 right-8 w-32 h-32 bg-gradient-to-br from-purple-500/30 to-purple-600/20 rounded-full blur-2xl animate-pulse" 
+                 style={{ animationDuration: '4s', animationDelay: '0s' }} />
+            <div className="absolute bottom-8 left-4 w-24 h-24 bg-gradient-to-tr from-purple-400/20 to-purple-500/15 rounded-full blur-xl animate-pulse" 
+                 style={{ animationDuration: '6s', animationDelay: '2s' }} />
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-gradient-to-r from-purple-500/15 to-transparent rounded-full blur-3xl animate-pulse" 
+                 style={{ animationDuration: '8s', animationDelay: '1s' }} />
+          </div>
+          
+          {/* Content */}
+          <div className="relative z-10">
           {/* Header */}
           <motion.div 
             initial={{ opacity: 0, y: -12 }}
@@ -241,9 +333,9 @@ export function ReplyMessageModal({
           >
             <div className="flex justify-between items-start w-full">
               <div className="flex-1 min-w-0">
-                <DialogTitle className="text-2xl font-bold text-purple-900 mb-2 tracking-tight bg-gradient-to-br from-purple-900 to-purple-600 bg-clip-text text-transparent pr-2 font-hubot">
+                <h2 className="text-2xl font-bold text-purple-900 mb-2 tracking-tight bg-gradient-to-br from-purple-900 to-purple-600 bg-clip-text text-transparent pr-2 font-hubot">
                   Would you like to set up Public Reply in the feed?
-                </DialogTitle>
+                </h2>
               </div>
             </div>
           </motion.div>
@@ -493,8 +585,14 @@ export function ReplyMessageModal({
               </Card>
             </motion.div>
           </motion.div>
+          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </motion.div>
+    </div>
   )
+
+  // Use portal to render outside any parent containers
+  return typeof window !== 'undefined' 
+    ? createPortal(modalContent, document.body)
+    : null
 } 

@@ -1,11 +1,13 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useMemo } from 'react'
 import { Handle, Position, useReactFlow } from 'reactflow'
 import { Plus, MessageSquare, Bot } from 'lucide-react'
 import styles from './placeholder-node.module.css'
 import { AnimatedMenu } from '@/components/ui/animated-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { useQueryUser } from '@/hooks/user-queries'
+import { useToast } from '@/contexts/toast-context'
 
 interface PlaceholderNodeProps {
   id: string
@@ -21,6 +23,9 @@ export function PlaceholderNode({ id, data }: PlaceholderNodeProps) {
   const triggerRef = useRef<HTMLDivElement>(null)
   const [popoverSide, setPopoverSide] = useState<'right' | 'bottom' | 'top' | 'left'>('right')
   const [arrowAlign, setArrowAlign] = useState<'left' | 'right' | 'top' | 'bottom'>('left')
+  const { data: userData } = useQueryUser()
+  const { showToast } = useToast()
+  const isPro = userData?.data?.subscription?.plan === 'PRO'
 
   const handleOpenChange = (open: boolean) => {
     if (open && triggerRef.current) {
@@ -109,13 +114,13 @@ export function PlaceholderNode({ id, data }: PlaceholderNodeProps) {
     setIsPopoverOpen(false)
   }
 
-  const menuItems = [
+  const menuItems = useMemo(() => [
     {
       riveIcon: {
         src: "https://public.rive.app/community/runtime-files/2063-4080-phone-icon.riv",
         stateMachine: "phoneIconSM"
       },
-      label: <span className="font-mona">Send Message</span>,
+      label: "Send Message",
       hotkey: "M",
       icon: MessageSquare,
       onClick: () => {
@@ -128,15 +133,19 @@ export function PlaceholderNode({ id, data }: PlaceholderNodeProps) {
         src: "https://public.rive.app/community/runtime-files/2487-5077-robot-dance.riv",
         stateMachine: "State Machine 1"
       },
-      label: <span className="font-mona">AI Assistant</span>,
+      label: "AI Assistant",
       hotkey: "A",
       icon: Bot,
       onClick: () => {
+        if (!isPro) {
+          showToast('error', 'AI Assistant is available on the Growth plan. Go to Settings → Payment to upgrade.')
+          return
+        }
         const actionId = `action-${Date.now()}`
         handleActionSelect(actionId, 'PROLYAI', 'AI Assistant', Bot)
       },
     },
-  ]
+  ], [handleActionSelect])
 
   return (
     <>

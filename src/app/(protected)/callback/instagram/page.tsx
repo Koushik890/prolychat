@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation'
 import { UserProfile } from '@/types/user'
 import InstagramCallbackClient from './client'
 
+// Force dynamic rendering for OAuth callback
+export const dynamic = 'force-dynamic'
+
 interface PageProps {
   params: Promise<any>
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>

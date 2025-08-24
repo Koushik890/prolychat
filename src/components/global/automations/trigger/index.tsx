@@ -1,7 +1,7 @@
 'use client'
 import { useQueryAutomation } from '@/hooks/user-queries'
 import React, { useState } from 'react'
-import ActiveTrigger from './active'
+import ActiveTrigger from './active-trigger'
 import { Separator } from '@/components/ui/separator'
 import ThenAction from '../then/then-action'
 import TriggerButton from '../trigger-button'

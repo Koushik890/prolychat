@@ -1,15 +1,8 @@
 'use client'
 
 import React, { useState, KeyboardEvent, useEffect, useRef, useContext, createContext, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { motion } from "framer-motion"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogClose,
-} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import * as TooltipPrimitive from "@radix-ui/react-tooltip"
@@ -22,7 +15,7 @@ import { useToast } from '@/contexts/toast-context'
 interface KeywordConfigurationModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (keywords: { include: string[] }) => void
+  onSave: (keywords: { include: string[] }, options?: { isDeletion?: boolean }) => void
   initialKeywords?: { include: string[] }
 }
 
@@ -113,6 +106,7 @@ function KeywordInput({
             "border-purple-200/60 bg-white/95 backdrop-blur-xl rounded-[2rem] border p-3 shadow-[0_24px_48px_rgba(139,92,246,0.12),0_8px_16px_rgba(139,92,246,0.08)] ring-1 ring-purple-900/[0.05] transition-all duration-300 hover:shadow-[0_32px_64px_rgba(139,92,246,0.16),0_12px_24px_rgba(139,92,246,0.12)]",
             className
           )}
+          style={{ pointerEvents: 'auto' }}
         >
           {children}
         </div>
@@ -121,11 +115,14 @@ function KeywordInput({
   )
 }
 
-export type KeywordInputInputProps = React.ComponentProps<typeof Input>
+export type KeywordInputInputProps = React.ComponentProps<typeof Input> & {
+  inputRef?: React.RefObject<HTMLInputElement>
+}
 
 function KeywordInputInput({
   className,
   onKeyDown,
+  inputRef,
   ...props
 }: KeywordInputInputProps) {
   const { value, setValue, onSubmit, disabled } = useKeywordInput()
@@ -140,6 +137,7 @@ function KeywordInputInput({
 
   return (
     <Input
+      ref={inputRef}
       value={value}
       onChange={(e) => setValue(e.target.value)}
       onKeyDown={handleKeyDown}
@@ -148,6 +146,8 @@ function KeywordInputInput({
         className
       )}
       disabled={disabled}
+      autoFocus={!disabled}
+      style={{ pointerEvents: 'auto' }}
       {...props}
     />
   )
@@ -210,6 +210,7 @@ export function KeywordConfigurationModal({
   const [includeInput, setIncludeInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const keywordsRef = useRef<string[]>([])
+  const inputRef = useRef<HTMLInputElement>(null)
   const { showToast } = useToast()
 
   // Update state when initialKeywords changes
@@ -217,6 +218,17 @@ export function KeywordConfigurationModal({
     setIncludeKeywords(initialKeywords.include)
     keywordsRef.current = initialKeywords.include
   }, [initialKeywords])
+
+  // Focus input when modal opens
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      // Delay focus to ensure modal is fully rendered
+      const timer = setTimeout(() => {
+        inputRef.current?.focus()
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen])
 
   const handleClose = useCallback(() => {
     // Reset keywords to initial value when closing without saving
@@ -226,17 +238,77 @@ export function KeywordConfigurationModal({
     onClose()
   }, [initialKeywords, onClose])
 
+  // Handle body scroll lock and interaction blocking when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      // Lock body scroll
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+      
+      // Add modal-open class for CSS styling, but don't block pointer events on body
+      // as it prevents input functionality within the modal
+      document.body.classList.add('modal-open')
+      
+      // Only block interactions on specific UI elements behind modal
+      const sidebar = document.querySelector('[data-sidebar]') as HTMLElement
+      const infobar = document.querySelector('[data-infobar]') as HTMLElement
+      const mainContent = document.querySelector('main') as HTMLElement
+      
+      if (sidebar) sidebar.style.pointerEvents = 'none'
+      if (infobar) infobar.style.pointerEvents = 'none'  
+      if (mainContent) mainContent.style.pointerEvents = 'none'
+    } else {
+      // Restore body scroll and interactions
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+      document.body.classList.remove('modal-open')
+      
+      // Restore sidebar and UI interactions
+      const sidebar = document.querySelector('[data-sidebar]') as HTMLElement
+      const infobar = document.querySelector('[data-infobar]') as HTMLElement
+      const mainContent = document.querySelector('main') as HTMLElement
+      
+      if (sidebar) sidebar.style.pointerEvents = ''
+      if (infobar) infobar.style.pointerEvents = ''
+      if (mainContent) mainContent.style.pointerEvents = ''
+    }
+
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+      document.body.classList.remove('modal-open')
+      
+      const sidebar = document.querySelector('[data-sidebar]') as HTMLElement
+      const infobar = document.querySelector('[data-infobar]') as HTMLElement
+      const mainContent = document.querySelector('main') as HTMLElement
+      
+      if (sidebar) sidebar.style.pointerEvents = ''
+      if (infobar) infobar.style.pointerEvents = ''
+      if (mainContent) mainContent.style.pointerEvents = ''
+    }
+  }, [isOpen])
+
   // Handle Escape key press
   useEffect(() => {
     const handleEscape = (e: Event) => {
       const keyboardEvent = e as unknown as KeyboardEvent
       if (keyboardEvent.key === 'Escape' && isOpen) {
-        keyboardEvent.preventDefault() // Prevent event from bubbling
+        keyboardEvent.preventDefault()
+        keyboardEvent.stopPropagation()
         handleClose()
       }
     }
-    window.addEventListener('keydown', handleEscape)
-    return () => window.removeEventListener('keydown', handleEscape)
+    
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape, { capture: true })
+    }
+    
+    return () => {
+      document.removeEventListener('keydown', handleEscape, { capture: true })
+    }
   }, [isOpen, handleClose])
 
   // Cleanup on unmount
@@ -255,37 +327,53 @@ export function KeywordConfigurationModal({
     }
   }, [includeInput])
 
-  const handleRemoveIncludeKeyword = useCallback((keyword: string) => {
+  const handleRemoveIncludeKeyword = useCallback(async (keyword: string) => {
     const newKeywords = keywordsRef.current.filter(k => k !== keyword)
     setIncludeKeywords(newKeywords)
     keywordsRef.current = newKeywords
-  }, [])
+    
+    // Check if this keyword was part of the initially saved keywords (exists in database)
+    const wasInitiallySaved = initialKeywords.include.includes(keyword)
+    
+    if (wasInitiallySaved) {
+      // Keyword exists in database, need to save the updated list
+      try {
+        showToast('loading', 'Deleting keyword', true)
+        window.addEventListener('beforeunload', preventReload)
+        await onSave({ include: newKeywords }, { isDeletion: true })
+        window.removeEventListener('beforeunload', preventReload)
+        showToast('success', 'Keyword deleted', true)
+      } catch (error) {
+        window.removeEventListener('beforeunload', preventReload)
+        console.error('Error removing keyword:', error)
+        showToast('error', 'Failed to delete keyword', true)
+        // Revert the local state on error
+        const revertedKeywords = [...newKeywords, keyword]
+        setIncludeKeywords(revertedKeywords)
+        keywordsRef.current = revertedKeywords
+      }
+    }
+    // If keyword was not initially saved (just added locally), no database update needed
+  }, [initialKeywords, onSave, showToast])
 
   const handleSave = async () => {
-    if (keywordsRef.current.length > 0) {
+    // If there's a typed keyword not yet added, include it before saving
+    const pendingValue = includeInput.trim()
+    const needsAppend = pendingValue && !keywordsRef.current.includes(pendingValue)
+    const finalKeywords = needsAppend ? [...keywordsRef.current, pendingValue] : keywordsRef.current
+    if (finalKeywords.length > 0) {
+      // Close immediately; save in background with toasts
+      onClose()
       try {
-        setIsLoading(true)
-        
-        // Show loading toast and prevent page reload
         showToast('loading', 'Saving keywords', true)
         window.addEventListener('beforeunload', preventReload)
-
-        // Call the save function
-        await onSave({ include: keywordsRef.current })
-
-        // Remove reload prevention and show success
+        await onSave({ include: finalKeywords })
         window.removeEventListener('beforeunload', preventReload)
         showToast('success', 'Keywords saved', true)
-        
-        // Close the modal after successful save
-        onClose()
       } catch (error) {
-        // Remove reload prevention on error
         window.removeEventListener('beforeunload', preventReload)
         console.error('Error saving keywords:', error)
         showToast('error', 'Failed to save keywords', true)
-      } finally {
-        setIsLoading(false)
       }
     }
   }
@@ -294,12 +382,63 @@ export function KeywordConfigurationModal({
     setIncludeInput(value)
   }
 
-  return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent 
-        className="sm:max-w-lg p-0 gap-0 border-purple-200/60 bg-white/95 backdrop-blur-xl !rounded-[2rem] sm:!rounded-[2rem] shadow-[0_24px_48px_rgba(139,92,246,0.12),0_8px_16px_rgba(139,92,246,0.08)] ring-1 ring-purple-900/[0.05] overflow-hidden"
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      handleClose()
+    }
+  }
+
+  if (!isOpen) return null
+
+  const modalContent = (
+    <div
+      className="fixed inset-0 z-[60000] flex items-center justify-center p-6 sm:p-8"
+      style={{ 
+        pointerEvents: 'auto'
+      }}
+      onClick={handleBackdropClick}
+    >
+      {/* Backdrop */}
+      <motion.div
+        initial={{
+          opacity: 0,
+          backdropFilter: "blur(0px)"
+        }}
+        animate={{
+          opacity: 1,
+          backdropFilter: "blur(8px)"
+        }}
+        exit={{
+          opacity: 0,
+          backdropFilter: "blur(0px)"
+        }}
+        transition={{ type: "spring", damping: 20, stiffness: 300 }}
+        className="absolute inset-0 bg-black/30 cursor-pointer"
+        style={{
+          pointerEvents: 'auto',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          msUserSelect: 'none',
+          WebkitTouchCallout: 'none'
+        }}
+        onClick={handleClose}
+      />
+      
+      {/* Modal */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+        transition={{ type: "spring", damping: 20, stiffness: 300 }}
+        className="relative w-full max-w-lg outline-none"
         onClick={(e) => e.stopPropagation()}
+        tabIndex={-1}
       >
+        <div 
+          className="relative bg-white/95 backdrop-blur-xl rounded-[2rem] border border-purple-200/60 shadow-[0_24px_48px_rgba(139,92,246,0.12),0_8px_16px_rgba(139,92,246,0.08)] ring-1 ring-purple-900/[0.05] overflow-hidden cursor-default"
+          style={{ pointerEvents: 'auto' }}
+        >
+          {/* Subtle gradient overlay */}
         {/* Subtle gradient overlay matching animated-menu */}
         <div className="absolute inset-0 bg-gradient-to-br from-purple-50/80 via-transparent to-purple-100/40 !rounded-[2rem] pointer-events-none" />
         
@@ -349,6 +488,7 @@ export function KeywordConfigurationModal({
               <KeywordInputInput 
                 placeholder="Add a keyword..." 
                 className="text-base leading-relaxed px-2 py-1 relative z-10"
+                inputRef={inputRef}
               />
               <KeywordInputActions className="justify-end pt-3 relative z-10">
                 <KeywordInputAction
@@ -462,8 +602,14 @@ export function KeywordConfigurationModal({
               </Button>
             </motion.div>
           </motion.div>
+          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </motion.div>
+    </div>
   )
+
+  // Use portal to render outside any parent containers
+  return typeof window !== 'undefined' 
+    ? createPortal(modalContent, document.body)
+    : null
 }

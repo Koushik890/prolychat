@@ -3,14 +3,7 @@
 import React, { useEffect, useState, useRef, useContext, createContext, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { motion } from "framer-motion"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogClose,
-} from '@/components/ui/dialog'
+
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import * as TooltipPrimitive from "@radix-ui/react-tooltip"
@@ -244,16 +237,73 @@ export function TextConfigModal({
     onClose()
   }, [initialText, onClose])
 
+  // Handle body scroll lock and interaction blocking when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+      
+      // Block all interactions behind modal
+      document.body.style.pointerEvents = 'none'
+      document.body.classList.add('modal-open')
+      
+      // Ensure sidebar and other UI elements are non-interactive
+      const sidebar = document.querySelector('[data-sidebar]') as HTMLElement
+      const infobar = document.querySelector('[data-infobar]') as HTMLElement
+      const mainContent = document.querySelector('main') as HTMLElement
+      
+      if (sidebar) sidebar.style.pointerEvents = 'none'
+      if (infobar) infobar.style.pointerEvents = 'none'  
+      if (mainContent) mainContent.style.pointerEvents = 'none'
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+      document.body.style.pointerEvents = ''
+      document.body.classList.remove('modal-open')
+      
+      // Restore sidebar and UI interactions
+      const sidebar = document.querySelector('[data-sidebar]') as HTMLElement
+      const infobar = document.querySelector('[data-infobar]') as HTMLElement
+      const mainContent = document.querySelector('main') as HTMLElement
+      
+      if (sidebar) sidebar.style.pointerEvents = ''
+      if (infobar) infobar.style.pointerEvents = ''
+      if (mainContent) mainContent.style.pointerEvents = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+      document.body.style.pointerEvents = ''
+      document.body.classList.remove('modal-open')
+      
+      const sidebar = document.querySelector('[data-sidebar]') as HTMLElement
+      const infobar = document.querySelector('[data-infobar]') as HTMLElement
+      const mainContent = document.querySelector('main') as HTMLElement
+      
+      if (sidebar) sidebar.style.pointerEvents = ''
+      if (infobar) infobar.style.pointerEvents = ''
+      if (mainContent) mainContent.style.pointerEvents = ''
+    }
+  }, [isOpen])
+
   // Handle Escape key press
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
         e.preventDefault() // Prevent event from bubbling
+        e.stopPropagation()
         handleClose()
       }
     }
-    window.addEventListener('keydown', handleEscape)
-    return () => window.removeEventListener('keydown', handleEscape)
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape, { capture: true })
+    }
+    return () => {
+      document.removeEventListener('keydown', handleEscape, { capture: true })
+    }
   }, [isOpen, handleClose])
 
   // Cleanup on unmount
@@ -306,7 +356,7 @@ export function TextConfigModal({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[10001] flex items-center justify-center p-6 sm:p-8"
+      className="fixed inset-0 z-[60000] flex items-center justify-center p-6 sm:p-8"
       onClick={handleBackdropClick}
     >
       {/* Backdrop */}

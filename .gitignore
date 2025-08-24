@@ -47,3 +47,13 @@ next-env.d.ts
 .cursor/
 .cursorrules
 
+# Sensitive documentation and implementation files
+CLAUDE.md
+CARD_IMPLEMENTATION_SUMMARY.md
+LEMONSQUEEZY_IMPLEMENTATION_SUMMARY.md
+POSTGRESQL_CONNECTION_FIX.md
+PRODUCT_SPECIFICATION.md
+SECURITY.md
+*.implementation.md
+*.specification.md
+
