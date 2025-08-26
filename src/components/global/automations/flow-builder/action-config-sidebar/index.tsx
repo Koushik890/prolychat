@@ -6,7 +6,8 @@ import { X, Type, Image, Video, Clock, PlayCircle, LayoutGrid, FileImage, Credit
 import { motion } from 'framer-motion'
 import { useParams, usePathname } from 'next/navigation'
 import { TextConfigModal } from '../text-config-modal'
-import { CardConfigModal, CardData } from '../card-config-modal'
+import { CardConfigModal } from '../card-config-modal'
+import type { CardData } from '@/types/automation'
 import { SIDEBAR_ANIMATIONS, PURPLE_THEME, CLOSE_BUTTON_STYLES, HEADER_STYLES } from '../shared/animation-patterns'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/contexts/toast-context'
@@ -256,9 +257,10 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
   }
 
   const handleTextSave = async (payload: { text: string; buttonLabel?: string; url?: string; buttons?: Array<{ label: string; url: string }> }) => {
+    // Resolve automation id once for use in try/catch
+    const automationId = getAutomationId()
     try {
       // Save text data to database
-      const automationId = getAutomationId()
       const { saveTextMessage, saveCardMessage } = await import('@/actions/automations')
       
       let result

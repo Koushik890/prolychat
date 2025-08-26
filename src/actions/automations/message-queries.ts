@@ -214,6 +214,7 @@ export const getCardDataFromMessage = (message: MessageData): CardData | null =>
 
   return {
     title: (message as any).richTitle || '',
+    subtitle: '',
     link: (message as any).ctaUrl || undefined,
     buttonAction: (message as any).ctaAction as any,
     buttonTitle: (message as any).ctaLabel || undefined,
