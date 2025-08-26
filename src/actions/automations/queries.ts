@@ -168,19 +168,7 @@ export const findAutomation = async (id: string) => {
               dmCount: true,
               commentCount: true,
               automationId: true,
-              messageData: {
-                select: {
-                  id: true,
-                  type: true,
-                  textContent: true,
-                  cardTitle: true,
-                  cardSubtitle: true,
-                  cardButtonLabel: true,
-                  cardButtonAction: true,
-                  cardLink: true,
-                  cardImageUrl: true
-                }
-              }
+              messageData: true
             }
           },
           User: {
@@ -805,7 +793,7 @@ export const deleteAutomationQuery = async (id: string) => {
 // New functions for handling message data (text and card)
 export const saveListenerMessage = async (
   automationId: string,
-  messageType: 'TEXT' | 'CARD',
+  messageType: 'TEXT' | 'RICH',
   data: {
     textContent?: string
     cardData?: CardData

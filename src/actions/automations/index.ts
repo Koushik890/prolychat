@@ -270,7 +270,7 @@ export const saveCardMessage = async (
     // Import the function directly instead of making an HTTP call
     const { saveListenerMessage } = await import('./queries')
 
-    const result = await saveListenerMessage(automationId, 'CARD', { cardData })
+    const result = await saveListenerMessage(automationId, 'RICH', { cardData })
     
     if (result.status === 200) {
       return { status: 200, data: 'Card message saved successfully' }

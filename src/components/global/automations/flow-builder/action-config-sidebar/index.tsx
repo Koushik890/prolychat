@@ -10,6 +10,7 @@ import { CardConfigModal, CardData } from '../card-config-modal'
 import { SIDEBAR_ANIMATIONS, PURPLE_THEME, CLOSE_BUTTON_STYLES, HEADER_STYLES } from '../shared/animation-patterns'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/contexts/toast-context'
+import { useQueryClient } from '@tanstack/react-query'
 
 export type { CardData }
 
@@ -92,23 +93,22 @@ interface CardPreviewProps {
 }
 
 const CardPreview: React.FC<CardPreviewProps> = ({ cardData, onEdit, onDelete, isDeleting = false }) => {
-  const getButtonText = () => {
-    if (!cardData.buttonAction) return null
-    
-    if (cardData.buttonAction === 'website' && cardData.buttonTitle) {
-      return cardData.buttonTitle
+  const getButtons = (): string[] => {
+    const labels: string[] = []
+    if (cardData.buttonAction === 'website') {
+      labels.push(cardData.buttonTitle || 'Open')
+    } else if (cardData.buttonAction === 'message') {
+      labels.push('Send Message')
+    } else if (cardData.buttonAction === 'ai') {
+      labels.push('Ask AI')
     }
-    
-    switch (cardData.buttonAction) {
-      case 'website':
-        return 'Visit Website'
-      case 'message':
-        return 'Send Message'
-      case 'ai':
-        return 'Ask AI'
-      default:
-        return 'Button'
+    if (cardData.button2Action === 'website' && cardData.button2Link) {
+      labels.push(cardData.button2Title || 'Open')
     }
+    if (cardData.button3Action === 'website' && cardData.button3Link) {
+      labels.push(cardData.button3Title || 'Open')
+    }
+    return labels
   }
 
   return (
@@ -137,9 +137,13 @@ const CardPreview: React.FC<CardPreviewProps> = ({ cardData, onEdit, onDelete, i
         {cardData.subtitle && (
           <p className="text-sm text-gray-600 mb-3 line-clamp-3 font-mona">{cardData.subtitle}</p>
         )}
-        {cardData.buttonAction && (
-          <div className="flex items-center justify-center w-full py-2 px-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-xs font-medium font-mona">
-            {getButtonText()}
+        {getButtons().length > 0 && (
+          <div className="flex flex-col gap-2">
+            {getButtons().map((label, idx) => (
+              <div key={idx} className="py-2 px-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-xs font-medium font-mona text-center w-full">
+                {label}
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -186,10 +190,12 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
   const [selectedText, setSelectedText] = useState<string | null>(initialMessage || null)
   const [selectedActionType, setSelectedActionType] = useState<'text' | 'card' | null>(null)
   const [selectedCardData, setSelectedCardData] = useState<CardData | null>(null)
+  const [createdFromTextModal, setCreatedFromTextModal] = useState<boolean>(false)
   const [isDeletingMessage, setIsDeletingMessage] = useState(false)
   const { showToast } = useToast()
   const params = useParams()
   const pathname = usePathname()
+  const queryClient = useQueryClient()
   
   // Helper function to get automation ID safely
   const getAutomationId = (): string => {
@@ -225,9 +231,12 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
       if (initialMessage.startsWith('Card:') && initialCardData) {
         setSelectedActionType('card')
         setSelectedCardData(initialCardData)
+        // Heuristic: website button, no image implies likely created from Text modal
+        setCreatedFromTextModal(Boolean(initialCardData.buttonAction === 'website'))
       } else {
         setSelectedActionType('text')
         setSelectedCardData(null)
+        setCreatedFromTextModal(false)
       }
     }
   }, [initialMessage, initialCardData])
@@ -246,34 +255,119 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
     }
   }
 
-  const handleTextSave = async (text: string) => {
+  const handleTextSave = async (payload: { text: string; buttonLabel?: string; url?: string; buttons?: Array<{ label: string; url: string }> }) => {
     try {
       // Save text data to database
       const automationId = getAutomationId()
-      const { saveTextMessage } = await import('@/actions/automations')
+      const { saveTextMessage, saveCardMessage } = await import('@/actions/automations')
       
-      const result = await saveTextMessage(automationId, text)
+      let result
+      // If URL provided, treat as CARD with website button
+      if (payload.url) {
+        const cardData = {
+          image: undefined,
+          title: payload.text,
+          subtitle: '',
+          link: payload.url,
+          buttonAction: 'website' as const,
+          buttonTitle: payload.buttonLabel || 'Open',
+          // map extra buttons into 2/3 slots if present
+          button2Link: payload.buttons && payload.buttons[1] ? payload.buttons[1].url : undefined,
+          button2Action: payload.buttons && payload.buttons[1] ? 'website' as const : undefined,
+          button2Title: payload.buttons && payload.buttons[1] ? (payload.buttons[1].label || 'Open') : undefined,
+          button3Link: payload.buttons && payload.buttons[2] ? payload.buttons[2].url : undefined,
+          button3Action: payload.buttons && payload.buttons[2] ? 'website' as const : undefined,
+          button3Title: payload.buttons && payload.buttons[2] ? (payload.buttons[2].label || 'Open') : undefined,
+        }
+        result = await saveCardMessage(automationId, cardData)
+      } else {
+        result = await saveTextMessage(automationId, payload.text)
+      }
       
       if (result.status === 200) {
-        setSelectedText(text)
-        setSelectedActionType('text')
-        setSelectedCardData(null)
-        onSelect('text', { message: text })
+        if (payload.url) {
+          const cardText = `Card: ${payload.text} [${payload.buttonLabel || 'Website'}]`
+          setSelectedText(cardText)
+          setSelectedActionType('card')
+          const cardData = { 
+            title: payload.text, 
+            subtitle: '', 
+            link: payload.url, 
+            buttonAction: 'website' as const, 
+            buttonTitle: payload.buttonLabel || 'Open',
+            button2Link: payload.buttons && payload.buttons[1] ? payload.buttons[1].url : undefined,
+            button2Action: payload.buttons && payload.buttons[1] ? 'website' as const : undefined,
+            button2Title: payload.buttons && payload.buttons[1] ? (payload.buttons[1].label || 'Open') : undefined,
+            button3Link: payload.buttons && payload.buttons[2] ? payload.buttons[2].url : undefined,
+            button3Action: payload.buttons && payload.buttons[2] ? 'website' as const : undefined,
+            button3Title: payload.buttons && payload.buttons[2] ? (payload.buttons[2].label || 'Open') : undefined,
+          }
+          setSelectedCardData(cardData)
+          setCreatedFromTextModal(true)
+          onSelect('card', { cardData })
+          // Ensure fresh data (including multi-button fields) is pulled
+          queryClient.invalidateQueries({ queryKey: ['automation-info', automationId], exact: true })
+        } else {
+          setSelectedText(payload.text)
+          setSelectedActionType('text')
+          setSelectedCardData(null)
+          setCreatedFromTextModal(false)
+          onSelect('text', { message: payload.text })
+          queryClient.invalidateQueries({ queryKey: ['automation-info', automationId], exact: true })
+        }
       } else {
         console.error('Failed to save text:', result.data)
         // Still update UI for now
-        setSelectedText(text)
-        setSelectedActionType('text')
-        setSelectedCardData(null)
-        onSelect('text', { message: text })
+        if (payload.url) {
+          const cardText = `Card: ${payload.text} [${payload.buttonLabel || 'Website'}]`
+          setSelectedText(cardText)
+          setSelectedActionType('card')
+          const cardData = { 
+            title: payload.text, 
+            subtitle: '', 
+            link: payload.url, 
+            buttonAction: 'website' as const, 
+            buttonTitle: payload.buttonLabel || 'Open',
+            button2Link: payload.buttons && payload.buttons[1] ? payload.buttons[1].url : undefined,
+            button2Action: payload.buttons && payload.buttons[1] ? 'website' as const : undefined,
+            button2Title: payload.buttons && payload.buttons[1] ? (payload.buttons[1].label || 'Open') : undefined,
+            button3Link: payload.buttons && payload.buttons[2] ? payload.buttons[2].url : undefined,
+            button3Action: payload.buttons && payload.buttons[2] ? 'website' as const : undefined,
+            button3Title: payload.buttons && payload.buttons[2] ? (payload.buttons[2].label || 'Open') : undefined,
+          }
+          setSelectedCardData(cardData)
+          setCreatedFromTextModal(true)
+          onSelect('card', { cardData })
+          queryClient.invalidateQueries({ queryKey: ['automation-info', automationId], exact: true })
+        } else {
+          setSelectedText(payload.text)
+          setSelectedActionType('text')
+          setSelectedCardData(null)
+          setCreatedFromTextModal(false)
+          onSelect('text', { message: payload.text })
+          queryClient.invalidateQueries({ queryKey: ['automation-info', automationId], exact: true })
+        }
       }
     } catch (error) {
       console.error('Error saving text:', error)
       // Still update UI for now
-      setSelectedText(text)
-      setSelectedActionType('text')
-      setSelectedCardData(null)
-      onSelect('text', { message: text })
+      if (payload.url) {
+        const cardText = `Card: ${payload.text} [${payload.buttonLabel || 'Website'}]`
+        setSelectedText(cardText)
+        setSelectedActionType('card')
+        const cardData = { title: payload.text, subtitle: '', link: payload.url, buttonAction: 'website' as const, buttonTitle: payload.buttonLabel || 'Open' }
+        setSelectedCardData(cardData)
+        setCreatedFromTextModal(true)
+        onSelect('card', { cardData })
+        queryClient.invalidateQueries({ queryKey: ['automation-info', automationId], exact: true })
+      } else {
+        setSelectedText(payload.text)
+        setSelectedActionType('text')
+        setSelectedCardData(null)
+        setCreatedFromTextModal(false)
+        onSelect('text', { message: payload.text })
+        queryClient.invalidateQueries({ queryKey: ['automation-info', automationId], exact: true })
+      }
     }
     
     setIsTextModalOpen(false)
@@ -304,6 +398,7 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
         setSelectedText(cardText)
         setSelectedActionType('card')
         setSelectedCardData(cardData)
+        setCreatedFromTextModal(false)
         onSelect('card', { cardData })
       } else {
         console.error('Failed to save card:', result.data)
@@ -324,6 +419,7 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
         setSelectedText(cardText)
         setSelectedActionType('card')
         setSelectedCardData(cardData)
+        setCreatedFromTextModal(false)
         onSelect('card', { cardData })
       }
     } catch (error) {
@@ -345,6 +441,7 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
       setSelectedText(cardText)
       setSelectedActionType('card')
       setSelectedCardData(cardData)
+      setCreatedFromTextModal(false)
       onSelect('card', { cardData })
     }
     
@@ -453,19 +550,31 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
                   </button>
                 </div>
                 {selectedActionType === 'card' && selectedCardData ? (
-                  <CardPreview
-                    cardData={selectedCardData}
-                    onEdit={() => setIsCardModalOpen(true)}
-                    onDelete={handleMessageDelete}
-                    isDeleting={isDeletingMessage}
-                  />
+                  <div className="mt-2 border border-purple-200/60 ring-1 ring-purple-900/[0.05] rounded-xl bg-white/95 p-3">
+                    <CardPreview
+                      cardData={selectedCardData}
+                      onEdit={() => {
+                        if (createdFromTextModal) {
+                          setIsTextModalOpen(true)
+                        } else {
+                          setIsCardModalOpen(true)
+                        }
+                      }}
+                      onDelete={handleMessageDelete}
+                      isDeleting={isDeletingMessage}
+                    />
+                  </div>
                 ) : (
-                  <div className="flex items-start justify-between gap-4 py-2 px-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-start justify-between gap-4 py-3 px-4 bg-white/95 border border-purple-200/60 ring-1 ring-purple-900/[0.05] rounded-xl">
                     <p className="text-sm text-gray-800 leading-relaxed flex-1 break-words font-mona">{selectedText}</p>
                     <button 
                       onClick={() => {
                         if (selectedActionType === 'card') {
-                          setIsCardModalOpen(true)
+                          if (createdFromTextModal) {
+                            setIsTextModalOpen(true)
+                          } else {
+                            setIsCardModalOpen(true)
+                          }
                         } else {
                           setIsTextModalOpen(true)
                         }
@@ -555,7 +664,15 @@ export const ActionConfigSidebar: React.FC<ActionConfigSidebarProps> = ({
         isOpen={isTextModalOpen}
         onClose={() => setIsTextModalOpen(false)}
         onSave={handleTextSave}
-        initialText={selectedText || ''}
+        initialText={selectedActionType === 'card' ? (selectedCardData?.title || selectedText || '') : (selectedText || '')}
+        initialButtonEnabled={createdFromTextModal}
+        initialButtonLabel={selectedCardData?.buttonTitle}
+        initialUrl={selectedCardData?.link}
+        initialButtons={[
+          { label: selectedCardData?.buttonTitle, url: selectedCardData?.link },
+          { label: selectedCardData?.button2Title, url: selectedCardData?.button2Link },
+          { label: selectedCardData?.button3Title, url: selectedCardData?.button3Link },
+        ].filter(Boolean) as Array<{ label?: string; url?: string }>}
       />
       
       <CardConfigModal

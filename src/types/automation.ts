@@ -105,20 +105,29 @@ export interface CardData {
   link?: string
   buttonAction?: 'message' | 'ai' | 'website'
   buttonTitle?: string
+  button2Link?: string
+  button2Action?: 'message' | 'ai' | 'website'
+  button2Title?: string
+  button3Link?: string
+  button3Action?: 'message' | 'ai' | 'website'
+  button3Title?: string
 }
 
 export interface MessageData {
   id?: string
   listenerId: string
-  type: 'TEXT' | 'CARD'
+  type: 'TEXT' | 'RICH'
   textContent?: string
-  cardTitle?: string
-  cardSubtitle?: string
-  cardButtonLabel?: string
-  cardImage?: Buffer
-  cardImageUrl?: string
-  cardButtonAction?: string
-  cardLink?: string
+  richTitle?: string
+  ctaLabel?: string
+  ctaAction?: string
+  ctaUrl?: string
+  cta2Label?: string
+  cta2Action?: string
+  cta2Url?: string
+  cta3Label?: string
+  cta3Action?: string
+  cta3Url?: string
   createdAt?: Date
   updatedAt?: Date
 }

@@ -119,10 +119,10 @@ CREATE TABLE "Listener" (
 
 -- CreateTable
 CREATE TABLE "Trigger" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "type" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'unconfigured',
-    "automationId" TEXT,
+    "automationId" UUID,
     "config" JSONB DEFAULT '{}',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
-import { useUser } from '@clerk/clerk-react'
+import { useUser } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, XCircle, Loader2, RefreshCw } from 'lucide-react'
 import { onOauthInstagram, onIntegrate } from '@/actions/integrations'
@@ -98,10 +98,13 @@ export default function InstagramCallbackClient({
 
       if (!isSignedIn || !user) {
         console.error('❌ No signed-in user found after session recovery attempt')
-        toast.error('Authentication required', {
-          description: 'Please sign in and try connecting Instagram again.',
-          duration: 6000,
+        // Redirect to sign-in on the SAME domain, then return to this callback URL (preserving the code)
+        const currentUrl = typeof window !== 'undefined' ? window.location.href : '/dashboard'
+        toast.message('Signing in required', {
+          description: 'Redirecting to sign in to finish connecting Instagram…',
+          duration: 3000,
         })
+        router.push(`/sign-in?redirect_url=${encodeURIComponent(currentUrl)}`)
         return
       }
 

@@ -16,8 +16,12 @@ import { useToast } from '@/contexts/toast-context'
 interface TextConfigModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (text: string) => void
+  onSave: (data: { text: string; buttonLabel?: string; url?: string; buttons?: Array<{ label: string; url: string }> }) => void
   initialText?: string
+  initialButtonLabel?: string
+  initialUrl?: string
+  initialButtonEnabled?: boolean
+  initialButtons?: Array<{ label?: string; url?: string }>
 }
 
 // Tooltip components
@@ -216,20 +220,55 @@ const preventReload = (e: BeforeUnloadEvent) => {
   return e.returnValue
 }
 
+type MessageButton = {
+	id: string
+	kind?: 'website'
+	label?: string
+	url?: string
+}
+
 export function TextConfigModal({ 
   isOpen, 
   onClose, 
   onSave,
-  initialText = ''
+  initialText = '',
+  initialButtonLabel,
+  initialUrl,
+  initialButtonEnabled,
+  initialButtons = [],
 }: TextConfigModalProps) {
   const [text, setText] = useState(initialText)
   const [isLoading, setIsLoading] = useState(false)
   const { showToast } = useToast()
   const dialogRef = React.useRef<HTMLDivElement>(null)
+  const [buttons, setButtons] = useState<MessageButton[]>([])
+  const [optionsForId, setOptionsForId] = useState<string | null>(null)
+  const [configForId, setConfigForId] = useState<string | null>(null)
+  const [tempLabel, setTempLabel] = useState('')
+  const [tempUrl, setTempUrl] = useState('')
+  const genId = () => Math.random().toString(36).slice(2)
 
   useEffect(() => {
     setText(initialText)
   }, [initialText])
+
+  useEffect(() => {
+    if (isOpen) {
+      const initial: MessageButton[] = []
+      if ((initialButtonEnabled || initialUrl) && (!initialButtons || initialButtons.length === 0)) {
+        initial.push({ id: genId(), kind: 'website', label: initialButtonLabel || 'Open', url: initialUrl || '' })
+      }
+      // Include any additional initial buttons if provided
+      if (initialButtons && Array.isArray(initialButtons)) {
+        for (const b of initialButtons.slice(0, 3)) {
+          if ((b.url || '').trim()) {
+            initial.push({ id: genId(), kind: 'website', label: (b.label || 'Open'), url: (b.url || '') })
+          }
+        }
+      }
+      setButtons(initial)
+    }
+  }, [isOpen, initialButtonEnabled, initialButtonLabel, initialUrl, initialButtons])
 
   const handleClose = useCallback(() => {
     // Reset text to initial value when closing without saving
@@ -322,8 +361,19 @@ export function TextConfigModal({
         showToast('loading', 'Saving message', true)
         window.addEventListener('beforeunload', preventReload)
 
-        // Call the save function
-        await onSave(text)
+        // Build buttons payload (up to 3 website buttons)
+        const websiteButtons = buttons
+          .filter(b => b.kind === 'website' && (b.url || '').trim())
+          .slice(0, 3)
+          .map(b => ({ label: (b.label || 'Open').trim(), url: (b.url || '').trim() }))
+
+        // Call the save function with primary and extras
+        if (websiteButtons.length > 0) {
+          const [first, ...rest] = websiteButtons
+          await onSave({ text, buttonLabel: first.label, url: first.url, buttons: [first, ...rest] })
+        } else {
+          await onSave({ text })
+        }
 
         // Remove reload prevention and show success
         window.removeEventListener('beforeunload', preventReload)
@@ -356,7 +406,8 @@ export function TextConfigModal({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[60000] flex items-center justify-center p-6 sm:p-8"
+      className="fixed inset-0 z-[70000] flex items-center justify-center p-6 sm:p-8"
+      style={{ pointerEvents: 'auto' }}
       onClick={handleBackdropClick}
     >
       {/* Backdrop */}
@@ -385,9 +436,10 @@ export function TextConfigModal({
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
         transition={{ type: "spring", damping: 20, stiffness: 300 }}
         className="relative w-full max-w-lg"
+        style={{ pointerEvents: 'auto' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative bg-white/95 backdrop-blur-xl rounded-[2rem] border border-purple-200/60 shadow-[0_24px_48px_rgba(139,92,246,0.12),0_8px_16px_rgba(139,92,246,0.08)] ring-1 ring-purple-900/[0.05] p-8 sm:p-10 overflow-hidden">
+        <div className="relative bg-white/95 backdrop-blur-xl rounded-[2rem] border border-purple-200/60 shadow-[0_24px_48px_rgba(139,92,246,0.12),0_8px_16px_rgba(139,92,246,0.08)] ring-1 ring-purple-900/[0.05] p-8 sm:p-10 overflow-hidden" style={{ pointerEvents: 'auto' }}>
           {/* Subtle gradient overlay matching animated-menu */}
           <div className="absolute inset-0 bg-gradient-to-br from-purple-50/80 via-transparent to-purple-100/40 rounded-2xl pointer-events-none" />
           
@@ -425,7 +477,7 @@ export function TextConfigModal({
                 value={text}
                 onValueChange={handleValueChange}
                 isLoading={isLoading}
-                onSubmit={undefined}
+                onSubmit={handleSave}
                 className="w-full relative overflow-hidden"
               >
                 {/* Input Background Animation */}
@@ -439,40 +491,154 @@ export function TextConfigModal({
                   onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => e.stopPropagation()}
                 />
-                <PromptInputActions className="justify-end pt-3 relative z-10">
-                  <PromptInputAction
-                    tooltip={<span className="font-mona">{isLoading ? "Stop generation" : "Send message"}</span>}
-                  >
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                    >
-                      <Button
-                        variant="default"
-                        size="icon"
-                        className="h-10 w-10 rounded-full transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/25 active:scale-95 relative overflow-hidden bg-purple-600 hover:bg-purple-700 text-white"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleSave()
-                        }}
-                        disabled={isLoading}
-                      >
-                        {/* Button Background Animation */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-purple-600 opacity-0 hover:opacity-100 transition-opacity duration-300" />
-                        <div className="relative z-10">
-                        {isLoading ? (
-                          <Square className="size-5 fill-current animate-pulse" />
-                        ) : (
-                          <ArrowUp className="size-5 transition-transform duration-200 group-hover:translate-y-[-1px]" />
-                        )}
-                      </div>
-                    </Button>
-                  </motion.div>
-                  </PromptInputAction>
-                </PromptInputActions>
+                {/* Removed top-right circular save button; footer actions below */}
               </PromptInput>
             </motion.div>
+				{/* Buttons Section */}
+				<motion.div 
+					initial={{ opacity: 0, y: 12 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ delay: 0.5, duration: 0.5, type: "spring", damping: 20 }}
+					className="mt-6"
+				>
+					{/* Current buttons list */}
+					{buttons.length > 0 && (
+						<div className="mb-3 flex flex-col gap-2">
+							{buttons.map((b) => (
+								<div
+									key={b.id}
+									className="flex items-center justify-between rounded-xl border border-purple-200/60 bg-white/90 px-3 py-2 cursor-pointer"
+									onClick={() => setOptionsForId(b.id)}
+									role="button"
+									tabIndex={0}
+									onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOptionsForId(b.id) } }}
+									style={{ pointerEvents: 'auto' }}
+								>
+									<span className="text-sm font-mona text-purple-700">
+										{b.label || 'Button'}
+									</span>
+									<button
+										type="button"
+										onClick={(e) => { e.stopPropagation(); setButtons(prev => prev.filter(x => x.id !== b.id)) }}
+										className="text-xs font-mona text-red-600 hover:text-red-700"
+										style={{ pointerEvents: 'auto' }}
+										aria-label="Remove button"
+									>
+										Remove
+									</button>
+								</div>
+							))}
+						</div>
+					)}
+
+					{/* Add button (hidden at 3) */}
+					{buttons.length < 3 && (
+						<button
+							type="button"
+							onClick={() => setButtons(prev => [...prev, { id: genId() }])}
+							className="w-full flex items-center justify-center rounded-xl border border-purple-200/60 bg-white/90 px-4 py-2.5 text-sm font-mona text-purple-700 transition-all duration-200 hover:bg-purple-50/70 hover:shadow-[0_6px_14px_rgba(139,92,246,0.10)]"
+							style={{ pointerEvents: 'auto' }}
+						>
+							+ Add Button (optional)
+						</button>
+					)}
+				</motion.div>
+
+				{/* Options Modal */}
+				{optionsForId && (
+					<div className="fixed inset-0 z-[71000] flex items-center justify-center p-6" onClick={() => setOptionsForId(null)}>
+						<div className="absolute inset-0 bg-black/30" />
+						<div className="relative z-10 w-full max-w-sm rounded-2xl border border-purple-200/60 bg-white/95 p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+							<h3 className="text-sm font-semibold text-purple-900 mb-3 font-hubot">Choose Button Action</h3>
+							<button
+								type="button"
+								className="w-full rounded-lg border border-purple-200/60 bg-white px-3 py-2 text-sm font-mona text-purple-700 hover:bg-purple-50"
+								onClick={() => {
+									setOptionsForId(null)
+									setConfigForId(optionsForId)
+									const btn = buttons.find(b => b.id === optionsForId)
+									setTempLabel(btn?.label || 'Open')
+									setTempUrl(btn?.url || '')
+									// preset kind
+									setButtons(prev => prev.map(x => x.id === optionsForId ? { ...x, kind: 'website' } : x))
+								}}
+							>
+								Open Website
+							</button>
+						</div>
+					</div>
+				)}
+
+				{/* Website Config Modal */}
+				{configForId && (
+					<div className="fixed inset-0 z-[72000] flex items-center justify-center p-6" onClick={() => setConfigForId(null)}>
+						<div className="absolute inset-0 bg-black/30" />
+						<div className="relative z-10 w-full max-w-md rounded-2xl border border-purple-200/60 bg-white/95 p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+							<h3 className="text-base font-semibold text-purple-900 mb-4 font-hubot">Website Button</h3>
+							<div className="space-y-3">
+								<div>
+									<label className="block text-xs text-purple-700 mb-1 font-mona">Button label</label>
+									<input
+										type="text"
+										maxLength={20}
+										value={tempLabel}
+										onChange={(e) => setTempLabel(e.target.value)}
+										className="w-full rounded-md border border-purple-200/60 bg-white/90 px-3 py-2 text-sm text-purple-900 placeholder:text-purple-400 font-mona focus:outline-none focus:ring-2 focus:ring-purple-500/30"
+									/>
+								</div>
+								<div>
+									<label className="block text-xs text-purple-700 mb-1 font-mona">Website URL</label>
+									<input
+										type="url"
+										value={tempUrl}
+										onChange={(e) => setTempUrl(e.target.value)}
+										placeholder="https://yourwebsite.com/path"
+										className="w-full rounded-md border border-purple-200/60 bg-white/90 px-3 py-2 text-sm text-purple-900 placeholder:text-purple-400 font-mona focus:outline-none focus:ring-2 focus:ring-purple-500/30"
+									/>
+									<p className="mt-1 text-[11px] text-purple-600 font-mona">Starts with https://</p>
+								</div>
+							</div>
+							<div className="mt-4 flex items-center justify-end gap-2">
+								<button
+									type="button"
+									className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-mona text-gray-700 hover:bg-gray-50"
+									onClick={() => setConfigForId(null)}
+								>
+									Cancel
+								</button>
+								<button
+									type="button"
+									className="rounded-lg bg-purple-600 px-3 py-1.5 text-sm font-mona text-white hover:bg-purple-700"
+									onClick={() => {
+										setButtons(prev => prev.map(x => x.id === configForId ? { ...x, label: (tempLabel || 'Open'), url: tempUrl } : x))
+										setConfigForId(null)
+									}}
+								>
+									Save
+								</button>
+							</div>
+						</div>
+					</div>
+				)}
+            {/* Footer Actions */}
+            <div className="mt-6 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-mona text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+                onClick={handleClose}
+                disabled={isLoading}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-mona text-white hover:bg-purple-700 disabled:opacity-60"
+                onClick={handleSave}
+                disabled={isLoading}
+              >
+                {isLoading ? 'Saving...' : 'Save'}
+              </button>
+            </div>
           </div>
         </div>
       </motion.div>

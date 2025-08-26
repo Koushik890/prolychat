@@ -445,6 +445,185 @@ export const sendPrivateMessage = async (
   }
 }
 
+export const sendDMWithButton = async (
+	userId: string,
+	recieverId: string,
+	text: string,
+	buttonLabel: string,
+	url: string,
+	token: string,
+	integrationId?: string
+) => {
+	// Fallback to plain DM if URL invalid
+	if (!/^https?:\/\//i.test(url)) {
+		return sendDM(userId, recieverId, text, token, integrationId)
+	}
+	try {
+		// Strip markdown in text to avoid formatting issues
+		text = stripMarkdown(text)
+		// Use button template so the full text appears in the template body
+		return await axios.post(
+			`${process.env.INSTAGRAM_BASE_URL}/v21.0/${userId}/messages`,
+			{
+				recipient: { id: recieverId },
+				message: {
+					attachment: {
+						type: 'template',
+						payload: {
+							template_type: 'button',
+							text: text,
+							buttons: [
+								{
+									type: 'web_url',
+									url,
+									title: (buttonLabel || 'Open').slice(0, 20),
+								},
+							],
+						},
+					},
+				},
+			},
+			{ headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
+		)
+	} catch (error) {
+		// If fails, fall back to plain text send
+		return sendDM(userId, recieverId, text, token, integrationId)
+	}
+}
+
+export const sendDMWithButtons = async (
+	userId: string,
+	recieverId: string,
+	text: string,
+	buttons: Array<{ label: string; url: string }>,
+	token: string,
+	integrationId?: string
+) => {
+	// Filter and cap buttons to valid http(s) and max 3
+	const valid = buttons
+		.filter(b => /^https?:\/\//i.test(b.url || ''))
+		.slice(0, 3)
+		.map(b => ({
+			type: 'web_url',
+			url: b.url,
+			title: (b.label || 'Open').slice(0, 20),
+		}))
+
+	if (valid.length === 0) {
+		return sendDM(userId, recieverId, text, token, integrationId)
+	}
+
+	try {
+		text = stripMarkdown(text)
+		return await axios.post(
+			`${process.env.INSTAGRAM_BASE_URL}/v21.0/${userId}/messages`,
+			{
+				recipient: { id: recieverId },
+				message: {
+					attachment: {
+						type: 'template',
+						payload: {
+							template_type: 'button',
+							text: text,
+							buttons: valid,
+						},
+					},
+				},
+			},
+			{ headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
+		)
+	} catch (error) {
+		return sendDM(userId, recieverId, text, token, integrationId)
+	}
+}
+
+export const sendPrivateMessageWithButton = async (
+	userId: string,
+	recieverCommentId: string,
+	text: string,
+	buttonLabel: string,
+	url: string,
+	token: string,
+	integrationId?: string
+) => {
+	if (!/^https?:\/\//i.test(url)) {
+		return sendPrivateMessage(userId, recieverCommentId, text, token, integrationId)
+	}
+	try {
+		text = stripMarkdown(text)
+		return await axios.post(
+			`${process.env.INSTAGRAM_BASE_URL}/${userId}/messages`,
+			{
+				recipient: { comment_id: recieverCommentId },
+				message: {
+					attachment: {
+						type: 'template',
+						payload: {
+							template_type: 'button',
+							text: text,
+							buttons: [
+								{
+									type: 'web_url',
+									url,
+									title: (buttonLabel || 'Open').slice(0, 20),
+								},
+							],
+						},
+					},
+				},
+			},
+			{ headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
+		)
+	} catch (error) {
+		return sendPrivateMessage(userId, recieverCommentId, text, token, integrationId)
+	}
+}
+
+export const sendPrivateMessageWithButtons = async (
+	userId: string,
+	recieverCommentId: string,
+	text: string,
+	buttons: Array<{ label: string; url: string }>,
+	token: string,
+	integrationId?: string
+) => {
+	const valid = buttons
+		.filter(b => /^https?:\/\//i.test(b.url || ''))
+		.slice(0, 3)
+		.map(b => ({
+			type: 'web_url',
+			url: b.url,
+			title: (b.label || 'Open').slice(0, 20),
+		}))
+
+	if (valid.length === 0) {
+		return sendPrivateMessage(userId, recieverCommentId, text, token, integrationId)
+	}
+
+	try {
+		text = stripMarkdown(text)
+		return await axios.post(
+			`${process.env.INSTAGRAM_BASE_URL}/${userId}/messages`,
+			{
+				recipient: { comment_id: recieverCommentId },
+				message: {
+					attachment: {
+						type: 'template',
+						payload: {
+							template_type: 'button',
+							text: text,
+							buttons: valid,
+						},
+					},
+				},
+			},
+			{ headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
+		)
+	} catch (error) {
+		return sendPrivateMessage(userId, recieverCommentId, text, token, integrationId)
+	}
+}
+
 export const generateTokens = async (code: string) => {
   try {
     // Validate input
