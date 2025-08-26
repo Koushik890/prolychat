@@ -57,3 +57,6 @@ SECURITY.md
 *.implementation.md
 *.specification.md
 
+# Accidental git command output files
+tatus*
+
