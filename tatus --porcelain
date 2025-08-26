@@ -1,0 +1,3 @@
+src/actions/automations/message-queries.ts
+src/components/global/automations/flow-builder/action-config-sidebar/index.tsx
+src/components/global/automations/flow-builder/card-config-modal/index.tsx

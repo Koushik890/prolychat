@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import { useToast } from '@/contexts/toast-context'
 import { ButtonActionModal } from '../button-action-modal'
 import { WebsiteConfigModal } from '../website-config-modal'
+import type { CardData } from '@/types/automation'
 import styles from './card-config-modal.module.css'
 
 interface CardConfigModalProps {
@@ -16,15 +17,6 @@ interface CardConfigModalProps {
   onClose: () => void
   onSave: (cardData: CardData) => void
   initialCard?: CardData
-}
-
-export interface CardData {
-  image?: string
-  title: string
-  subtitle: string
-  link?: string
-  buttonAction?: 'message' | 'ai' | 'website'
-  buttonTitle?: string
 }
 
 // Prevent page reload function
