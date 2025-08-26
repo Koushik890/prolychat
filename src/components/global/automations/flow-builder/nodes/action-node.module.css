@@ -1,6 +1,6 @@
 .actionNode {
-  min-width: 340px;
-  max-width: 340px;
+  min-width: 350px;
+  max-width: 350px;
   min-height: 102px;
   /* Allow height to expand based on content */
   height: auto;
@@ -22,8 +22,8 @@
 
 /* Expanded state for card content - allows dynamic height expansion */
 .cardExpanded {
-  min-width: 420px !important;
-  max-width: 420px !important;
+  min-width: 350px !important; /* keep same width regardless of button count */
+  max-width: 350px !important; /* consistent width for text/card */
   min-height: 205px !important;
   /* Removed max-height to allow dynamic expansion for card content */
   height: auto !important;
@@ -65,38 +65,26 @@
   display: flex;
   align-items: center;
   gap: 0.875rem;
-  margin-bottom: 0.375rem;
+  margin-bottom: 0; /* minimal spacing under title */
   position: relative;
   background-color: #ffffff !important;
 }
 
 .iconWrapper {
   position: relative;
-  width: 1.9rem;
-  height: 1.9rem;
-  background-color: #f5f3ff !important;
-  border-radius: 12px;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: transparent !important;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 4px rgba(124, 58, 237, 0.06);
-  border: 1px solid rgba(124, 58, 237, 0.12);
+  box-shadow: none;
+  border: none;
 }
 
-.iconWrapper::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  background-color: #7c3aed;
-  border-radius: inherit;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.actionNode:hover .iconWrapper::before {
-  opacity: 0.08;
-}
+.iconWrapper::before { content: none; }
 
 .icon {
   width: 1.25rem;
@@ -271,7 +259,7 @@
 }
 
 .messageContent {
-  margin-top: 0.75rem;
+  margin-top: 0.125rem; /* minimal gap above preview */
   position: relative;
   background-color: #ffffff !important;
 }
@@ -280,7 +268,7 @@
   width: 100%;
   height: auto;
   min-height: auto;
-  padding: 0.375rem 0.75rem;
+  padding: 0.5rem; /* Uniform, thinner gap on all sides */
   background-color: #ffffff !important;
   border: 1px solid rgba(168, 85, 247, 0.15);
   border-radius: 12px;
@@ -293,7 +281,7 @@
 
 /* Enhanced styling for card content in expanded state */
 .cardExpanded .viewPromptButton {
-  padding: 1rem !important;
+  padding: 0.5rem !important; /* Match uniform gap in expanded state */
   border-radius: 16px !important;
 }
 
@@ -473,5 +461,5 @@
 }
 
 .configured .header {
-  margin-bottom: 0.5rem;
-} 
+  margin-bottom: 0; /* minimal spacing in configured state */
+}

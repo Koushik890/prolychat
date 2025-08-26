@@ -293,11 +293,17 @@ import React from 'react'
 
 type Props = {}
 
-const Page = (props: Props) => {
+const Page = (props: Props & { searchParams?: { [key: string]: string | string[] | undefined } }) => {
+  const redirectParam = props.searchParams?.redirect_url
+  const redirectUrl = typeof redirectParam === 'string' && redirectParam.length > 0
+    ? redirectParam
+    : '/dashboard'
+
   return (
     <SignIn 
-      forceRedirectUrl="/dashboard"
       signUpUrl="/sign-up"
+      redirectUrl={redirectUrl}
+      afterSignInUrl={redirectUrl}
     />
   )
 }

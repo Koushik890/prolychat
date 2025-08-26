@@ -9,7 +9,7 @@ import {
   trackResponses,
   trackAutomationRun,
 } from '@/actions/webhook/queries'
-import { sendDM, sendPrivateMessage, replyToComment } from '@/lib/fetch'
+import { sendDM, sendPrivateMessage, replyToComment, sendDMWithButton, sendPrivateMessageWithButton, sendDMWithButtons, sendPrivateMessageWithButtons } from '@/lib/fetch'
 import { mistralAI } from '@/lib/mistral'
 import { client } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
@@ -74,13 +74,38 @@ function getListenerMessage(listener: any): string {
   if (listener.messageData) {
     if (listener.messageData.type === 'TEXT' && listener.messageData.textContent) {
       return listener.messageData.textContent;
-    } else if (listener.messageData.type === 'CARD' && listener.messageData.cardTitle) {
-      return `Card: ${listener.messageData.cardTitle}`;
+    } else if (listener.messageData.type === 'RICH' && (listener.messageData as any).richTitle) {
+      return (listener.messageData as any).richTitle;
     }
   }
   
   // Default fallback message if no message data is available
   return 'Thank you for your comment!';
+}
+
+function getWebsiteButtonFromListener(listener: any): { label: string; url: string } | null {
+  const md = listener?.messageData
+  if (!md) return null
+  if (md.type === 'RICH' && (md as any).ctaAction === 'website' && (md as any).ctaUrl) {
+    return { label: (md as any).ctaLabel || 'Open', url: (md as any).ctaUrl }
+  }
+  return null
+}
+
+function getWebsiteButtonsFromListener(listener: any): Array<{ label: string; url: string }> {
+  const md = listener?.messageData
+  const buttons: Array<{ label: string; url: string }> = []
+  if (!md || md.type !== 'RICH') return buttons
+  if ((md as any).ctaAction === 'website' && (md as any).ctaUrl) {
+    buttons.push({ label: (md as any).ctaLabel || 'Open', url: (md as any).ctaUrl })
+  }
+  if ((md as any).cta2Action === 'website' && (md as any).cta2Url) {
+    buttons.push({ label: (md as any).cta2Label || 'Open', url: (md as any).cta2Url })
+  }
+  if ((md as any).cta3Action === 'website' && (md as any).cta3Url) {
+    buttons.push({ label: (md as any).cta3Label || 'Open', url: (md as any).cta3Url })
+  }
+  return buttons.slice(0, 3)
 }
 
 // Cache to store Instagram IDs to usernames from webhooks
@@ -688,13 +713,33 @@ export async function POST(req: NextRequest) {
                 })
 
                 try {
-                  const direct_message = await sendPrivateMessage(
-                    webhook_payload.entry[0].id,
-                    commentId,
-                    dmMessage,
-                    token,
-                    automation.User?.integrations[0].id
-                  )
+                  const websites = getWebsiteButtonsFromListener(listenerToUse)
+                  const direct_message = websites.length > 1
+                    ? await sendPrivateMessageWithButtons(
+                        webhook_payload.entry[0].id,
+                        commentId,
+                        dmMessage,
+                        websites,
+                        token,
+                        automation.User?.integrations[0].id
+                      )
+                    : websites.length === 1
+                    ? await sendPrivateMessageWithButton(
+                        webhook_payload.entry[0].id,
+                        commentId,
+                        dmMessage,
+                        websites[0].label,
+                        websites[0].url,
+                        token,
+                        automation.User?.integrations[0].id
+                      )
+                    : await sendPrivateMessage(
+                        webhook_payload.entry[0].id,
+                        commentId,
+                        dmMessage,
+                        token,
+                        automation.User?.integrations[0].id
+                      )
 
                   if (direct_message.status === 200) {
                     console.log('DM sent successfully');
@@ -993,13 +1038,33 @@ export async function POST(req: NextRequest) {
             if (automation.listener && isSameActionType(automation.listener.type, ACTION_TYPE.MESSAGE)) {
               console.log('Processing MESSAGE listener')
               
-              const direct_message = await sendDM(
-                webhook_payload.entry[0].id,
-                webhook_payload.entry[0].messaging[0].sender.id,
-                getListenerMessage(automation.listener),
-                automation.User?.integrations[0].token!,
-                automation.User?.integrations[0].id
-              )
+              const websites = getWebsiteButtonsFromListener(automation.listener)
+              const direct_message = websites.length > 1
+                ? await sendDMWithButtons(
+                    webhook_payload.entry[0].id,
+                    webhook_payload.entry[0].messaging[0].sender.id,
+                    getListenerMessage(automation.listener),
+                    websites,
+                    automation.User?.integrations[0].token!,
+                    automation.User?.integrations[0].id
+                  )
+                : websites.length === 1
+                ? await sendDMWithButton(
+                    webhook_payload.entry[0].id,
+                    webhook_payload.entry[0].messaging[0].sender.id,
+                    getListenerMessage(automation.listener),
+                    websites[0].label,
+                    websites[0].url,
+                    automation.User?.integrations[0].token!,
+                    automation.User?.integrations[0].id
+                  )
+                : await sendDM(
+                    webhook_payload.entry[0].id,
+                    webhook_payload.entry[0].messaging[0].sender.id,
+                    getListenerMessage(automation.listener),
+                    automation.User?.integrations[0].token!,
+                    automation.User?.integrations[0].id
+                  )
 
               if (direct_message.status === 200) {
                 console.log('MESSAGE: DM sent successfully')
@@ -1487,13 +1552,24 @@ export async function POST(req: NextRequest) {
                   })
 
                   try {
-                    const direct_message = await sendPrivateMessage(
-                      webhook_payload.entry[0].id,
-                      commentId,
-                      dmMessage,
-                      token,
-                      automation.User?.integrations[0].id
-                    )
+                    const website = getWebsiteButtonFromListener(automation.listener)
+                    const direct_message = website
+                      ? await sendPrivateMessageWithButton(
+                          webhook_payload.entry[0].id,
+                          commentId,
+                          dmMessage,
+                          website.label,
+                          website.url,
+                          token,
+                          automation.User?.integrations[0].id
+                        )
+                      : await sendPrivateMessage(
+                          webhook_payload.entry[0].id,
+                          commentId,
+                          dmMessage,
+                          token,
+                          automation.User?.integrations[0].id
+                        )
 
                     if (direct_message.status === 200) {
                       console.log('DM sent successfully')

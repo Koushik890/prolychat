@@ -64,9 +64,9 @@ export async function POST(request: NextRequest, { params }: Context) {
     const body = await request.json()
     const { messageType, data } = body
 
-    if (!messageType || !['TEXT', 'CARD'].includes(messageType)) {
+    if (!messageType || !['TEXT', 'RICH'].includes(messageType)) {
       return new Response(
-        JSON.stringify({ message: 'Valid message type (TEXT or CARD) is required' }),
+        JSON.stringify({ message: 'Valid message type (TEXT or RICH) is required' }),
         {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
@@ -84,9 +84,9 @@ export async function POST(request: NextRequest, { params }: Context) {
       )
     }
 
-    if (messageType === 'CARD' && !data?.cardData) {
+    if (messageType === 'RICH' && !data?.cardData) {
       return new Response(
-        JSON.stringify({ message: 'Card data is required for CARD messages' }),
+        JSON.stringify({ message: 'Card data is required for RICH messages' }),
         {
           status: 400,
           headers: { 'Content-Type': 'application/json' },

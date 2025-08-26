@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { Handle, Position } from 'reactflow'
 import { Card } from '@/components/ui/card'
-import { MessageSquare, Bot } from 'lucide-react'
+import { MessageCircle, Bot } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ActionConfigSidebar, CardData } from '../action-config-sidebar'
 import { AiPromptModal } from '../ai-prompt-modal'
@@ -17,42 +17,59 @@ interface ActionNodeCardPreviewProps {
 }
 
 const ActionNodeCardPreview: React.FC<ActionNodeCardPreviewProps> = ({ cardData }) => {
-  const getButtonText = () => {
-    if (!cardData.buttonAction) return null
-    
-    if (cardData.buttonAction === 'website' && cardData.buttonTitle) {
-      return cardData.buttonTitle
+  const getButtons = (): string[] => {
+    const labels: string[] = []
+    if (cardData.buttonAction === 'website') {
+      labels.push(cardData.buttonTitle || 'Open')
+    } else if (cardData.buttonAction === 'message') {
+      labels.push('Send Message')
+    } else if (cardData.buttonAction === 'ai') {
+      labels.push('Ask AI')
     }
-    
-    switch (cardData.buttonAction) {
-      case 'website':
-        return 'Visit Website'
-      case 'message':
-        return 'Send Message'
-      case 'ai':
-        return 'Ask AI'
-      default:
-        return 'Button'
+    if (cardData.button2Action === 'website' && cardData.button2Link) {
+      labels.push(cardData.button2Title || 'Open')
     }
+    if (cardData.button3Action === 'website' && cardData.button3Link) {
+      labels.push(cardData.button3Title || 'Open')
+    }
+    return labels
   }
 
+  const buttons = getButtons()
+
   return (
-    <div className={styles.actionCardPreview}>
+    <div className="w-full">
       {cardData.image && (
-        <div className={styles.actionCardImageContainer}>
-          <img src={cardData.image} alt="Card preview" className={styles.actionCardImage} />
+        <div className="relative w-full h-16 rounded-xl overflow-hidden mb-3 bg-gradient-to-br from-purple-50 to-purple-100/60 ring-1 ring-purple-200/40">
+          <img 
+            src={cardData.image} 
+            alt="Card preview" 
+            className="w-full h-full object-cover" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent" />
         </div>
       )}
-      <div className={styles.actionCardContent}>
+      <div className="space-y-2">
         {cardData.title && (
-          <h4 className={`${styles.actionCardTitle} font-hubot`}>{cardData.title}</h4>
+          <h4 className="font-hubot text-gray-900 font-semibold text-sm leading-tight line-clamp-2">
+            {cardData.title}
+          </h4>
         )}
         {cardData.subtitle && (
-          <p className={`${styles.actionCardSubtitle} font-mona`}>{cardData.subtitle}</p>
+          <p className="font-mona text-gray-600 text-xs leading-relaxed line-clamp-2">
+            {cardData.subtitle}
+          </p>
         )}
-        {cardData.buttonAction && (
-          <div className={`${styles.actionCardButton} font-mona`}>
-            {getButtonText()}
+        {buttons.length > 0 && (
+          <div className="flex flex-col gap-2 w-full">
+            {buttons.map((label, idx) => (
+              <div
+                key={idx}
+                className="font-mona px-3 py-2.5 w-full text-center text-xs font-medium text-white bg-gradient-to-r from-purple-400 to-purple-500 rounded-lg shadow-sm ring-1 ring-purple-900/[0.05]"
+              >
+                {label}
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -70,15 +87,18 @@ interface ActionNodeProps {
       dmCount: number
       commentCount: number
       messageData?: {
-        type: 'TEXT' | 'CARD'
+        type: 'TEXT' | 'RICH'
         textContent?: string
-        cardTitle?: string
-        cardSubtitle?: string
-        cardButtonLabel?: string
-        cardImage?: Buffer
-        cardImageUrl?: string
-        cardButtonAction?: string
-        cardLink?: string
+        richTitle?: string
+        ctaLabel?: string
+        ctaAction?: string
+        ctaUrl?: string
+        cta2Label?: string
+        cta2Action?: string
+        cta2Url?: string
+        cta3Label?: string
+        cta3Action?: string
+        cta3Url?: string
       }
       cardData?: CardData
       actionType?: 'text' | 'card'
@@ -97,7 +117,7 @@ export const ActionNode: React.FC<ActionNodeProps> = ({ data, onMessageUpdate, o
   
   // Determine if there's a configured message based on messageData
   const hasConfiguredMessage = isMessageAction 
-    ? (data.listener.messageData?.textContent || data.listener.messageData?.cardTitle)
+    ? (data.listener.messageData?.textContent || (data.listener.messageData as any)?.richTitle)
     : data.listener.prompt
 
   // Extract display data from messageData
@@ -105,54 +125,27 @@ export const ActionNode: React.FC<ActionNodeProps> = ({ data, onMessageUpdate, o
     if (data.listener.messageData) {
       if (data.listener.messageData.type === 'TEXT') {
         return data.listener.messageData.textContent || ''
-      } else if (data.listener.messageData.type === 'CARD') {
-        return `Card: ${data.listener.messageData.cardTitle || 'Untitled'}`
+      } else if (data.listener.messageData.type === 'RICH') {
+        return `Card: ${(data.listener.messageData as any).richTitle || 'Untitled'}`
       }
     }
     return ''
   }
 
   const getCardDataFromMessage = () => {
-    if (data.listener.messageData?.type === 'CARD') {
-      let imageData = data.listener.messageData.cardImageUrl || undefined
-      
-      // Convert buffer/uint8array to base64 if image is stored as binary data
-      if (data.listener.messageData.cardImage) {
-        let buffer: Buffer | null = null
-        
-        if (data.listener.messageData.cardImage instanceof Buffer) {
-          buffer = data.listener.messageData.cardImage
-        } else if (data.listener.messageData.cardImage instanceof Uint8Array) {
-          buffer = Buffer.from(data.listener.messageData.cardImage)
-                          } else {
-          // Safe handling of array-like structures
-          try {
-            const rawImageData = data.listener.messageData.cardImage
-            if (Array.isArray(rawImageData)) {
-              buffer = Buffer.from(rawImageData)
-            } else if (typeof rawImageData === 'object' && rawImageData !== null && 'length' in rawImageData) {
-              // Convert array-like object to actual array
-              buffer = Buffer.from(Array.from(rawImageData as ArrayLike<number>))
-            } else {
-              console.warn('Unexpected cardImage data type:', typeof rawImageData, rawImageData)
-            }
-          } catch (error) {
-            console.warn('Failed to convert cardImage to Buffer:', error)
-          }
-        }
-        
-        if (buffer) {
-          imageData = bufferToDataUrl(buffer)
-        }
-      }
-
+    if (data.listener.messageData?.type === 'RICH') {
       return {
-        image: imageData,
-        title: data.listener.messageData.cardTitle || '',
-        subtitle: data.listener.messageData.cardSubtitle || '',
-        link: data.listener.messageData.cardLink || undefined,
-        buttonAction: data.listener.messageData.cardButtonAction as 'message' | 'ai' | 'website' | undefined,
-        buttonTitle: data.listener.messageData.cardButtonLabel || undefined,
+        title: (data.listener.messageData as any).richTitle || '',
+        subtitle: '',
+        link: (data.listener.messageData as any).ctaUrl || undefined,
+        buttonAction: (data.listener.messageData as any).ctaAction as any,
+        buttonTitle: (data.listener.messageData as any).ctaLabel || undefined,
+        button2Link: (data.listener.messageData as any).cta2Url || undefined,
+        button2Action: (data.listener.messageData as any).cta2Action as any,
+        button2Title: (data.listener.messageData as any).cta2Label || undefined,
+        button3Link: (data.listener.messageData as any).cta3Url || undefined,
+        button3Action: (data.listener.messageData as any).cta3Action as any,
+        button3Title: (data.listener.messageData as any).cta3Label || undefined,
       }
     }
     return data.listener.cardData
@@ -170,14 +163,11 @@ export const ActionNode: React.FC<ActionNodeProps> = ({ data, onMessageUpdate, o
       } else {
         data.listener.messageData.type = 'TEXT'
         data.listener.messageData.textContent = config.message
-        // Clear card-related fields
-        data.listener.messageData.cardTitle = undefined
-        data.listener.messageData.cardSubtitle = undefined
-        data.listener.messageData.cardButtonLabel = undefined
-        data.listener.messageData.cardImage = undefined
-        data.listener.messageData.cardImageUrl = undefined
-        data.listener.messageData.cardButtonAction = undefined
-        data.listener.messageData.cardLink = undefined
+        // Clear RICH-related fields
+        ;(data.listener.messageData as any).richTitle = undefined
+        ;(data.listener.messageData as any).ctaLabel = undefined
+        ;(data.listener.messageData as any).ctaAction = undefined
+        ;(data.listener.messageData as any).ctaUrl = undefined
       }
       
       onMessageUpdate?.(data.id, config.message)
@@ -188,22 +178,31 @@ export const ActionNode: React.FC<ActionNodeProps> = ({ data, onMessageUpdate, o
       // Update messageData to maintain consistency
       if (!data.listener.messageData) {
         data.listener.messageData = { 
-          type: 'CARD',
-          cardTitle: config.cardData.title,
-          cardSubtitle: config.cardData.subtitle,
-          cardButtonLabel: config.cardData.buttonTitle,
-          cardImageUrl: config.cardData.image,
-          cardButtonAction: config.cardData.buttonAction,
-          cardLink: config.cardData.link
+          type: 'RICH',
+          richTitle: config.cardData.title,
+          ctaLabel: config.cardData.buttonTitle,
+          ctaAction: config.cardData.buttonAction,
+          ctaUrl: config.cardData.link,
+          // extra buttons for local state parity
+          ...(config.cardData.button2Title ? { cta2Label: config.cardData.button2Title } : {} as any),
+          ...(config.cardData.button2Action ? { cta2Action: config.cardData.button2Action } : {} as any),
+          ...(config.cardData.button2Link ? { cta2Url: config.cardData.button2Link } : {} as any),
+          ...(config.cardData.button3Title ? { cta3Label: config.cardData.button3Title } : {} as any),
+          ...(config.cardData.button3Action ? { cta3Action: config.cardData.button3Action } : {} as any),
+          ...(config.cardData.button3Link ? { cta3Url: config.cardData.button3Link } : {} as any),
         }
       } else {
-        data.listener.messageData.type = 'CARD'
-        data.listener.messageData.cardTitle = config.cardData.title
-        data.listener.messageData.cardSubtitle = config.cardData.subtitle
-        data.listener.messageData.cardButtonLabel = config.cardData.buttonTitle
-        data.listener.messageData.cardImageUrl = config.cardData.image
-        data.listener.messageData.cardButtonAction = config.cardData.buttonAction
-        data.listener.messageData.cardLink = config.cardData.link
+        data.listener.messageData.type = 'RICH'
+        ;(data.listener.messageData as any).richTitle = config.cardData.title
+        ;(data.listener.messageData as any).ctaLabel = config.cardData.buttonTitle
+        ;(data.listener.messageData as any).ctaAction = config.cardData.buttonAction as any
+        ;(data.listener.messageData as any).ctaUrl = config.cardData.link
+        ;(data.listener.messageData as any).cta2Label = config.cardData.button2Title
+        ;(data.listener.messageData as any).cta2Action = config.cardData.button2Action as any
+        ;(data.listener.messageData as any).cta2Url = config.cardData.button2Link
+        ;(data.listener.messageData as any).cta3Label = config.cardData.button3Title
+        ;(data.listener.messageData as any).cta3Action = config.cardData.button3Action as any
+        ;(data.listener.messageData as any).cta3Url = config.cardData.button3Link
         // Clear text content when switching to card
         data.listener.messageData.textContent = undefined
       }
@@ -255,7 +254,7 @@ export const ActionNode: React.FC<ActionNodeProps> = ({ data, onMessageUpdate, o
         <div className={styles.header}>
           <div className={styles.iconWrapper}>
             {isMessageAction ? (
-              <MessageSquare className={styles.icon} />
+              <MessageCircle className={styles.icon} />
             ) : (
               <Bot className={styles.icon} />
             )}
@@ -277,12 +276,15 @@ export const ActionNode: React.FC<ActionNodeProps> = ({ data, onMessageUpdate, o
                 e.stopPropagation()
                 if (!isMessageAction) {
                   setIsViewPromptModalOpen(true)
+                } else {
+                  // For message action, clicking the preview should open the configure sidebar
+                  setIsConfigOpen(true)
                 }
               }}
             >
               <span className={styles.buttonContent}>
                 {isMessageAction ? (
-                  (data.listener.messageData?.type === 'CARD' || data.listener.actionType === 'card') && getCardDataFromMessage() ? (
+                  (data.listener.messageData?.type === 'RICH' || data.listener.actionType === 'card') && getCardDataFromMessage() ? (
                     <ActionNodeCardPreview cardData={getCardDataFromMessage()!} />
                   ) : (
                     <p className={`${styles.configuredMessage} font-mona`} title={getMessageDisplayText()}>

@@ -846,7 +846,7 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
 
   // Define the initializeNodesAndEdges function before it's used
   const initializeNodesAndEdges = React.useCallback((data: any) => {
-    const automationData = data.data as unknown as Partial<AutomationData>
+    const automationData = (data?.data ?? {}) as Partial<AutomationData>
     const initialNodes: Node[] = []
     const initialEdges: Edge[] = []
 
@@ -1031,11 +1031,11 @@ const FlowBuilder: React.FC<FlowBuilderProps> = ({ id }) => {
 
   // Initialize flow with data
   React.useEffect(() => {
-    if (data && !isInitializedRef.current) {
+    if (data?.data && !isInitializedRef.current) {
       // Initialize nodes and edges based on automation data
       initializeNodesAndEdges(data)
       isInitializedRef.current = true
-    } else if (data && isInitializedRef.current && nodes.length === 0) {
+    } else if (data?.data && isInitializedRef.current && nodes.length === 0) {
       // If nodes are empty but we have data, re-initialize
       // This can happen after a trigger is removed and the component re-renders
       console.log('Re-initializing flow with data after nodes were cleared')

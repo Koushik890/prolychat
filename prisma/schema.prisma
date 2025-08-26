@@ -105,13 +105,16 @@ model Message {
   listenerId       String       @unique @db.Uuid
   type             MESSAGE_TYPE @default(TEXT)
   textContent      String?
-  cardTitle        String?
-  cardSubtitle     String?
-  cardButtonLabel  String?
-  cardImage        Bytes?
-  cardImageUrl     String?
-  cardButtonAction String?
-  cardLink         String?
+  richTitle        String?
+  ctaLabel         String?
+  ctaAction        String?
+  ctaUrl           String?
+  cta2Label        String?
+  cta2Action       String?
+  cta2Url          String?
+  cta3Label        String?
+  cta3Action       String?
+  cta3Url          String?
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
   listener         Listener     @relation(fields: [listenerId], references: [id], onDelete: Cascade)
@@ -229,5 +232,5 @@ enum ContactStatus {
 
 enum MESSAGE_TYPE {
   TEXT
-  CARD
+  RICH
 }
